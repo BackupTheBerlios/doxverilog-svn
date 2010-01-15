@@ -20,7 +20,7 @@ System Requirements
 
   Name			version		        URL
   ----			---------------		---
-  * bison		2.1 or higher		http://www.gnu.org/software/bison/bison.html
+  * bison		2.4 or higher		http://www.gnu.org/software/bison/bison.html
   * flex		2.5.4 or higher         http://flex.sourceforge.net
   * doxygen sources     1.5.8 			http://www.doxygen.org/download.html
  	
@@ -108,4 +108,4 @@ endmodule
 ----------------------------------------------------------------------------------------------
 tested under Windows XP/Suse Linux 10.2
 
-compiled with Microsoft Visual C++ 2005 Express Edition 8.0 and gcc 4.1 
+compiled with Microsoft Visual C++ 2008 Express Edition 8.0 and gcc 4.1 
