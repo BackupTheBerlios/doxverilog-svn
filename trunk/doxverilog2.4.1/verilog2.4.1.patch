@@ -1266,3 +1266,79 @@ G:\VerilogProject>diff -u -i -b -B --strip-trailing-cr doxverilog/winbuild/runbi
  bison -l -p cppExpYY %1\..\src\constexp.y -o %1\..\src\ce_parse.cpp
 +bison -d -t -v %1\..\src\verilogparser.y -o %1\..\src\verilogparser.cpp
 +
+
+G:\VerilogProject>diff -u -i -b -B --strip-trailing-cr doxverilog/src/htmlgen.cpp         doxygen-1.5.8/src/htmlgen.cpp 
+--- doxverilog/src/htmlgen.cpp	2008-12-20 14:13:24.000000000 -0800
++++ doxygen-1.5.8/src/htmlgen.cpp	2010-01-02 14:15:46.000000000 -0800
+@@ -1182,6 +1182,7 @@
+       case 0:  t << "<td class=\"memItemLeft\" nowrap align=\"right\" valign=\"top\">"; break;
+       case 1:  t << "<td class=\"memItemLeft\" nowrap>"; break;
+       case 2:  t << "<td class=\"memItemLeft\" nowrap valign=\"top\">"; break;
++      case 3:  t << "<td class=\"memItemLeft\"  valign=\"top\">"; break;
+       default: t << "<td class=\"memTemplParams\" nowrap colspan=\"2\">"; break;
+     }
+   }
+@@ -1256,7 +1257,7 @@
+   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
+   if (Config_getBool("HTML_ALIGN_MEMBERS"))
+   {
+-    t << "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">" << endl;
++    t << "<table class=\"pre\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">" << endl;
+     // HTML is not recursively decomposable, sorry
+     t << "<tr><td></td></tr>" << endl;
+   }
+
+G:\VerilogProject>diff -u -i -b -B --strip-trailing-cr doxverilog/src/doxygen_css.h       doxygen-1.5.8/src/doxygen_css.h 
+--- doxverilog/src/doxygen_css.h	2008-11-08 07:16:00.000000000 -0800
++++ doxygen-1.5.8/src/doxygen_css.h	2010-01-02 13:37:34.000000000 -0800
+@@ -199,6 +199,10 @@
+ "	color: #000000 \n"
+ "}\n"
+ "\n"
++"span.undoc { \n"
++"	color: #a5a5a5 \n"
++"}\n"
++"\n"
+ "span.vhdlkeyword { \n"
+ "	color: #700070 \n"
+ "}\n"
+@@ -439,3 +443,7 @@
+ "	font-style: normal;\n"
+ "	color: #333;\n"
+ "}\n"
++".pre {white-space: pre;}\n"
++".nowrap {white-space: nowrap;}\n"
++".pre-wrap {white-space: pre-wrap;}\n"
++".pre-line {white-space: pre-line;}\n"
+\ No newline at end of file
+
+G:\VerilogProject>diff -u -i -b -B --strip-trailing-cr doxverilog/src/definition.h        doxygen-1.5.8/src/definition.h 
+
+G:\VerilogProject>diff -u -i -b -B --strip-trailing-cr doxverilog/src/definition.cpp      doxygen-1.5.8/src/definition.cpp 
+--- doxverilog/src/definition.cpp	2008-12-09 12:34:50.000000000 -0800
++++ doxygen-1.5.8/src/definition.cpp	2009-12-17 18:16:02.000000000 -0800
+@@ -37,7 +37,8 @@
+ #include "parserintf.h"
+ #include "marshal.h"
+ #include "debug.h"
+-
++#include "preVerilog.h"
++#include "bufstr.h"
+ #define START_MARKER 0x4445465B // DEF[
+ #define END_MARKER   0x4445465D // DEF]
+ 
+@@ -766,6 +767,14 @@
+           actualStart,actualEnd,codeFragment)
+        )
+     {
++     QCString path= m_impl->body->fileDef->absFilePath();  
++	 BufStr preBuf(codeFragment.length());
++	 
++	 if (Config_getBool("ENABLE_PREPROCESSING") && Config_getBool("OPTIMIZE_OUTPUT_VERILOG")){
++		 preprocessVerilogFile(path.data(),preBuf,codeFragment.data(), actualStart);
++         preBuf.addChar('\0');	
++		 codeFragment=preBuf.data();
++	 }
+       //printf("Adding code fragement '%s' ext='%s'\n",
+       //    codeFragment.data(),m_impl->defFileExt.data());
+       ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
