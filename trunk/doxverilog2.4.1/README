@@ -13,15 +13,15 @@ Introduction
 ============
  Doxverilog  is a nativ verilog parser (Verilog 2001) for Doxygen. After installing this patch you can
  documentate your verilog project  similar to VHDL in Doxygen. 
- It is patch against the doxygen-1.5.8 version. 
+ Patch against the doxygen-1.5.8 version. 
 
 System Requirements
 ===================
 
   Name			version		        URL
   ----			---------------		---
-  * bison		2.4 or higher		http://www.gnu.org/software/bison/bison.html
-  * flex		2.5.4 or higher         http://flex.sourceforge.net
+  * bison		2.1 or higher		http://www.gnu.org/software/bison/bison.html
+  * flex		2.5.35 or higher         http://flex.sourceforge.net
   * doxygen sources     1.5.8 			http://www.doxygen.org/download.html
  	
  
@@ -35,11 +35,16 @@ install the doxygen-1.5.8 sources
 2. copy the patch file verilog.patch to directory doxygen-1.5.8
 
 3. open a shell in the doxygen-1.5.8 directory
-   make the patch  # patch -p1 < verilog.patch
+
+3.1 configure doxygen
+    sh configure
+  
+3.2  make the patch  # patch -p1 < verilog.patch
    
 4 compile  the source files
+  make all
 
-5 If the compilition was successful create a doxygen configuration file with  # doxygen -s -g verilog.cfg
+5 If the compilation was successful create a doxygen configuration file with  # doxygen -s -g verilog.cfg
   In the configuration file you should see the option OPTIMIZE_OUTPUT_VERILOG. 
   The file patterns for the Verilog parser  are *.v and *.V
 
@@ -64,7 +69,7 @@ Example for a Verilog  configuration file
   HIDE_SCOPE_NAMES     = YES
   SOURCE_BROWSER       = YES
   ENABLE_PREPROCESSING   = YES
-  MACRO_EXPANSION        = yes
+  MACRO_EXPANSION        = no
   SEARCH_INCLUDES        = yes
  
  Documentation in Verilog
@@ -106,6 +111,6 @@ module XOR2 ( OUT, I0, I1 );
 endmodule
 
 ----------------------------------------------------------------------------------------------
-tested under Windows XP/Suse Linux 10.2
+tested under Windows XP/ Open Suse 11.0
 
-compiled with Microsoft Visual C++ 2008 Express Edition 8.0 and gcc 4.1 
+compiled with Microsoft Visual C++ 2008 Express Edition 8.0 and g++ 4.3 
