@@ -531,6 +531,8 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 		ol.insertMemberAlign();
 	   //writeLink(mdef,ol);
 	case VerilogDocGen::MODPORT:
+		VhdlDocGen::writeLink(mdef,ol);
+		break;
 	case VerilogDocGen::PORT:
 		  VhdlDocGen::writeLink(mdef,ol);
 		 ol.insertMemberAlign();
@@ -1256,8 +1258,7 @@ while(sec.stripPrefix(" "));
 }
 
  if(parseCode){
-     VhdlDocGen::deleteAllChars(sec,'\t');
-   currVerilogInst=sec;
+    currVerilogInst=sec;
    return;
   }
  else {
@@ -2198,8 +2199,8 @@ QCString mod(getVerilogString());
   QStringList qstr=QStringList::split(regg,mod,false);
   uint ll=qstr.count();
  // assert(ll>0);
-  if(ll<=0) return;
-  for(uint u=1;u<ll;u++){
+  if(ll<0) return;
+  for(uint u=0;u<ll;u++){
 	QCString imp =  (QCString)qstr[u];
 	imp.replace(ep,"_1");
 	Entry* ee=VerilogDocGen::makeNewEntry(imp.data(),Entry::VARIABLE_SEC,VerilogDocGen::IMPORT,c_lloc.first_line);
@@ -2532,7 +2533,11 @@ if(parseCode) return;
 
 QCString mod(str);
 Entry* ee=VerilogDocGen::makeNewEntry(mod.data(),Entry::FUNCTION_SEC,MODPORT,c_lloc.first_line);
-if(lastModule)ee->args=lastModule->name; 
+if(lastModule)
+	{ 
+	 ee->args=lastModule->name;
+	 ee->type="modport";
+	}
 }//addModPort
 
 void 
@@ -2655,11 +2660,11 @@ VerilogDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definitio
      
 	 if(kr>=0)
 	 {
-       arg=arg.left(kr-2);
+       arg=arg.left(kr);
 	   arg.stripPrefix("feature");
 	   arg=arg.simplifyWhiteSpace();
 	   arg.stripPrefix(mdef->name().data());
-	   arg.append("{ . . . }");
+	   arg.append(" { . . . }");
 	   VhdlDocGen::formatString(arg,ol,mdef);
 	 }
 	 else{
@@ -2754,9 +2759,14 @@ parseDefineConstruct(QCString & largs, MemberDef* mdef ,OutputList& ol)
 			{
 			//	ol.startParagraph();
 				QCString val=ql[i].data();			
-				//ol.codify(val.data());
-				if(val.contains("//"))
-					writeVerilogFont("keyword",val.data());
+				val+="\\";//ol.codify(val.data());
+				if(val.contains("//") || (val.contains("/*") && val.contains("*/")))
+					{
+					 QCString tt=checkVerilogComment(val);
+					 VhdlDocGen::formatString(val,ol,mdef);
+					 if(tt.data())
+					 writeVerilogFont("keyword",tt.data());
+					}
 				else 			
 				 VhdlDocGen::formatString(val,ol,mdef);			
 			    // ol.lineBreak();

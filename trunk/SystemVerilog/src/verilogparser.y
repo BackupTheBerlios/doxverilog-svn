@@ -56,7 +56,7 @@ static MyParserConv* myconv=0;
 // functions for  verilog parser ---------------------
 int c_lex (void);
 void c_error (char const *);
-
+QCString mem_Type;
 %}
 
 %union {
@@ -312,13 +312,18 @@ class_declaration : virti CLASS_TOK  xlifetime class_identifier xmodule_paramete
 				  ;
 				   
 extends_identifier : simple_identifier { 
-					 						 if(!VerilogDocGen::parseCode){ 
-	                                         	if(VerilogDocGen::currentVerilog)
-                                                 if(!VerilogDocGen::findExtendsComponent(VerilogDocGen::currentVerilog->extends,VerilogDocGen::sdataType))
+					 						 if(!VerilogDocGen::parseCode)
+											 { 
+	                                         QCString ex=getVerilogString();
+											  VhdlDocGen::deleteAllChars(ex,' ');
+											 VhdlDocGen::deleteAllChars(ex,';');
+											 if(VerilogDocGen::currentVerilog)
+                                                 if(!VerilogDocGen::findExtendsComponent(VerilogDocGen::currentVerilog->extends,ex))
 												 {	
-                                                 	BaseInfo *bb=new BaseInfo($<cstr>1,Public,Normal);
+                                                 	BaseInfo *bb=new BaseInfo(ex.data(),Public,Normal);
                      	                            VerilogDocGen::currentVerilog->extends->append(bb);	
                                                   }// findExtendsComponent
+												 VerilogDocGen::paraType.resize(0);
 											 }
 					                   }
  
@@ -765,10 +770,38 @@ extern_constraint_declaration : CONSTRAINT_TOK ps_or_hier_identifier {VerilogDoc
 
 
 									 
-anonymous_program : PROGRAM_TOK SEM_TOK anonymous_program_item_list ENDPROGRAM_TOK
-                  | PROGRAM_TOK SEM_TOK error ENDPROGRAM_TOK
-                  | PROGRAM_TOK SEM_TOK  ENDPROGRAM_TOK
+anonymous_program : PROGRAM_TOK SEMP_TOK anonymous_program_item_list ENDPROGRAM_TOK { VerilogDocGen::resetTypes(); }
+                  | PROGRAM_TOK SEMP_TOK error ENDPROGRAM_TOK                       { VerilogDocGen::resetTypes(); }
+                  | PROGRAM_TOK SEMP_TOK  ENDPROGRAM_TOK                            { VerilogDocGen::resetTypes(); }
 				  ;
+
+SEMP_TOK : SEM_TOK {
+                                          QCString prog;
+				                           if(!VerilogDocGen::parseCode) 
+							               { 
+								             VerilogDocGen::portType.resize(0);
+											 prog=VhdlDocGen::getRecordNumber();
+                                             prog.prepend("anonymous_program_");
+							  				 Entry* lastMod=VerilogDocGen::makeNewEntry("",Entry::CLASS_SEC,getVerilogState());
+											 VerilogDocGen::currState=getVerilogState();
+											 if(VerilogDocGen::lastModule && !VerilogDocGen::lastModule->name.isEmpty())
+											{
+												 prog.prepend("::");
+												 prog.prepend(VerilogDocGen::lastModule->name.data());
+											 }
+											 lastMod->name=prog;
+                                             VerilogDocGen::addVerilogClass(lastMod);
+                                             VerilogDocGen::currentVerilog=lastMod;
+                                             VerilogDocGen::currentVerilog->protection=Public;
+					                         VerilogDocGen::parseModule(prog);
+    									    }
+                                            else {
+											     VerilogDocGen::parseModule(prog);
+                                         		  }
+                               VerilogDocGen::currVerilogType=0;
+							   VerilogDocGen::portType.resize(0);
+							   vbufreset();
+							 }
 
 anonymous_program_item_list: anonymous_program_item
                             | anonymous_program_item_list anonymous_program_item
@@ -1452,9 +1485,9 @@ dpi_function_import_property : CONTEXT_TOK            {VerilogDocGen::portType+=
               | identifier EQU_TOK
               ;                         
                   
-dpi_function_proto :function_prototype
+dpi_function_proto :function_prototype {vbufreset();}
 
-dpi_task_proto : task_prototype
+dpi_task_proto : task_prototype {vbufreset();}
 
 task_prototype : TASK_TOK func_name LBRACE_TOK tf_port_list_empty RBRACE_TOK {if(!VerilogDocGen::parseCode && VerilogDocGen::currentFunctionVerilog){VerilogDocGen::currentFunctionVerilog->spec=VerilogDocGen::TASK;}}
 
@@ -3482,7 +3515,7 @@ dot_identifier : identifier
 			   | dot_identifier CCOLON_TOK identifier
             		   
 simple_identifier : identifier
-			| identifier dimension_list { }
+			| identifier dimension_list { mem_Type.resize(0); }
             | simple_identifier parameter_value_assignment
 			| simple_identifier DOT_TOK identifier	
             | simple_identifier CCOLON_TOK identifier       
@@ -3549,7 +3582,9 @@ identifier:ident { VerilogDocGen::parseString(); }
 ident : LETTER_TOK  {
 			if(VerilogDocGen::parseCode)
 			                  { 
-                               
+                                  mem_Type+=$<cstr>1; 
+                                  mem_Type+=" ";
+								  VerilogDocGen::identVerilog+=$<cstr>1; 
 			                  }
 		            }
         | DOLLAR_TOK 
@@ -3608,11 +3643,11 @@ void c_error(const char * err)
 {
    if(err && ! VerilogDocGen::parseCode)
    {
-  //  fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
+   // fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
   //  printf("\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
     vbufreset();
  //   if(yydebug) 
-//      exit(0);
+  //    exit(0);
     }
  } 
     

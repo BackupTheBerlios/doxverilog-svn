@@ -2587,6 +2587,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  g_defLitText+=preYYVerilogtext; 
 				
 					}
+
+<SkipDoubleQuote>\n	{ 
+  					  g_defText += preYYVerilogtext; 
+  					  g_defLitText+=preYYVerilogtext; 
+  					  g_yyLineNr++;
+					}
+
 <SkipDoubleQuote>"//"			{ g_defText += preYYVerilogtext; g_defLitText+=preYYVerilogtext; }
 <SkipDoubleQuote>"/*"			{ g_defText += preYYVerilogtext; g_defLitText+=preYYVerilogtext; }
 <SkipDoubleQuote>\"			{

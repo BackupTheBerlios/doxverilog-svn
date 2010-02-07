@@ -91,7 +91,7 @@ static bool          g_needsTermination;
 
 static QCString      g_exampleName;
 static QCString      g_exampleFile;
-
+static bool doxComment=false; // doxygen comment ? 
 static QCString      g_CurrScope;
 static FileDef *     g_sourceFileDef;
 static Definition *  g_currentDefinition;
@@ -121,9 +121,9 @@ static void endFontClass();
 
 static void parseGlobalMember();
 static void parseLib(char *);
-static QCString checkComment(QCString& q);
 static void composeString(QCString& q);
 static void writeInclude(QCString);
+static void printLineString(QCString&);
 
 // static void addVerilogIncludes();
 //-------------------------------------------------------------------
@@ -312,6 +312,9 @@ static void writeVWord(QCString& qcs){
 	     {g_code->codify(temp.data()); return;}   
  	if(qcs.stripPrefix("\""))
         {
+        if(temp.contains('\n'))
+         printLineString(temp);
+         else
          writeFont("keyword",temp.data());
         return;
          }
@@ -948,6 +951,7 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
 <Start>{FEATURE} { 
               //    fprintf(stderr,"<[ %s ]>",verilogScanYYtext);
 				   QCString q(verilogScanYYtext);
+                   char c=yy_hold_char;
                    defineLineContinue=yyLineNr;
 				    vbufreset();  
 				   if(!g_parseCode)
@@ -969,7 +973,7 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
                       VhdlDocGen::deleteAllChars(q,'§');                                              
                       uint le=q.length()-1;
                       bool newLine=(q.at(le)=='\\');
-                      QCString com=checkComment(q);
+                      QCString com=checkVerilogComment(q);
                      // qlist.append(new QCString(q.data())); 
                       if(!q.contains("`include"))
                        composeString(q);
@@ -1013,7 +1017,7 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
 				  	
 				  	if(!def && !bDef)// && !def->definition.isEmpty())
 					if(Config_getBool("WARNINGS"))
-					 warn(yyFileName,yyLineNr,"\n macro %s is not defined",verilogScanYYtext);		  
+					 printf(" ");  
 							 if(!bDef) 
 							  return  LETTER_TOK;	
 				
@@ -1366,20 +1370,14 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
                       
                       if((verilogScanYYleng > 2) && verilogScanYYtext[verilogScanYYleng-2] != 92) {
                       addText(verilogScanYYtext,verilogScanYYleng);
+                      if(!g_parseCode)
+                        yyLineNr+=temp.contains('\n');
                       if(g_parseCode) 
                        {
-                       while(temp.contains('\n'))
-                       {
-                          int u=temp.find('\n');
-                          qlist.append(new QCString(temp.data(),u));
-                        
-                          temp=temp.right(temp.length()-u-1);
-                           qlist.append(new QCString("\n"));                 
-                       }
-                       
                         qlist.append(new QCString(temp.data()));
                         c_lval.ctype=verilogScanYYtext[0];
                        }
+                      
                       return  STRING_TOK;
                       }
                       if(verilogScanYYleng == 2){ 
@@ -1502,11 +1500,20 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
 <Start>"##" { parseToken(verilogScanYYtext);	return  DOUBLEPARA_TOK;}
 <Start>"$" {  parseToken(verilogScanYYtext); return  DOLLAR_TOK;}
 <Start>"'" { if(g_parseCode) parseToken(verilogScanYYtext); return  APOS_TOK;}
-
+<Start>"/" {
+ 					  char c=yy_hold_char;
+                         if(c !='/'){ 
+						 parseToken(verilogScanYYtext);
+						 return  ENV_TOK;
+                         }
+						 unput('/');// found "//"
+						 REJECT;}
 
 <Start>"/*" {
                  vbufreset(); 
 				 addText(verilogScanYYtext,verilogScanYYleng);
+				 if(yy_hold_char=='!') // found  comment starting with "/*!"
+				  doxComment=true;
 				 startComment=yyLineNr;
 				 BEGIN(StartComment); 
 				 }
@@ -1522,7 +1529,20 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
 
 <StartComment>[^*]*[*]+    {
                        QCString tt(verilogScanYYtext);
-					   addText(verilogScanYYtext,verilogScanYYleng);
+					   int len=tt.length();
+					  if(!g_parseCode){
+					   if(verilogScanYYtext[len-1]=='*' && tt.contains('\n'))
+					        {
+					         QCString ss=tt;
+					         VhdlDocGen::deleteAllChars(ss,' ');
+					         if(ss.data()  && ss.at(ss.length()-2)=='\n')
+					         {
+					          tt=tt.left(len-1);
+					          len--;
+					          }
+					         }
+					   }
+					   addText(tt.data(),len);
                        char c=yy_hold_char;
                          if(c =='/'){
 						   unput('*');
@@ -1534,25 +1554,28 @@ GATETYPE  	"and"|"nand"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"notif0
 <Commentt>"*/" {	 
 						 
 						  QCString *qq=new QCString(getVerilogString());
-						  qq->append("/");
-						  bool b=qq->contains("\n")>1;
-						  QCString temp=qq->data();
-						  bool bComment=temp.stripPrefix("/*!");
-						  if(bComment){
-						   temp.remove(temp.length()-2,2);
-						   handleVerilogCommentBlock(temp,b,startComment);
-						  }
-						  startComment=0;
+						  qq->append("*/");
+                       
 						  if(g_parseCode){ 
-							 	qlist.append(qq);		
+							   	 	qlist.append(qq);		
 							}
 							else{
-							  yyLineNr+=qq->contains('\n');
+				             if(doxComment){  
+						      qq->stripPrefix("/*!");
+						        *qq=qq->left(qq->length()-2);
+						        handleVerilogCommentBlock(*qq,FALSE,startComment);
+							    }
+							   yyLineNr+=qq->contains('\n');
+							 
+							
+							  doxComment=false;
 							delete qq;
 							}
                       	 vbufreset();
                          BEGIN(Start);
                 }
+
+
 %%
 
 //------ ------------------------------------------------------------------------------------------------
@@ -1791,7 +1814,7 @@ static void parseGlobalMember(){
         
         if(qcs.stripPrefix("`define") || qcs.stripPrefix("`include"))
 	    {
-         comment=checkComment(qcs);
+         comment=checkVerilogComment(qcs);
            if(!comment.stripPrefix("//%"))
               comment.resize(0);
          QRegExp reg("[^a-zA-Z_0-9$]+");
@@ -1974,7 +1997,7 @@ else
 
 }//parseLib
 
-QCString checkComment(QCString& q)
+QCString checkVerilogComment(QCString& q)
 {
  
  int ll=q.contains("\\?");
@@ -2100,4 +2123,20 @@ void writeDefineString(const char* str)
    }// while
  }
        
-       
+void printLineString(QCString & str)
+ {
+  int u=str.find('\n'); 
+   while(u>=0)
+  {
+   QCString left=str.left(u);
+   writeFont("keyword",left.data());
+   QCString t("\n");
+   codifyLines(t.data());
+   str.remove(u,1);
+   str.stripPrefix(left.data());
+   u=str.find('\n');               
+  }
+  if(str.data())
+   writeFont("keyword",str.data());
+ }       
+ 

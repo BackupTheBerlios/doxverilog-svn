@@ -139,6 +139,8 @@ MemberDef* findGlobalMember(const QCString& file, const QCString& memName);
 // finds global `define/`includes
 MemberDef* findGlobalMember(const QCString& memName);
 
+QCString checkVerilogComment(QCString& q);
+
 int getVerilogState();
 
 void addVerilogClass(Entry*);
