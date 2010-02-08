@@ -56,7 +56,7 @@ static MyParserConv* myconv=0;
 // functions for  verilog parser ---------------------
 int c_lex (void);
 void c_error (char const *);
-QCString mem_Type;
+
 %}
 
 %union {
@@ -3515,7 +3515,7 @@ dot_identifier : identifier
 			   | dot_identifier CCOLON_TOK identifier
             		   
 simple_identifier : identifier
-			| identifier dimension_list { mem_Type.resize(0); }
+			| identifier dimension_list {  }
             | simple_identifier parameter_value_assignment
 			| simple_identifier DOT_TOK identifier	
             | simple_identifier CCOLON_TOK identifier       
@@ -3582,9 +3582,7 @@ identifier:ident { VerilogDocGen::parseString(); }
 ident : LETTER_TOK  {
 			if(VerilogDocGen::parseCode)
 			                  { 
-                                  mem_Type+=$<cstr>1; 
-                                  mem_Type+=" ";
-								  VerilogDocGen::identVerilog+=$<cstr>1; 
+                                				  VerilogDocGen::identVerilog+=$<cstr>1; 
 			                  }
 		            }
         | DOLLAR_TOK 
