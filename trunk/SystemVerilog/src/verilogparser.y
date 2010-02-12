@@ -49,7 +49,7 @@
 #define YYMAXDEPTH 15000
 
 static MyParserConv* myconv=0;
-
+//static bool bUseVerilog=false;
 
 
 
@@ -69,7 +69,6 @@ void c_error (char const *);
 {
   /* turn on/off debugging mode */
  yydebug=FALSE;
-// yydebug=TRUE;
 };
 	
 	
@@ -598,7 +597,10 @@ class_item :  attribute_instance  timeunits_declaration    {VerilogDocGen::currV
            |  attribute_instance  class_declaration        {VerilogDocGen::currVerilogType=0;vbufreset();}
            |  attribute_instance  class_property           {VerilogDocGen::currVerilogType=0;vbufreset(); VerilogDocGen::currState=0; VerilogDocGen::currentFunctionVerilog =0;}
 		   |  attribute_instance  S_STAT                   {VerilogDocGen::currVerilogType=0;vbufreset();}
-		   |  attribute_instance  S_VIRT                   {VerilogDocGen::currVerilogType=0;vbufreset();}
+		   |  attribute_instance  S_VIRT                   {
+				                                             VerilogDocGen::currVerilogType=0;
+															 vbufreset();
+			                                               }
            |  attribute_instance covergroup_declaration    {VerilogDocGen::currentFunctionVerilog=0;VerilogDocGen::currVerilogType=0;vbufreset();}
            |  SEM_TOK                                      {VerilogDocGen::currVerilogType=0;VerilogDocGen::currentFunctionVerilog=0;vbufreset();}
            ;
@@ -608,18 +610,21 @@ new_stat: class_constraint
 		| class_property
     
 
-S_STAT : STATIC_TOK  { VerilogDocGen::portType+="static ";}   new_stat
-	   											  
+S_STAT : STATIC_TOK                      { VerilogDocGen::portType+="static ";}   new_stat
 	|  STATIC_TOK VIRTUAL_TOK            { VerilogDocGen::portType+="static ";} class_method
     |  STATIC_TOK PURE_TOK VIRTUAL_TOK   { VerilogDocGen::portType+="static pure ";} class_method  
 	;    
       
-S_VIRT :    VIRTUAL_TOK   class_method 
-		|   class_item_qualifier11 VIRTUAL_TOK    class_method 
-		|   class_item_qualifier11 VIRTUAL_TOK  class_property 
-	    |   VIRTUAL_TOK    class_property
-	  	;
-     
+S_VIRT :   VIRTUAL_TOK {VerilogDocGen::portType="virtual ";} hhh 
+	   |  class_item_qualifier11 VIRTUAL_TOK  kkk    
+   	   ;
+  
+hhh:  class_method 
+    | class_property
+	
+kkk: class_method
+	 | class_property 
+
 class_property :  data_declaration11 
                | property_qualifier_list data_declaration11 
                | property_qualifier_list STATIC_TOK {VerilogDocGen::portType+="static ";} data_declaration11               
@@ -631,7 +636,7 @@ class_method : task_declaration
              | method_qualifier  function_declaration
 			 | EXTERN_TOK  method_qualifier_list  method_prototype  
 			 | EXTERN_TOK method_prototype     
-	 	 	 |  PURE_TOK method_qualifier_list method_prototype 
+	 	 	 | PURE_TOK method_qualifier_list method_prototype 
 		 	 | EXTERN_TOK  method_qualifier_list class_constructor_prototype 
              | EXTERN_TOK  class_constructor_prototype                   
              ;
@@ -642,9 +647,10 @@ class_constraint : constraint_prototype
                  | constraint_declaration
                   ;
 
-class_item_qualifier11:  PROTECTED_TOK {  VerilogDocGen::portType+="protected ";}
-                    | LOCAL_TOK        {  VerilogDocGen::portType+="local ";}
-					
+class_item_qualifier11:  PROTECTED_TOK              {  VerilogDocGen::portType+="protected ";}
+                    |    LOCAL_TOK                  {  VerilogDocGen::portType+="local ";}
+                    | 	 LOCAL_TOK STATIC_TOK	    {  VerilogDocGen::portType.resize(0); VerilogDocGen::portType+="local static ";}
+					|    PROTECTED_TOK STATIC_TOK	{ VerilogDocGen::portType.resize(0); VerilogDocGen::portType+="protected static ";}	
 					;
   
 class_item_qualifier_list : class_item_qualifier_list class_item_qualifier
@@ -653,8 +659,7 @@ class_item_qualifier_list : class_item_qualifier_list class_item_qualifier
 class_item_qualifier: PROTECTED_TOK {  VerilogDocGen::portType+="protected ";}
                     | LOCAL_TOK     {  VerilogDocGen::portType+="local ";}
                     | STATIC_TOK    {  VerilogDocGen::portType+="static ";}
-				//		| PROTECTED_TOK VIRTUAL_TOK
-				
+				 
 					;
 
 
@@ -662,11 +667,13 @@ property_qualifier_list: property_qualifier_list property_qualifier
                        | property_qualifier
 
 property_qualifier :  RAND_TOK         { VerilogDocGen::portType+="rand "; }
-						 |  RANDC_TOK  { VerilogDocGen::portType+="randc ";}
-                  | class_item_qualifier11
+				   |  RANDC_TOK  { VerilogDocGen::portType+="randc ";}
+                   | class_item_qualifier11
                    ;
-				   
-method_qualifier : class_item_qualifier11
+
+
+
+method_qualifier : class_item_qualifier11 
 		          ;
 
 method_qualifier_list: method_qualifier11
@@ -3515,7 +3522,7 @@ dot_identifier : identifier
 			   | dot_identifier CCOLON_TOK identifier
             		   
 simple_identifier : identifier
-			| identifier dimension_list {  }
+			| identifier dimension_list { }
             | simple_identifier parameter_value_assignment
 			| simple_identifier DOT_TOK identifier	
             | simple_identifier CCOLON_TOK identifier       
@@ -3581,10 +3588,10 @@ identifier:ident { VerilogDocGen::parseString(); }
 
 ident : LETTER_TOK  {
 			if(VerilogDocGen::parseCode)
-			                  { 
-                                				  VerilogDocGen::identVerilog+=$<cstr>1; 
-			                  }
-		            }
+			  { 
+                VerilogDocGen::identVerilog+=$<cstr>1; 
+			  }
+		   }
         | DOLLAR_TOK 
 		;
 			
@@ -3642,7 +3649,7 @@ void c_error(const char * err)
    if(err && ! VerilogDocGen::parseCode)
    {
    // fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
-  //  printf("\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
+    printf("\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
     vbufreset();
  //   if(yydebug) 
   //    exit(0);

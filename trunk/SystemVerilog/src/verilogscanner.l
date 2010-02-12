@@ -136,6 +136,7 @@ static QDict<QCString> verilogKeyDict(17,false);
 static QDict<QCString> verilogGlobalDict(17,false);
 static QDict<QCString> verilogDefineDict(17,false);
 static QDict<QCString> verilogDataTypeDict(17,false);
+static QDict<QCString> systemVerilogDict(17,false);
 
 static const QCString g_verilogkeyword("vhdlkeyword");
 static const QCString g_verilogDefinition("preprocessor");
@@ -148,6 +149,27 @@ int currState=0;
 static void buildKeyMap()
 {
 	 const char* data_types[]={"logic","reg", "byte","bit","shortint","int","longint","integer","time","real","shortreal","realtime",""};
+	 
+	  const char* SystenVerilogKeyMap[] = {  "alias","always_comb","always_ff","always_latch","assert","assume",
+                                           "before","bind","bins","binsof","bit",
+                                           "chandle","class","clocking","const","constraint","context","continue","cover","covergroup","coverpoint","cross",
+                                           "dist","do",
+                                            "endclass","endclocking","endgroup","endinterface","endpackage","endprogram","endproperty","endsequence","enum","export","extends","extern",
+                                           "final","first_match","force","foreach","forkjoin",
+                                           "iff","inside","int","interface","intersect",
+                                           "join_any","join_none",
+                                           "local","logic","longint",
+                                           "matches","modport","new",
+                                           "null",
+                                           "package","packed","priority","program","property","protected","pure",
+                                           "rand","randc","randcase","randsequence","ref","release",
+                                           "sequence","shortint","shortreal","solve","static","string","struct","super",
+                                           "tagged","this","throughout","timeprecision","timeunit","type","typedef",
+                                           "union","unique",
+                                           "var","virtual","void",
+                                           "wait_order","wildcard","with","within"
+                                           ,""
+                                          };
 	 
 	 const char* VerilogDefineMap[] = {
 	                                   "`accelerate","`autoexepand_vectornets",
@@ -218,6 +240,7 @@ const char* VerilogSystemMap[] = {"$async$and$array","$async$and$plane","$async$
     verilogGlobalDict.setAutoDelete(true);
     verilogKeyDict.setAutoDelete(true);
     verilogDefineDict.setAutoDelete(true);
+    systemVerilogDict.setAutoDelete(true);
 	qlist.setAutoDelete(true);
 	globalMemberList.setAutoDelete(true);
     verilogDataTypeDict.setAutoDelete(true);
@@ -230,6 +253,14 @@ const char* VerilogSystemMap[] = {"$async$and$array","$async$and$plane","$async$
     	p=VerilogKeyMap[++j];	  
 	}
 
+    j=0;
+    p=SystenVerilogKeyMap[0]; 
+	while(!p.isEmpty())
+	{
+		 systemVerilogDict.insert(p,new QCString(p.data()));
+    	 p=SystenVerilogKeyMap[++j];	  
+	}
+	
 	j=0;
     p=VerilogSystemMap[0]; 
 	while(!p.isEmpty())
@@ -257,6 +288,18 @@ const char* VerilogSystemMap[] = {"$async$and$array","$async$and$plane","$async$
 	}
 
 }// buildKeypMap
+
+
+bool VerilogDocGen::findVerilogKeyWord(const QCString & word)
+{
+    
+	if (word.isEmpty() || word.at(0)=='\0') return 0;
+	
+	if(systemVerilogDict.find(word))
+	  return true;
+ 
+    return false;
+}
 
 const QCString* VerilogDocGen::findKeyWord(const char *str)
 {
@@ -1875,8 +1918,8 @@ static void parseGlobalMember(){
          if(getCurrVerilog()!=0) return; // found definition outside a module(not global)
          
          pTemp->spec=0;
-         Entry *pNew=new Entry(*pTemp);
-         globalMemberList.insert(pNew->name,pNew);
+       //  Entry *pNew=new Entry(*pTemp);
+       //  globalMemberList.insert(pNew->name,pNew);
         }
 
 }// parseGlobalMember

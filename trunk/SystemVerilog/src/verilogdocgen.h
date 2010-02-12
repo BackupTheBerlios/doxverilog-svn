@@ -249,6 +249,7 @@ static void printIntMems(const ClassDef *cd) ;
 static void printGlobalVars(const FileDef *fd) ;
 static void buildGlobalVerilogVariableDict(const FileDef* fileDef,bool clear=FALSE,int level=0);
 static void printAllMem(ClassDef *cd);
+static bool findVerilogKeyWord(const QCString & word);
 
 
 

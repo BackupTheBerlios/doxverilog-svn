@@ -258,9 +258,18 @@ QCString VerilogDocGen::convertTypeToString(int type,bool sing)
   MemberListIterator mmli(*ml);
   for ( ; (mdd=mmli.current()); ++mmli )
   {
-	//  printf("\n %d %s",lt,mdd->name().data());
+ 
+/*
+  QCString nk=mdd->typeString();
+  if(mdd->getMemberSpecifiers() == 0 && nk!="`define" )
+	  {
+		 mdd->setMemberSpecifiers(VerilogDocGen::FEATURE);  
+       printf("\n %d %s",mdd->getVerilogType(),mdd->name().data());
+	  }
+
+*/
 	  if(mdd->getMemberSpecifiers() != 0) continue;	 
-      mdd->setMemberSpecifiers(mdd->getVerilogType());    
+        mdd->setMemberSpecifiers(mdd->getVerilogType());    
    }
   } 
                     
@@ -489,13 +498,14 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
    LockingPtr<ArgumentList> alp = mdef->argumentList();
    QCString nn;
    uint i=0;
-   QRegExp ep=QRegExp("_1");
+   QRegExp ep=QRegExp("_1_1");
    if(gd)gd=NULL;
    switch(mm)
    {
    case VerilogDocGen::IMPORT: 
 		 ltype=mdef->name();
 		 ltype.replace(ep,"::");
+		 VhdlDocGen::deleteAllChars(ltype,' ');
 		 mdef->setName(ltype.data());
 		 VhdlDocGen::writeLink(mdef,ol);
 		 break;
@@ -2195,14 +2205,16 @@ VerilogDocGen::parseImport()
 if(parseCode) { vbufreset(); return; }
 QRegExp regg("[\\s,;]");
 QCString mod(getVerilogString());
- if(mod.isEmpty()) return;
+mod=mod.simplifyWhiteSpace(); 
+ mod.stripPrefix("import");
+if(mod.isEmpty()) return;
   QStringList qstr=QStringList::split(regg,mod,false);
   uint ll=qstr.count();
  // assert(ll>0);
-  if(ll<0) return;
+   if(ll<0) return;
   for(uint u=0;u<ll;u++){
 	QCString imp =  (QCString)qstr[u];
-	imp.replace(ep,"_1");
+    imp.replace(ep,"_1_1");
 	Entry* ee=VerilogDocGen::makeNewEntry(imp.data(),Entry::VARIABLE_SEC,VerilogDocGen::IMPORT,c_lloc.first_line);
     ee->type="Import";                       
 
@@ -2506,14 +2518,18 @@ VerilogDocGen::addFunction(const char *str)
 						 
 							if(!bFunc && lastModule)
 								currentFunctionVerilog->proto=true;
-						  if(j>0){
+						  if(j>0)
+						   {
 							  funcName=funcName.left(j).simplifyWhiteSpace();
 							  portType=portType.simplifyWhiteSpace();
-							if(findVerilogKey(funcName,portType.data()))
-                              currentFunctionVerilog->type=funcName;
-							else
-                              currentFunctionVerilog->type+=funcName;
-						    }						 
+							if(!portType.contains(funcName))
+								{
+						         if(findVerilogKey(funcName,portType.data()))
+                                   currentFunctionVerilog->type=funcName;
+						 	     else
+                                   currentFunctionVerilog->type+=funcName;
+								}
+							}						 
 						  }
 						  
 						  currVerilogType=0;

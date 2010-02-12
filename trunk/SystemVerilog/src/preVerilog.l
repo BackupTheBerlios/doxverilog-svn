@@ -48,6 +48,7 @@
 #include "portable.h"
 #include "math.h"
 #include "vhdldocgen.h"
+#include "verilogdocgen.h"
 #include "assert.h"
 #include "bufstr.h"
 
@@ -131,11 +132,26 @@ static bool g_bParseFile;
 static void parseVerilogDefinition(QCString & def);
 
 
-DefineDict* getFileDefineDictVerilog() {
+
+
+DefineDict* getFileDefineDictVerilog() 
+{
   return g_DefineMacroDict;
 }
 
+static void checkKeyWord(QCString & word)
+{
+ 
+ bool  bUseVerilog=Config_getBool("CHECK_VERILOG_KEYWORD");
+ if(bUseVerilog && VerilogDocGen::findVerilogKeyWord(word))
+ {
+// printf("\n\n probably a SystemVerilog keyword [ %s ] at line %d\n\n",word.data(),g_yyLineNr);
+   fprintf(stderr,"\n\n probably a SystemVerilog keyword [ %s ] at line %d\n\n",word.data(),g_yyLineNr);
 
+//  fprintf(stderr,"\n\n probably a SystemVerilog KeyWord");
+ // exit(0);
+ }
+}
 
 static void setFileName(const char *name)
 {
@@ -1602,6 +1618,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  //printf("Search for define %s\n",preYYVerilogtext);
   					 
   					  QCString str(preYYVerilogtext);
+  					  checkKeyWord(str);
   					  if(str=="`endif")
   					  {
   					  int i;
@@ -1917,7 +1934,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Guard>"defined"/{B}+			{
     					  BEGIN(DefinedExpr1);
     					}
-<Guard>{ID}				{ g_guardExpr+=preYYVerilogtext; }
+<Guard>{ID}				{
+                           g_guardExpr+=preYYVerilogtext; 
+                           QCString word(preYYVerilogtext);
+                           checkKeyWord(word);
+                        }
 
 
 <Guard>.				{
@@ -1961,7 +1982,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    appString(g_lastDef);
   					    
   					  if(g_firstIF) g_firstIF=FALSE;  
-  					    
+  					  g_lastDef.resize(0);  
 					  if (guard)
 					  {
 					    BEGIN(Start);
@@ -2041,6 +2062,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    setCaseDone(TRUE);
   					    //outputChar('\n');
+  					     g_lastDef="";
 					    BEGIN(Start);
 					  }
 					
@@ -2050,23 +2072,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					      g_lastDef="`";
   					  
 				      g_lastDef+=preYYVerilogtext;
-  					// appString(g_lastDef.data());
-					
-  						  if (g_ifcount==0) 
-						  {
+  					
+  					  if (g_ifcount==0) 
+					   {
   					    if (!otherCaseDone())
 					    {
 					      g_guardExpr.resize(0);
 					      g_lastGuardName.resize(0);
-  					  
-  					 //     g_lastDef+=preYYVerilogtext;
-  					       BEGIN(Guard);
+  					      outputChar('`');
+  					      outputArray(preYYVerilogtext,yyleng);
+  					      g_lastDef="";//preYYVerilogtext;
+  					      BEGIN(Guard);
 					    }
 					    else
 					    {
-					  //g_lastDef+=preYYVerilogtext;
-  					 // outputArray(g_lastDef,g_lastDef.length());
-  					 appString(g_lastDef.data());
+					      appString(g_lastDef.data());
 					      BEGIN(SkipCPPBlock);
 					    }
 					  }
