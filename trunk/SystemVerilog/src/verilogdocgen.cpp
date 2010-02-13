@@ -2188,7 +2188,8 @@ VerilogDocGen::getPreviusClass()
 void 
 VerilogDocGen::resetTypes()		   
  { 
-	 portType.resize(0);
+     paraType.resize(0);
+     portType.resize(0);
 	 currState=0;
 	 lastModule=0;	
 	 deleteVerilogClass();
