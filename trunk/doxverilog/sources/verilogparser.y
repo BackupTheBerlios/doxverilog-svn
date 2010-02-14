@@ -412,8 +412,8 @@ parameter_declaration :        PARAMETER_TOK  { currVerilogType=VerilogDocGen::P
 							 | PARAMETER_TOK error SEM_TOK {currVerilogType=0;vbufreset();}
 							 ;
 
-specparam_declaration : SPECPARAM_TOK  range  list_of_specparam_assignments SEM_TOK  { vbufreset();}
-				      | SPECPARAM_TOK   list_of_specparam_assignments SEM_TOK        { vbufreset();}
+specparam_declaration : SPECPARAM_TOK  range { currVerilogType=VerilogDocGen::PARAMETER;}  list_of_specparam_assignments SEM_TOK  { currVerilogType=0;vbufreset();}
+				      | SPECPARAM_TOK { currVerilogType=VerilogDocGen::PARAMETER;}   list_of_specparam_assignments SEM_TOK        { currVerilogType=0;vbufreset();}
                       | SPECPARAM_TOK error SEM_TOK 
 					  ;
 
@@ -631,7 +631,7 @@ param_assignment :simple_identifier EQU_TOK expression {
 	                   }
                  ;
 				 
-specparam_assignment : identifier EQU_TOK mintypemax_expression
+specparam_assignment : param_assignment //identifier EQU_TOK mintypemax_expression
                    //  | PATHPULSE_TOK EQU_TOK constant_mintypmax_expression 
 					  ;
 
@@ -2059,7 +2059,7 @@ void parseModule(){
 
 void parseModuleInst(QCString& first, QCString& sec) {
  
-if(currVerilogType==VerilogDocGen::DEFPARAM || generateItem ) return;
+if(currVerilogType==VerilogDocGen::DEFPARAM ) return; // || generateItem 
 
 
 
@@ -2098,6 +2098,7 @@ while(sec.stripPrefix(" "));
  else {
   Entry* pTemp=VerilogDocGen::makeNewEntry(sec.data(),Entry::VARIABLE_SEC,VerilogDocGen::COMPONENT,moduleLine);
   pTemp->type=first;
+  pTemp->args="[generate]";
  
  if(sec==first)return;
 if(currentVerilog)
@@ -2526,9 +2527,9 @@ int c_lex(void){
 
 void c_error(const char * err){
    if(err){// && !parseCode){
- // fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
+  fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
   vbufreset();
-  //exit(0);
+//  exit(0);
   }
   
    } 

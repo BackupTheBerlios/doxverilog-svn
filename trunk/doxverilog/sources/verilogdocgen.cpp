@@ -513,6 +513,12 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 	    ol.endEmphasis();
         ol.popGeneratorState();
 		}
+		if(largs.data())
+			{
+				ol.docify(" ");
+			ol.docify(largs.data());
+			}
+
         } 
 		break;
   default: break;
