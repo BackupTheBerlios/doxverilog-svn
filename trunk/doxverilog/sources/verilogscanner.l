@@ -1201,16 +1201,16 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>{STRENGTH0} { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);   return  STR0_TOK;} REJECT;}
 <Start>{STRENGTH1} { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng); return  STR1_TOK;}REJECT;}
 <Start>{GATETYPE}  { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);  return  GATE_TOK;}REJECT;}
-<*>"//%"[^{}\n][^\n]*\n/{LL}*"//%" { // found multiline comment
+<*>{LL}*"//%"[^{}\n][^\n]*\n/{LL}*"//%" { // found multiline comment
                      QCString text(verilogScanYYtext);
                      if(!g_parseCode){
                      if(iDocLine==-1){
                        iDocLine=yyLineNr; 
                      }
                       
-  //                    Entry* pTemp=VerilogDocGen::getEntryAtLine(curRoots,iDocLine);
+                      Entry* pTemp=VerilogDocGen::getEntryAtLine(curRoots,iDocLine);
     
-/*                      
+   /*                   
   if (pTemp)
   { // found one line comment, add it to the entry on this line
     pTemp->briefLine=yyLineNr;
@@ -1218,9 +1218,9 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
     VhdlDocGen::prepareComment(pTemp->brief);
   }
     else 
-  */  
-   if(!checkMultiComment(text)) 
-    { 
+	*/
+	if(!checkMultiComment(text))
+	{ 
       strComment+=verilogScanYYtext;
 	  multLineComment=true;
 	}			                     
@@ -1229,29 +1229,41 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                       
      }
 					 if(g_parseCode) {
-					 if(Config_getBool("STRIP_CODE_COMMENTS"))
-					      qlist.append(new QCString(verilogScanYYtext)); 
-					 else{
+					     int v=text.find("//%");
+					     if(v>0)
+					     {
+					     QCString left=text.left(v);
+					     qlist.append(new QCString(left));
+					     text=text.right(text.length()-v);
+					    }
 					     QStringList ql=QStringList::split('\n',text,false);
-					     //QCString trial=(QCString)ql[0];
-					     qlist.append(new QCString((QCString)ql[0]));   
+					     QCString trial=(QCString)ql[0];
+					     qlist.append(new QCString(trial.data()));   
 					     qlist.append(new QCString("\n"));   
 					     if(ql.count()>1)
 					     qlist.append(new QCString((QCString)ql[1]));   			     
-					  }
+					  
 					  }
 					 c_lval.ctype=' ';
   BEGIN(tagComment);
   }
 
-<tagComment>"//%"[^\n]* {
+<tagComment>{LL}*"//%"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
   if(!g_parseCode)
    strComment+=verilogScanYYtext;
   
    if(g_parseCode) 
    { 
-     qlist.append(new QCString(verilogScanYYtext)); 
+      QCString text(verilogScanYYtext);
+      int v=text.find("//%");
+      if(v>0)
+	  {
+	   QCString left=text.left(v);
+	   qlist.append(new QCString(left));
+	   text=text.right(text.length()-v);
+	  }
+     qlist.append(new QCString(text)); 
    } 
   BEGIN(tagComment);
 }
@@ -1286,6 +1298,8 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
   {
     handleVerilogCommentBlock(qcs,TRUE,iDocLine);
   }
+   //printf("--> end: handleCommentBlock line %d\n",yyLineNr);
+  //  bufferClear();
  }//if
   if(g_parseCode) // && !Config_getBool("STRIP_CODE_COMMENTS"))
    { 
@@ -1294,26 +1308,27 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 
 } 
 
-
 <Start>{COMMENT} {
        QCString text(verilogScanYYtext); 
-				//fprintf(stderr,"\n %s",text.data());
 					  int b=text.contains(vlogComment);
-					  if(b && !g_parseCode){  
+					  if(b && !g_parseCode)
+					  {  
                        strComment+=verilogScanYYtext;
                         if (iDocLine==-1) iDocLine=yyLineNr;
                          VhdlDocGen::prepareComment(strComment);
                    
-                         if(multLineComment){
+                         if(multLineComment)
+						 {
                           handleVerilogCommentBlock(strComment,FALSE,iDocLine);
                           multLineComment=false;
                          }
                          else{
                            if(!checkMultiComment(text))
                             handleVerilogCommentBlock(strComment,true,iDocLine);
-                          }//else 
+                         
                          }
-                           strComment.resize(0);      
+                         }    
+                       strComment.resize(0);      
                          
 					 
 					 if(g_parseCode)
@@ -1325,10 +1340,18 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 
 <Start>{STRING}    {
                   //   fprintf(stderr,"\n [%s : %c %d] string\n",verilogScanYYtext,verilogScanYYtext[verilogScanYYleng-2],verilogScanYYleng);
-
+                      QCString temp(verilogScanYYtext);
+                      
                       if((verilogScanYYleng > 2) && verilogScanYYtext[verilogScanYYleng-2] != 92) {
                       addText(verilogScanYYtext,verilogScanYYleng);
-                      if(g_parseCode) { qlist.append(new QCString(verilogScanYYtext));c_lval.ctype=verilogScanYYtext[0];}
+                      if(!g_parseCode)
+                        yyLineNr+=temp.contains('\n');
+                      if(g_parseCode) 
+                       {
+                        qlist.append(new QCString(temp.data()));
+                        c_lval.ctype=verilogScanYYtext[0];
+                       }
+                      
                       return  STRING_TOK;
                       }
                       if(verilogScanYYleng == 2){ 
@@ -1429,6 +1452,15 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>"@" { parseToken(verilogScanYYtext);return  AT_TOK;}
 <Start>"#" { parseToken(verilogScanYYtext);	return  PARA_TOK;}
 <Start>"$" { if(g_parseCode) parseToken(verilogScanYYtext); return  DOLLAR_TOK;}
+<Start>"/" {
+ 					  char c=yy_hold_char;
+                         if(c !='/'){ 
+						 parseToken(verilogScanYYtext);
+						 return  ENV_TOK;
+                         }
+						 unput('/');// found "//"
+						 REJECT;}
+
 <Start>"/*" {
                  vbufreset(); 
 				 addText(verilogScanYYtext,verilogScanYYleng);
@@ -1450,19 +1482,18 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <StartComment>[^*]*[*]+    {
                        QCString tt(verilogScanYYtext);
 					   int len=tt.length();
-					  
+					  if(!g_parseCode){
 					   if(verilogScanYYtext[len-1]=='*' && tt.contains('\n'))
 					        {
 					         QCString ss=tt;
 					         VhdlDocGen::deleteAllChars(ss,' ');
-					         VhdlDocGen::deleteAllChars(ss,'\t');
 					         if(ss.data()  && ss.at(ss.length()-2)=='\n')
 					         {
 					          tt=tt.left(len-1);
 					          len--;
 					          }
 					         }
-					   
+					   }
 					   addText(tt.data(),len);
                        char c=yy_hold_char;
                          if(c =='/'){
@@ -1495,6 +1526,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                       	 vbufreset();
                          BEGIN(Start);
                 }
+
 %%
 
 //------ -------------------------------------------------------------------------------------------------
