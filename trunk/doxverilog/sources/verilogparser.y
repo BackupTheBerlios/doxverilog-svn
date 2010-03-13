@@ -951,10 +951,10 @@ module_instance : identifier11  LBRACE_TOK  list_of_port_connections  RBRACE_TOK
 				 ;
 
 identifier11:identifier xrange { 
-                            const char *name=$<cstr>1;
-                            QCString firstName(name);
-							int u=getVerilogEndLine();
-							QCString secName(getVerilogString());
+                            QCString secName($<cstr>0);
+							QCString firstName($<cstr>1);
+							//int u=getVerilogEndLine();
+							//QCString secName(getVerilogString());
 							 if(moduleParamName.isEmpty()){
 							   moduleParamName=secName;
 							  moduleLine=c_lloc.last_line;
@@ -1018,7 +1018,7 @@ generate_item : generate_conditional_statement{vbufreset();}
 			  ;
 
 generate_conditional_statement  :  IF_TOK LBRACE_TOK  expression RBRACE_TOK generate_item_or_null 
-                                 |   IF_TOK LBRACE_TOK  expression RBRACE_TOK generate_item_or_null  ELSE_TOK  generate_item_or_null 
+								|   IF_TOK LBRACE_TOK  expression RBRACE_TOK  generate_item_or_null  ELSE_TOK  generate_item_or_null 
      						     ;
 
 generate_case_statement :CASE_TOK  LBRACE_TOK  expression RBRACE_TOK  genvar_module_case_item_list  ENDCASE_TOK    
@@ -2098,6 +2098,7 @@ while(sec.stripPrefix(" "));
  else {
   Entry* pTemp=VerilogDocGen::makeNewEntry(sec.data(),Entry::VARIABLE_SEC,VerilogDocGen::COMPONENT,moduleLine);
   pTemp->type=first;
+ if(generateItem) 
   pTemp->args="[generate]";
  
  if(sec==first)return;
