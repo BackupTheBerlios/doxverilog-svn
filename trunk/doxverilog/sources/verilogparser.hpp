@@ -180,7 +180,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2638 of glr.c  */
-#line 97 "g:\\VerilogProject\\doxygen-1.5.8\\src\\\\..\\src\\verilogparser.y"
+#line 96 "g:\\dox163\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
 
 	int itype;	/* for count */
 	char ctype;	/* for char */
@@ -189,7 +189,7 @@ typedef union YYSTYPE
 
 
 /* Line 2638 of glr.c  */
-#line 193 "g:\\VerilogProject\\doxygen-1.5.8\\src\\\\..\\src\\verilogparser.hpp"
+#line 193 "g:\\dox163\\doxygen-svn\\src\\\\..\\src\\verilogparser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 #endif

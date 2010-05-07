@@ -2667,13 +2667,13 @@ void cleanUpVerilogPreprocessor()
   delete g_expandedDict; g_expandedDict=0;
   delete g_pathList; g_pathList=0;
   Define *defi;
- /* 
+ 
   QGDictIterator iter(*g_DefineMacroDict) ;
   for(iter.toFirst();defi=(Define*)iter() ;++iter)
   {
-    fprintf(stderr,"\n %s",defi->name.data());
+    fprintf(stderr,"\n [%s]",defi->name.data());
   }
-  */
+  
   delete g_DefineMacroDict; g_DefineMacroDict=0;
 }
 

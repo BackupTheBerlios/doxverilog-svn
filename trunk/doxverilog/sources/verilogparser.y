@@ -57,7 +57,6 @@ static Entry*		currentVerilog=0  ;
 static Entry*       currentFunctionVerilog=0;
 static Entry*       lastModule=0;
 
-static Entry        prevDocEntryVerilog;
 
 static bool         parseCode=FALSE; 
 
@@ -300,14 +299,18 @@ module_option : module_item
 //-----------------------------------------------------------------------------------------------------
 
 module_parameter_port_list : PARA_TOK LBRACE_TOK {currVerilogType=VerilogDocGen::PORT;} parameter_declaration_list  RBRACE_TOK               {currVerilogType=0;vbufreset();}
-                           | PARA_TOK  error RBRACE_TOK 
+                           | PARA_TOK  LBRACE_TOK error RBRACE_TOK 
 						   ;
 
-parameter_declaration_list:  PARAMETER_TOK  { currVerilogType=VerilogDocGen::PARAMETER;}   param_assignment                                      {currVerilogType=0;}
-                          | parameter_declaration_list COMMA_TOK PARAMETER_TOK  { currVerilogType=VerilogDocGen::PARAMETER;}  param_assignment {currVerilogType=0;}
-						  | parameter_declaration_list COMMA_TOK { currVerilogType=VerilogDocGen::PARAMETER;}param_assignment                    {currVerilogType=0;}
+parameter_declaration_list:  PARAMETER_TOK  { currVerilogType=VerilogDocGen::PARAMETER;} signed_range param_assignment                                      {currVerilogType=0;}
+                          | parameter_declaration_list COMMA_TOK PARAMETER_TOK  { currVerilogType=VerilogDocGen::PARAMETER;}signed_range  param_assignment {currVerilogType=0;}
 						  ;
 
+signed_range: //empty
+   | range
+   | signed
+   | signed range
+   ;
 
 
 						  
@@ -656,16 +659,16 @@ function_declaration : FUNC_TOK  automatic xsigned  range_or_type  name_of_funct
                         ENDFUNC_TOK                  {if(!parseCode && currentFunctionVerilog)
 						                                {
 														  currentFunctionVerilog->endBodyLine=getVerilogPrevLine();
-														} vbufreset(); }
+														} vbufreset(); CurrState=0;}
 
 					  | FUNC_TOK  automatic xsigned range_or_type name_of_function LBRACE_TOK function_port_list RBRACE_TOK SEM_TOK 
                         block_item_declaration_list 
                         function_statement
-                        ENDFUNC_TOK                  {if(!parseCode && currentFunctionVerilog){currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset(); }
+                        ENDFUNC_TOK                  {if(!parseCode && currentFunctionVerilog){currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset();CurrState=0 ;}
                       | FUNC_TOK  automatic xsigned range_or_type name_of_function LBRACE_TOK function_port_list RBRACE_TOK SEM_TOK 
                         function_statement
                         ENDFUNC_TOK					
-					  | FUNC_TOK error ENDFUNC_TOK { vbufreset(); }
+					  | FUNC_TOK error ENDFUNC_TOK { vbufreset();CurrState=0; }
 					  ;
  
 
@@ -1227,6 +1230,7 @@ always_construct : ALWAYS_TOK {
 											  if( currentFunctionVerilog->endBodyLine<currentFunctionVerilog->startLine || c_lloc.first_line>currentFunctionVerilog->endBodyLine ) // awlays without end
 											   currentFunctionVerilog->endBodyLine=c_lloc.first_line;
 											  currVerilogType=0;
+											  CurrState=0;
 											  }
 											   vbufreset();}
                   | always_construct error END_TOK { vbufreset();currVerilogType=0;}
@@ -1955,7 +1959,6 @@ ident : LETTER_TOK  {
   identVerilog.resize(0);
   currVerilogInst.resize(0);
   currVerilogClass.resize(0);
-  prevDocEntryVerilog.reset();
   currentVerilog=0;
   generateItem=false;
   currentFunctionVerilog=0;
@@ -1969,23 +1972,13 @@ if(pc) return;
   VerilogDocGen::initEntry(current);
   current_rootVerilog->name=QCString("XXX"); // dummy name for root
 }
-
+/*
  Entry* VerilogDocGen::makeNewEntry(char* name,int sec,int spec,int line,bool add){
- 
-  Entry *e=current;
- 
-  if(e->briefLine>0 && e->brief.data())
-  {
-    briefLine=line;
-    briefString=e->brief;
-  }
 
-  if(line==briefLine && briefString.data())
-  {
-   e->brief=briefString;
-  }
 
- if(parseCode) // should not happen!
+ Entry *e=current;
+ 
+ if(parseCode) // should not happend!
  assert(0);
 
 if(add){ // features like 'include xxx or 'define xxx must not be inserted here
@@ -2001,6 +1994,55 @@ if(add){ // features like 'include xxx or 'define xxx must not be inserted here
    {
      e->bodyLine=getVerilogPrevLine();
      e->startLine=getVerilogPrevLine();
+   }
+   
+  e->section=sec;
+  e->spec=spec;
+  e->name=name;
+
+  current=new Entry;
+  VerilogDocGen::initEntry(current);
+   return e;
+ }
+ */
+ 
+ Entry* VerilogDocGen::makeNewEntry(char* name,int sec,int spec,int line,bool add){
+ 
+  Entry *e=current;
+  int entLine=getVerilogPrevLine();
+  
+  if(e->briefLine>0 && e->brief.data())
+  {
+     briefString=e->brief;
+   if(line)
+     briefLine=line;
+   else
+	 briefLine=entLine;
+  }
+
+  if(entLine==briefLine && briefString.data())
+  {
+   e->brief=briefString;
+  }
+  else
+	  briefString.resize(0);
+
+ if(parseCode) // should not happen!
+ assert(0);
+
+if(add){ // features like 'include xxx or 'define xxx must not be inserted here
+ if(lastModule)
+    addSubEntry(lastModule,e); 
+  else
+    addSubEntry(current_rootVerilog,e); 
+}
+   if(line){
+  	  e->bodyLine=line;
+      e->startLine=line;
+  }else
+   {
+     e->bodyLine=entLine;
+     e->startLine=entLine;
    }
    
   e->section=sec;
@@ -2156,7 +2198,7 @@ QCString qcs;
 
 int p,l;
      
-
+QCString mods=getVerilogString();
  if((generateItem || CurrState==VerilogDocGen::STATE_FUNCTION || CurrState==VerilogDocGen::STATE_TASK )) return;
 
 QCString mod(getVerilogString());
@@ -2233,7 +2275,7 @@ VhdlDocGen::deleteAllChars(mod,' ');
  for(uint j=0;j<len;j++) {
   QCString name=(QCString)ql[j];
   name.prepend(VhdlDocGen::getRecordNumber().data());
- 
+  fprintf(stderr," [preLine %d%] ",getVerilogPrevLine());
   Entry* pTemp=VerilogDocGen::makeNewEntry(name.data(),Entry::VARIABLE_SEC,getVerilogPrevLine());
  // pTemp->type=prevType;
  
@@ -2305,6 +2347,17 @@ void parseParam(Entry* e)
   VhdlDocGen::deleteAllChars(mod,';');
   VhdlDocGen::deleteAllChars(mod,'\n');
   VhdlDocGen::deleteAllChars(mod,',');
+
+  mod=mod.simplifyWhiteSpace();
+
+  if(mod.stripPrefix("#"))
+  {
+  if(mod.at(mod.length()-1)==')') 
+    mod.remove(mod.length()-1,1);
+  
+  while(mod.stripPrefix(" "));
+   mod.stripPrefix("(");
+  }
 
 if(mod.contains("="))
 {

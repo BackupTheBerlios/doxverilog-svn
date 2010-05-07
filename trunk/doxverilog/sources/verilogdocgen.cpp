@@ -190,8 +190,10 @@ if (!VhdlDocGen::membersHaveSpecificType(ml,type)) return;
   
   if (title) 
   {
-    ol.startMemberHeader();
-    ol.parseText(title);
+    QCString tti(title);
+	VhdlDocGen::deleteAllChars(tti,' '); // Always Construct
+    ol.startMemberHeader(tti);
+	ol.parseText(title);
     ol.endMemberHeader();
 	ol.docify(" ");
   }
@@ -329,7 +331,7 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
   }
   
   // write search index info
-  if (Config_getBool("SEARCHENGINE"))
+  if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->setCurrentDoc(mdef->qualifiedName(),mdef->getOutputFileBase(),mdef->anchor());
     Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
@@ -349,11 +351,11 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
- 
+ /*
   if(mdef->getMemberSpecifiers()==VerilogDocGen::FEATURE)
   ol.startMemberItem(3); //? 1 : m_impl->tArgList ? 3 : 0);
   else
-
+*/
  ol.startMemberItem( isAnonymous );// ? 1 : m_impl->tArgList ? 3 : 0);
 
 
@@ -523,14 +525,13 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 		break;
   default: break;
    }
-
-   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
   if (htmlOn && Config_getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
   {
     ol.disable(OutputGenerator::Html);
   }
   if (!ltype.isEmpty()) ol.docify(" ");
-  
+
   if (htmlOn) 
   {
     ol.enable(OutputGenerator::Html);
@@ -544,10 +545,12 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
   //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
   //    name().data(),annoClassDef,annEnumType);
   ol.endMemberItem();
-   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
+  if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
     ol.startMemberDescription();
-    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),mdef->getOuterScope()?mdef->getOuterScope():d,mdef,mdef->briefDescription(),TRUE,FALSE);
+    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),
+                mdef->getOuterScope()?mdef->getOuterScope():d,
+                mdef,mdef->briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -556,23 +559,21 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
       ol.docify(" ");
       if (mdef->getGroupDef()!=0 && gd==0) // forward link to the group
       {
-        ol.startTextLink(mdef->getOutputFileBase(),mdef->anchor());
+	ol.startTextLink(mdef->getOutputFileBase(),mdef->anchor());
       }
       else // local link
       {
-        ol.startTextLink(0,mdef->anchor());
+	ol.startTextLink(0,mdef->anchor());
       }
       ol.endTextLink();
       //ol.startEmphasis();
       ol.popGeneratorState();
     }
     //ol.newParagraph();
-
     ol.endMemberDescription();
-    // if(VhdlDocGen::isComponent(mdef))
-       ol.lineBreak();
   }
-   mdef->warnIfUndocumented();
+  mdef->warnIfUndocumented();
+
 
   }// end writeVerilogDeclaration
 

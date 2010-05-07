@@ -606,8 +606,7 @@ static void endCodeLine()
 
 static void addToSearchIndex(const char *text)
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  if (searchEngineEnabled)
+  if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->addWord(text,FALSE);
   }
@@ -768,15 +767,14 @@ static void codifyLines(char *text,char *cl)
   }
 }
 
-
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  if (searchEngineEnabled)
+  if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
   }
 }
+
 
 
 /*! start a new line of code, inserting a line number if g_sourceFileDef
@@ -947,7 +945,7 @@ COMMENT     "//"[^\n]*
 COMMENT1    "//!"[^\n]*
 MIT         [^\\\n]*
 STRING      ["][^"]*["]
-FEATURE     ("`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef")[^\n]*
+FEATURE     ("`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef"|"`default_nettype")[^\n]*
 FEATUREX     ("`define"){MIT}
 
 
@@ -1100,11 +1098,12 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 					if(!g_parseCode)
 					 addText(verilogScanYYtext,verilogScanYYleng);
 				    }
-				  	
-				  	if(!def)// && !def->definition.isEmpty())
+				  /*	
+				  	if(!def && !)// && !def->definition.isEmpty())
 					if(Config_getBool("WARNINGS"))
 					 warn(yyFileName,yyLineNr,"\n macro %s is not defined",verilogScanYYtext);		  
-							  return  LETTER_TOK;	
+				  */			  
+					return  LETTER_TOK;	
 				
 					}
 
@@ -1632,7 +1631,8 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                    int startLine,
                    int endLine,
                    bool inlineFragment,
-                   MemberDef *memberDef
+                   MemberDef *memberDef,
+                     bool showLineNumbers
                   )
 				  { 
               
