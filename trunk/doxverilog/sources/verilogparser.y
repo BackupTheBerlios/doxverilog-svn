@@ -57,6 +57,7 @@ static Entry*		currentVerilog=0  ;
 static Entry*       currentFunctionVerilog=0;
 static Entry*       lastModule=0;
 
+static Entry        prevDocEntryVerilog;
 
 static bool         parseCode=FALSE; 
 
@@ -299,7 +300,7 @@ module_option : module_item
 //-----------------------------------------------------------------------------------------------------
 
 module_parameter_port_list : PARA_TOK LBRACE_TOK {currVerilogType=VerilogDocGen::PORT;} parameter_declaration_list  RBRACE_TOK               {currVerilogType=0;vbufreset();}
-                           | PARA_TOK  LBRACE_TOK error RBRACE_TOK 
+				| PARA_TOK  LBRACE_TOK error RBRACE_TOK {vbufreset();}
 						   ;
 
 parameter_declaration_list:  PARAMETER_TOK  { currVerilogType=VerilogDocGen::PARAMETER;} signed_range param_assignment                                      {currVerilogType=0;}
@@ -312,8 +313,6 @@ signed_range: //empty
    | signed range
    ;
 
-
-						  
 list_of_ports :  LBRACE_TOK                    {currVerilogType=VerilogDocGen::PORT;} port_list RBRACE_TOK                                     {currVerilogType=0;vbufreset();}
                | LBRACE_TOK error RBRACE_TOK {currVerilogType=0;vbufreset();}
 			  ;
@@ -415,8 +414,8 @@ parameter_declaration :        PARAMETER_TOK  { currVerilogType=VerilogDocGen::P
 							 | PARAMETER_TOK error SEM_TOK {currVerilogType=0;vbufreset();}
 							 ;
 
-specparam_declaration : SPECPARAM_TOK  range { currVerilogType=VerilogDocGen::PARAMETER;}  list_of_specparam_assignments SEM_TOK  { currVerilogType=0;vbufreset();}
-				      | SPECPARAM_TOK { currVerilogType=VerilogDocGen::PARAMETER;}   list_of_specparam_assignments SEM_TOK        { currVerilogType=0;vbufreset();}
+specparam_declaration : SPECPARAM_TOK  range  list_of_specparam_assignments SEM_TOK  { vbufreset();}
+				      | SPECPARAM_TOK   list_of_specparam_assignments SEM_TOK        { vbufreset();}
                       | SPECPARAM_TOK error SEM_TOK 
 					  ;
 
@@ -634,7 +633,7 @@ param_assignment :simple_identifier EQU_TOK expression {
 	                   }
                  ;
 				 
-specparam_assignment : param_assignment //identifier EQU_TOK mintypemax_expression
+specparam_assignment : identifier EQU_TOK mintypemax_expression
                    //  | PATHPULSE_TOK EQU_TOK constant_mintypmax_expression 
 					  ;
 
@@ -659,16 +658,16 @@ function_declaration : FUNC_TOK  automatic xsigned  range_or_type  name_of_funct
                         ENDFUNC_TOK                  {if(!parseCode && currentFunctionVerilog)
 						                                {
 														  currentFunctionVerilog->endBodyLine=getVerilogPrevLine();
-														} vbufreset(); CurrState=0;}
+														} vbufreset(); }
 
 					  | FUNC_TOK  automatic xsigned range_or_type name_of_function LBRACE_TOK function_port_list RBRACE_TOK SEM_TOK 
                         block_item_declaration_list 
                         function_statement
-                        ENDFUNC_TOK                  {if(!parseCode && currentFunctionVerilog){currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset();CurrState=0 ;}
+                        ENDFUNC_TOK                  {if(!parseCode && currentFunctionVerilog){currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset(); }
                       | FUNC_TOK  automatic xsigned range_or_type name_of_function LBRACE_TOK function_port_list RBRACE_TOK SEM_TOK 
                         function_statement
                         ENDFUNC_TOK					
-					  | FUNC_TOK error ENDFUNC_TOK { vbufreset();CurrState=0; }
+					  | FUNC_TOK error ENDFUNC_TOK { vbufreset(); }
 					  ;
  
 
@@ -954,10 +953,10 @@ module_instance : identifier11  LBRACE_TOK  list_of_port_connections  RBRACE_TOK
 				 ;
 
 identifier11:identifier xrange { 
-                            QCString secName($<cstr>0);
-							QCString firstName($<cstr>1);
-							//int u=getVerilogEndLine();
-							//QCString secName(getVerilogString());
+                            const char *name=$<cstr>1;
+                            QCString firstName(name);
+							int u=getVerilogEndLine();
+							QCString secName(getVerilogString());
 							 if(moduleParamName.isEmpty()){
 							   moduleParamName=secName;
 							  moduleLine=c_lloc.last_line;
@@ -1021,7 +1020,7 @@ generate_item : generate_conditional_statement{vbufreset();}
 			  ;
 
 generate_conditional_statement  :  IF_TOK LBRACE_TOK  expression RBRACE_TOK generate_item_or_null 
-								|   IF_TOK LBRACE_TOK  expression RBRACE_TOK  generate_item_or_null  ELSE_TOK  generate_item_or_null 
+                                 |   IF_TOK LBRACE_TOK  expression RBRACE_TOK generate_item_or_null  ELSE_TOK  generate_item_or_null 
      						     ;
 
 generate_case_statement :CASE_TOK  LBRACE_TOK  expression RBRACE_TOK  genvar_module_case_item_list  ENDCASE_TOK    
@@ -1230,7 +1229,6 @@ always_construct : ALWAYS_TOK {
 											  if( currentFunctionVerilog->endBodyLine<currentFunctionVerilog->startLine || c_lloc.first_line>currentFunctionVerilog->endBodyLine ) // awlays without end
 											   currentFunctionVerilog->endBodyLine=c_lloc.first_line;
 											  currVerilogType=0;
-											  CurrState=0;
 											  }
 											   vbufreset();}
                   | always_construct error END_TOK { vbufreset();currVerilogType=0;}
@@ -1959,6 +1957,7 @@ ident : LETTER_TOK  {
   identVerilog.resize(0);
   currVerilogInst.resize(0);
   currVerilogClass.resize(0);
+  prevDocEntryVerilog.reset();
   currentVerilog=0;
   generateItem=false;
   currentFunctionVerilog=0;
@@ -1972,77 +1971,42 @@ if(pc) return;
   VerilogDocGen::initEntry(current);
   current_rootVerilog->name=QCString("XXX"); // dummy name for root
 }
-/*
+
  Entry* VerilogDocGen::makeNewEntry(char* name,int sec,int spec,int line,bool add){
-
-
- Entry *e=current;
  
- if(parseCode) // should not happend!
+  Entry *e=current;
+ 
+  if(e->briefLine>0 && e->brief.data())
+  {
+    briefLine=line;
+    briefString=e->brief;
+  }
+
+  if(line==briefLine && briefString.data())
+  {
+   e->brief=briefString;
+  }
+
+ if(parseCode) // should not happen!
  assert(0);
 
-if(add){ // features like 'include xxx or 'define xxx must not be inserted here
+if(add)
+{ // features like 'include xxx or 'define xxx must not be inserted here
  if(lastModule)
     addSubEntry(lastModule,e); 
   else
     addSubEntry(current_rootVerilog,e); 
 }
-   if(line){
+else
+  addSubEntry(current_rootVerilog,e);
+
+if(line){
   	  e->bodyLine=line;
       e->startLine=line;
   }else
    {
      e->bodyLine=getVerilogPrevLine();
      e->startLine=getVerilogPrevLine();
-   }
-   
-  e->section=sec;
-  e->spec=spec;
-  e->name=name;
-
-  current=new Entry;
-  VerilogDocGen::initEntry(current);
-   return e;
- }
- */
- 
- Entry* VerilogDocGen::makeNewEntry(char* name,int sec,int spec,int line,bool add){
- 
-  Entry *e=current;
-  int entLine=getVerilogPrevLine();
-  
-  if(e->briefLine>0 && e->brief.data())
-  {
-     briefString=e->brief;
-   if(line)
-     briefLine=line;
-   else
-	 briefLine=entLine;
-  }
-
-  if(entLine==briefLine && briefString.data())
-  {
-   e->brief=briefString;
-  }
-  else
-	  briefString.resize(0);
-
- if(parseCode) // should not happen!
- assert(0);
-
-if(add){ // features like 'include xxx or 'define xxx must not be inserted here
- if(lastModule)
-    addSubEntry(lastModule,e); 
-  else
-    addSubEntry(current_rootVerilog,e); 
-}
-   if(line){
-  	  e->bodyLine=line;
-      e->startLine=line;
-  }else
-   {
-     e->bodyLine=entLine;
-     e->startLine=entLine;
    }
    
   e->section=sec;
@@ -2065,7 +2029,7 @@ void addSubEntry(Entry* root, Entry* e) {
 
 
 //-------------------------------------------------------------------------
-
+  
 // extracts module/primitive name
 
 void parseModule(){
@@ -2101,7 +2065,7 @@ void parseModule(){
 
 void parseModuleInst(QCString& first, QCString& sec) {
  
-if(currVerilogType==VerilogDocGen::DEFPARAM ) return; // || generateItem 
+if(currVerilogType==VerilogDocGen::DEFPARAM || generateItem ) return;
 
 
 
@@ -2140,8 +2104,6 @@ while(sec.stripPrefix(" "));
  else {
   Entry* pTemp=VerilogDocGen::makeNewEntry(sec.data(),Entry::VARIABLE_SEC,VerilogDocGen::COMPONENT,moduleLine);
   pTemp->type=first;
- if(generateItem) 
-  pTemp->args="[generate]";
  
  if(sec==first)return;
 if(currentVerilog)
@@ -2198,7 +2160,7 @@ QCString qcs;
 
 int p,l;
      
-QCString mods=getVerilogString();
+
  if((generateItem || CurrState==VerilogDocGen::STATE_FUNCTION || CurrState==VerilogDocGen::STATE_TASK )) return;
 
 QCString mod(getVerilogString());
@@ -2275,7 +2237,7 @@ VhdlDocGen::deleteAllChars(mod,' ');
  for(uint j=0;j<len;j++) {
   QCString name=(QCString)ql[j];
   name.prepend(VhdlDocGen::getRecordNumber().data());
-  fprintf(stderr," [preLine %d%] ",getVerilogPrevLine());
+ 
   Entry* pTemp=VerilogDocGen::makeNewEntry(name.data(),Entry::VARIABLE_SEC,getVerilogPrevLine());
  // pTemp->type=prevType;
  
@@ -2350,14 +2312,14 @@ void parseParam(Entry* e)
 
   mod=mod.simplifyWhiteSpace();
 
-  if(mod.stripPrefix("#"))
-  {
-  if(mod.at(mod.length()-1)==')') 
-    mod.remove(mod.length()-1,1);
-  
+ if(mod.at(mod.length()-1)==')') 
+  mod.remove(mod.length()-1,1);
+
+  mod.stripPrefix("#");
   while(mod.stripPrefix(" "));
-   mod.stripPrefix("(");
-  }
+  mod.stripPrefix("(");
+
+
 
 if(mod.contains("="))
 {
@@ -2581,9 +2543,9 @@ int c_lex(void){
 
 void c_error(const char * err){
    if(err){// && !parseCode){
-  fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
+//  fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
   vbufreset();
-//  exit(0);
+ // exit(0);
   }
   
    } 
@@ -2626,23 +2588,13 @@ void parseString(){
 					 else if(currVerilogType==VerilogDocGen::COMPONENT){
 					    QCString tt(getVerilogString());
 					    if(tt.contains('('))
-					     b=generateVerilogMemLink(currVerilogClass,identVerilog,VerilogDocGen::PORT);
+					     b=generateVerilogCompMemLink(currVerilogClass,currVerilogInst,identVerilog,true);
 				        else if(!b)   
-				         b=generateVerilogMemLink(currVerilogInst,identVerilog,VerilogDocGen::PORT);
+				         b=generateVerilogCompMemLink(currVerilogClass ,currVerilogInst,identVerilog,false);
 				        if(!b)   
-				         b=generateVerilogMemLink(currVerilogClass,identVerilog,-1);    
+				         b=generateVerilogCompMemLink(currVerilogClass,currVerilogInst,identVerilog,true);    
 					   }
-				    /*
-				      else if(currVerilogType==VerilogDocGen::NETTYPE){
-                       QCString tt(getVerilogString());
-                      if(tt.contains("["))
-                         b=generateVerilogMemLink(currVerilogClass,identVerilog,-1);
-                       else{
-                      	 codifyVerilogString(identVerilog.data(),"vhdlcharacter");
-				         b=true;
-				          }
-                      	 }
-				      */
+				  
 				      else if(currVerilogType==VerilogDocGen::PORT)
                         b=generateVerilogMemLink(currVerilogClass,identVerilog,VerilogDocGen::PORT);
 				     else if(currVerilogType==VerilogDocGen::PARAMETER)

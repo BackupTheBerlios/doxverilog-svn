@@ -8,7 +8,7 @@
  * documentation under the   terms of the GNU General Public License is hereby
  * granted. No representations are made about the suitability of this software 
  * for any purpose. It is provided "as is" without express or implied warranty.
- * See the GNU General Public License for more details.
+ * See  the GNU   General Public License for more details.
  *
  * Documents   produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
@@ -125,14 +125,60 @@ static int                g_elsIf;
 static int inputPosition;
 static const char* inString;
 static bool g_bParseFile;
-
+static void printDict();
 
 
 DefineDict* getFileDefineDictVerilog() {
   return g_DefineMacroDict;
 }
 
+void insertMacros()
+{  
+  QGDictIterator iter(*g_fileDefineDict) ;
+  Define *defi,*dd;
+  for(;defi=(Define*)iter.get() ;dd=(Define*)++iter)
+  {
+    if(!g_DefineMacroDict->find(defi->name.data()))
+    {
+ //    fprintf(stderr,"\n insert: [%s]",defi->name.data());
+     Define *def1 = new Define(*defi);
+     g_DefineMacroDict->insert(defi->name,def1);
+    }
+  }
+ // printDict();
+}   
 
+
+void printDict()
+{
+
+Define *defi;
+  
+  QGDictIterator iter(*g_DefineMacroDict) ;
+ uint len=g_DefineMacroDict->count();
+ 
+ /*
+ QGDictIterator iterFile(*g_fileDefineDict) ;
+  
+  printf("\n======= FileDict =============\n");
+
+for(iterFile.toFirst();defi=(Define*)iterFile() ;++iterFile)
+  {
+    fprintf(stderr,"\n %s",defi->name.data());
+     printf("\n %s",defi->name.data());
+  }
+  printf("\n====================\n");
+
+
+*/
+ for(iter.toFirst();defi=(Define*)iter() ;++iter)
+ 
+  {
+    fprintf(stderr,"\n %s",defi->name.data());
+     printf("\n %s",defi->name.data());
+  }
+  printf("\n====================\n");
+}
 
 static void setFileName(const char *name)
 {
@@ -1050,12 +1096,14 @@ static Define *newDefine()
 {
   Define *def=new Define;
   def->name = g_defName;
-  def->definition = g_defText.stripWhiteSpace();
+  def->definition =g_defText.stripWhiteSpace();
+//  fprintf(stderr,"\n newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
+
+ //  VhdlDocGen::deleteAllChars(def->definition,'"');
   def->nargs = g_defArgs;
   def->fileName = g_yyFileName; 
   def->lineNr = g_yyLineNr;
   def->varArgs = g_defVarArgs;
-  //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
   if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
   {
     def->isPredefined=TRUE;
@@ -1528,6 +1576,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  }
   					    
   					  bool bb=str.stripPrefix("`");
+ 
+  					 
   					  if ((g_includeStack.isEmpty() || g_curlyCount>0) && 
 					      g_macroExpansion && bb &&
 					      (def=g_fileDefineDict->find(str.data())) &&
@@ -1541,6 +1591,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 //					    result=result.simplifyWhiteSpace();
 					 //   printf("result=`%s'\n",result.data());
 					    outputArray(result,result.length());
+					  }
+					  else if(bb && g_macroExpansion && (def=g_DefineMacroDict->find(str.data())))
+					  {
+					    outputArray(def->definition,def->definition.length());
 					  }
 					  else
 					  {
@@ -2129,6 +2183,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      }
 					    }
 					    g_lastGuardName.resize(0);
+					    //printDict();
 					    BEGIN(Start);
 					  }
   					}
@@ -2354,7 +2409,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defLitText+=preYYVerilogtext;
   					}
 <DefineText,CopyCComment>{ID}		{
-					  g_defLitText+=preYYVerilogtext;
+                  //    if(YY_START==DefineText)
+                   //     fprintf(stderr,"\nDefineText");
+					  QCString temp=preYYVerilogtext;
+  					  if(Config_getBool("MACRO_EXPANSION") )
+  					  {
+  					   Define *def=g_fileDefineDict->find(temp.data());
+  					  //printDict();
+  					   if(def)
+						{
+  					     temp=def->definition;
+  					     g_defLitText+=temp;
+  					     VhdlDocGen::deleteAllChars(g_defLitText,'`');
+  					     g_quoteArg=false;
+  					    }  
+  					    else 
+  					    g_defLitText+=temp;
+  					  }
+  					  else
+  					    g_defLitText+=preYYVerilogtext;
+  					
   					  if (g_quoteArg)
 					  {
 					    g_defText+="\"";
@@ -2373,18 +2447,19 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    }
 					    else
 					    {
-					      g_defText+=preYYVerilogtext;
+					      g_defText+=temp;
 					    }
 					  }
 					  else
 					  {
-					    g_defText+=preYYVerilogtext;
+					    g_defText+=temp;
 					  }
 					  if (g_quoteArg)
 					  {
 					    g_defText+="\"";
 					  }
 					  g_quoteArg=FALSE;
+					  //printDict();
   					}
 <CopyCComment>.				{
 					  g_defLitText+=preYYVerilogtext;
@@ -2425,6 +2500,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    addDefine();
 					  }
 					  def=g_fileDefineDict->find(g_defName);
+					  //printDict();
 					  if (def==0) // new define
 					  {
 					   // fprintf(stderr,"\n new define: [%s]",g_defName.data());
@@ -2434,6 +2510,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					   // if(def->definition.isEmpty() && (YY_START==DefineText))
 					   //  def->definition ="1";
 					    g_fileDefineDict->insert(g_defName,def);
+					  /* 
+					    if(!g_DefineMacroDict->find(g_defName.data()))
+						 {
+                            Define *def1 = new Define(*def);
+                            VhdlDocGen::deleteAllChars(def->definition,'"');   
+                            g_DefineMacroDict->insert(g_defName,def1);
+						 }
+					  */
 					  }
 					  else if (def)// name already exists
 					  {
@@ -2456,6 +2540,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  delete g_argDict; g_argDict=0;
 					  g_yyLineNr++;
 					  g_lastGuardName.resize(0);
+					  //printDict();
 					  BEGIN(Start);
   					}
 <DefineText>{B}*			{ g_defText += ' '; g_defLitText+=preYYVerilogtext; }
@@ -2491,6 +2576,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefineText>.				{ g_defText += *preYYVerilogtext; g_defLitText+=preYYVerilogtext; }
 <<EOF>>					{
                                           //fprintf(stderr,"End of include file\n");
+					  //printDict();
 					  //printf("Include stack depth=%d\n",g_includeStack.count());
   					  if (g_includeStack.isEmpty())
 					  {
@@ -2667,13 +2753,14 @@ void cleanUpVerilogPreprocessor()
   delete g_expandedDict; g_expandedDict=0;
   delete g_pathList; g_pathList=0;
   Define *defi;
- 
+  
   QGDictIterator iter(*g_DefineMacroDict) ;
   for(iter.toFirst();defi=(Define*)iter() ;++iter)
   {
-    fprintf(stderr,"\n [%s]",defi->name.data());
+   // fprintf(stderr,"\n %s",defi->name.data());
+ //    printf("\n %s",defi->name.data());
   }
-  
+ 
   delete g_DefineMacroDict; g_DefineMacroDict=0;
 }
 
@@ -2691,17 +2778,7 @@ void preprocessVerilogFile(const char *fileName,BufStr &output,const char* codeF
   g_includeStack.clear();
   g_fileDefineDict->setAutoDelete(TRUE);
   int u=g_fileDefineDict->count();
-  QGDictIterator iter(*g_fileDefineDict) ;
-  Define *defi;
-  for(iter.toFirst();defi=(Define*)iter() ;++iter)
-  {
-    if(!g_DefineMacroDict->find(defi->name.data()))
-    {
-     Define *def1 = new Define(*defi);
-     g_DefineMacroDict->insert(defi->name,def1);
-    }
-  }
-   
+
   g_fileDefineDict->clear();
   g_expandedDict->setAutoDelete(FALSE);
   g_expandedDict->clear();
@@ -2853,12 +2930,13 @@ void preprocessVerilogFile(const char *fileName,BufStr &output,const char* codeF
   g_guardExpr.resize(0);
   
   preYYVeriloglex();
+  insertMacros();
   g_lexInit=TRUE;
   if (inputFilter.isEmpty())
     fclose(preYYVerilogin);
   else
     portable_pclose(preYYVerilogin);
-  
+  output.addChar('\0');
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
     char *orgPos=output.data()+orgOffset;

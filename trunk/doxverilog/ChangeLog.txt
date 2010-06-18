@@ -80,3 +80,14 @@ patching file winbuild/Doxygen.vcproj
  I don't know the cause of this error.However, the file is unimportant under LINUX and 
  the compilation should be successful.  
 
+-----------------------------------------------------------------------------------------------
+
+
+Doxverilog Release 2.5
+
+-patch is now against doxygen-1.7.0
+-include patches 002987 002982 002904
+
+
+
+

@@ -36,6 +36,18 @@ static void setType(MemberList* ml);
 static void parseDefineConstruct(QCString&, MemberDef*,OutputList& ol);
 static void writeFunctionProto(OutputList& ol,const ArgumentList* al,const MemberDef* mdef);
 
+static QDict<MemberDef> variableDict(10007);
+
+static QDict<MemberDef> instPortDict(10007);
+static QDict<MemberDef> classPortDict(10007);
+
+
+static QDict<MemberDef> functionDict(5003);
+static QDict<MemberDef> globalMemDict(5003);
+static QList<MemberDef> includeMemList;
+static QDict<MemberDef> classglobDict(17);
+static QDict<ClassDef>  classInnerDict(17);
+
 
 Entry* VerilogDocGen::getEntryAtLine(const Entry* ce,int line)
 {
@@ -190,10 +202,8 @@ if (!VhdlDocGen::membersHaveSpecificType(ml,type)) return;
   
   if (title) 
   {
-    QCString tti(title);
-	VhdlDocGen::deleteAllChars(tti,' '); // Always Construct
-    ol.startMemberHeader(tti);
-	ol.parseText(title);
+    ol.startMemberHeader(title);
+    ol.parseText(title);
     ol.endMemberHeader();
 	ol.docify(" ");
   }
@@ -351,11 +361,11 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
- /*
+ 
   if(mdef->getMemberSpecifiers()==VerilogDocGen::FEATURE)
   ol.startMemberItem(3); //? 1 : m_impl->tArgList ? 3 : 0);
   else
-*/
+
  ol.startMemberItem( isAnonymous );// ? 1 : m_impl->tArgList ? 3 : 0);
 
 
@@ -515,23 +525,18 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 	    ol.endEmphasis();
         ol.popGeneratorState();
 		}
-		if(largs.data())
-			{
-				ol.docify(" ");
-			ol.docify(largs.data());
-			}
-
         } 
 		break;
   default: break;
    }
-  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+
+   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
   if (htmlOn && Config_getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
   {
     ol.disable(OutputGenerator::Html);
   }
   if (!ltype.isEmpty()) ol.docify(" ");
-
+  
   if (htmlOn) 
   {
     ol.enable(OutputGenerator::Html);
@@ -545,12 +550,10 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
   //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
   //    name().data(),annoClassDef,annEnumType);
   ol.endMemberItem();
-  if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
+   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
     ol.startMemberDescription();
-    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),
-                mdef->getOuterScope()?mdef->getOuterScope():d,
-                mdef,mdef->briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),mdef->getOuterScope()?mdef->getOuterScope():d,mdef,mdef->briefDescription(),TRUE,FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -559,21 +562,23 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
       ol.docify(" ");
       if (mdef->getGroupDef()!=0 && gd==0) // forward link to the group
       {
-	ol.startTextLink(mdef->getOutputFileBase(),mdef->anchor());
+        ol.startTextLink(mdef->getOutputFileBase(),mdef->anchor());
       }
       else // local link
       {
-	ol.startTextLink(0,mdef->anchor());
+        ol.startTextLink(0,mdef->anchor());
       }
       ol.endTextLink();
       //ol.startEmphasis();
       ol.popGeneratorState();
     }
     //ol.newParagraph();
-    ol.endMemberDescription();
-  }
-  mdef->warnIfUndocumented();
 
+    ol.endMemberDescription();
+    // if(VhdlDocGen::isComponent(mdef))
+       ol.lineBreak();
+  }
+   mdef->warnIfUndocumented();
 
   }// end writeVerilogDeclaration
 
@@ -589,26 +594,112 @@ return cdef->className()+" Primitive";
 
 //-----------------< Code Parsing >------------------------------------------------
 
+static bool buildInst=false;
+
+void buildVariableDict(ClassDef *inst, ClassDef *cl)
+{
+	 MemberList *instPort=NULL;
+	 MemberList *classPort=NULL;
+      
+	  instPortDict.clear();
+	  classPortDict.clear();
+   
+    if(inst!=NULL)
+        instPort=inst->getMemberList(MemberList::variableMembers); 
+	 
+	if(cl!=NULL)
+	 classPort=cl->getMemberList(MemberList::variableMembers); 
+
+
+	  if(instPort)
+		  {
+            MemberListIterator mnii(*instPort);
+            MemberDef *md;
+             for (mnii.toFirst();(md=mnii.current());++mnii)
+                instPortDict.insert(md->name().data(),md);
+		  }
+
+	  if(classPort)
+		  {
+             MemberListIterator mnii(*classPort);
+			 MemberDef *md;
+             for (mnii.toFirst();(md=mnii.current());++mnii)
+                classPortDict.insert(md->name().data(),md);
+		  }
+}//funct
+
+void buildVariableDict(ClassDef *cd)
+{
+   
+if(cd==0) return;
+variableDict.clear();
+
+	MemberList* ml=cd->getMemberList(MemberList::variableMembers); 
+     if(ml)
+		  {
+             MemberListIterator mnii(*ml);
+			 MemberDef *md;
+             for (mnii.toFirst();(md=mnii.current());++mnii)
+                variableDict.insert(md->name().data(),md);
+		 }
+
+     ml=cd->getMemberList(MemberList::pubMethods); 
+	 if(ml)
+		  {
+             MemberListIterator mnii(*ml);
+			 MemberDef *md;
+             for (mnii.toFirst();(md=mnii.current());++mnii)
+                variableDict.insert(md->name().data(),md);
+		 }
+}
+
+MemberDef* VerilogDocGen::findInstMember(QCString & cl,QCString & inst,QCString & key,bool b)
+	{
+     ClassDef* cdInst=0;
+	 ClassDef* cdClass=0;
+	 MemberDef *mdef=NULL;
+	 if(!cl.isEmpty())
+		 cdClass=getClass(cl.data());
+
+	  if(!inst.isEmpty())
+		 cdInst=getClass(inst.data());
+
+    if(!buildInst)
+		{
+         buildVariableDict(cdInst,cdClass);
+         buildInst=true;
+		}
+
+      if(!b) 
+		  return  classPortDict.find(key.data());
+	  else
+		  return  instPortDict.find(key.data());
+
+    return NULL;
+	}//find
+
 
 MemberDef* VerilogDocGen::findMember(QCString& className, QCString& memName,int type)
 {
 	ClassDef* cd;
 	MemberDef *mdef=NULL;
 	bool feat=false;
-
+    buildInst=false;
+	
 	cd=getClass(className.data());
-    if(!cd) return NULL;
+  //  if(!cd) return NULL;
 
+	 if(memName.contains('`'))
+     memName.stripPrefix("`");
+  
 	 mdef=VerilogDocGen::findMemberDef(cd,memName,MemberList::variableMembers,type,feat);
      if(mdef) return mdef;
   	
-  // if(memName.contains('`')){
-     memName.stripPrefix("`");
-     mdef=VerilogDocGen::findMemberDef(cd,memName,MemberList:: pubMethods,type,feat);
-    if(mdef) return mdef;
+ //    mdef=VerilogDocGen::findMemberDef(cd,memName,MemberList:: pubMethods,type,feat);
+ //   if(mdef) return mdef;
   
-     QCString file=VerilogDocGen::getFileNameFromString(cd->getDefFileName().data());
-     mdef = findGlobalMember(file,memName);
+ //    QCString file=VerilogDocGen::getFileNameFromString(cd->getDefFileName().data());
+ //    mdef = findGlobalMember(file,memName);
 	return mdef;
 
 }//findMember
@@ -616,35 +707,91 @@ MemberDef* VerilogDocGen::findMember(QCString& className, QCString& memName,int 
 
  MemberDef* VerilogDocGen::findMemberDef(ClassDef* cd,QCString& key,MemberList::ListType type,int spec,bool def)
  {
-	 static QRegExp regg("[_a-zA-Z]");
-	 MemberDef *md=NULL;
- 
-     MemberList *ml=	cd->getMemberList(type);
-     if(ml==NULL) return NULL;
-	 
-	   MemberListIterator fmni(*ml);
-      
-	    for (fmni.toFirst();(md=fmni.current());++fmni)
-        {
-          QCString nn(md->name());
-		  int j=nn.find(regg,0);
-          if (j>0)
-          {
-           nn=nn.mid(j,nn.length());
-          }
-		  if(spec!=-1){ 
-		  if((stricmp(key.data(),nn.data())==0) && (md->getMemberSpecifiers()==spec)) 
-			  return md;
-			  }
-          else {
-                 if(stricmp(key.data(),nn.data())==0) 
-			     return md;
-		       }
-        } 
 
+    static QCString className;
+	static QCString prevName;
+    static ClassDef* sClass=0;
+
+	MemberDef  *mem=NULL;
+
+	if(cd==0)
+	{       
+ 	  mem=globalMemDict.find(key.data());
+	  if(mem) return mem;
+	  return NULL;
+	}
+	className=cd->name();
+	 
+  if(prevName != className )
+  {
+     prevName=className;
+	 buildVariableDict(cd);
+  }
+  
+
+	  if(mem==0)
+		  mem=variableDict.find(key.data());
+	  if(mem)
+	  { 
+		 return mem;
+	  }
+      mem=globalMemDict.find(key.data());
+	  if(mem)
+		 return mem;
+	  	
  return NULL;
 
+
 }//findMemberDef
+
+
+void 
+VerilogDocGen::buildGlobalVerilogVariableDict(const FileDef* fd,bool clear,int level)
+{
+   if(fd==0)return;
+   
+   if(clear)
+   {
+     globalMemDict.clear();
+     classInnerDict.clear();
+   }
+
+ 
+   MemberDef *md=NULL;
+   MemberList *ml=	fd->getMemberList(MemberList::decVarMembers);
+   if(ml!=NULL) 
+   {
+   MemberListIterator fmni(*ml);
+      
+	for (fmni.toFirst();(md=fmni.current());++fmni)
+	{
+		//VhdlDocGen::adjustRecordMember(md);
+		//if(stricmp(md->typeString(),"include")==0)
+		/*
+	    if(!findIncludeName(md->name().data()))
+		{
+			//	printf("\n insert %s",md->name());	
+			    includeMemList.append(md);
+		}
+		*/
+   //		printf("\n %s ....  ",md->name().data());
+   //		ClassDef *ch=md->getClassDef();
+   //		if(ch==0)
+		globalMemDict.insert(md->name().data(),md);
+	}
+   }
+
+   ml=	fd->getMemberList(MemberList::decFuncMembers);
+   if(ml!=0)
+   {
+   MemberListIterator fmni(*ml);
+   for (fmni.toFirst();(md=fmni.current());++fmni)
+	{
+		VhdlDocGen::adjustRecordMember(md);
+		globalMemDict.insert(md->name().data(),md);
+	}
+   }
+  } 
 
 
 MemberDef* VerilogDocGen::findDefinition(ClassDef *cd, QCString& memName){

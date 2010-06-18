@@ -545,6 +545,7 @@ void printVerilogStringList()
     QCString *qcs=(QCString*)qlist.at(j);
 	 qbuffer+=qcs->data();
   }
+  
   fprintf(stderr,"\n[%s]",qbuffer.data());
 }
 
@@ -562,6 +563,26 @@ bool  generateVerilogMemLink(QCString &clName,QCString& memberName,int type)
  return generateMemLink(*g_code,clName,memberName,type);
 }
 
+bool generateVerilogCompMemLink(QCString &cl,QCString& inst,QCString & key, bool b)
+{
+   MemberDef *md=0;
+   md=VerilogDocGen::findInstMember(cl,inst,key,b);
+    
+    if (md && md->isLinkable()) // is it a linkable class
+    {
+   	 if(b && !cl.isEmpty())
+   	 {
+   	   writeMultiLineCodeLink(*g_code,md->getReference(),md->getOutputFileBase(),md->anchor(),cl);
+       return true;
+     }
+     if(b && !inst.isEmpty())
+     {
+       writeMultiLineCodeLink(*g_code,md->getReference(),md->getOutputFileBase(),md->anchor(),inst);
+       return true;
+     }
+    }
+   return false;
+}
 
 static bool generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& memberName,int type)
 {
@@ -606,7 +627,7 @@ static void endCodeLine()
 
 static void addToSearchIndex(const char *text)
 {
-  if (Doxygen::searchIndex)
+   if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->addWord(text,FALSE);
   }
@@ -767,6 +788,7 @@ static void codifyLines(char *text,char *cl)
   }
 }
 
+
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
   if (Doxygen::searchIndex)
@@ -774,7 +796,6 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
     Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
   }
 }
-
 
 
 /*! start a new line of code, inserting a line number if g_sourceFileDef
@@ -786,7 +807,7 @@ static void startCodeLine()
   //if (g_currentFontClass) { g_code->endFontClass(); }
   if (g_sourceFileDef)
   {
-     if((yyLineNr % 1000) == 0) 
+     if((yyLineNr % 500) == 0) 
 	 fprintf(stderr,"\r parsing line %d:",yyLineNr);
     Definition *d   = g_sourceFileDef->getSourceDefinition(yyLineNr);
    // printf("startCodeLine %d d=%s\n", yyLineNr,d ? d->name().data() : "<null>");
@@ -945,7 +966,7 @@ COMMENT     "//"[^\n]*
 COMMENT1    "//!"[^\n]*
 MIT         [^\\\n]*
 STRING      ["][^"]*["]
-FEATURE     ("`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef"|"`default_nettype")[^\n]*
+FEATURE     ("`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef")[^\n]*
 FEATUREX     ("`define"){MIT}
 
 
@@ -1017,8 +1038,8 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                    }
                       else{
                            addText(verilogScanYYtext,verilogScanYYleng);
-                           if(yy_hold_char==10)
-                                addText("?",1);
+                          // if(yy_hold_char==10)
+                          //      addText("?",1);
                            if(yy_hold_char==32)
                            yyLineNr++;
                           }
@@ -1055,7 +1076,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
  
                  if(g_parseCode) 
                  {
-                      VhdlDocGen::deleteAllChars(q,'§');                                              
+                    //  VhdlDocGen::deleteAllChars(q,'§');                                              
                       uint le=q.length()-1;
                       bool newLine=(q.at(le)=='\\');
                       QCString com=checkComment(q);
@@ -1088,7 +1109,14 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 					 
 				 	if(g_parseCode)
 				 	{
-                      QCString *yy=new QCString(verilogScanYYtext);
+                      QCString *yy=0;
+                     if(Config_getBool("MACRO_EXPANSION") && def)
+                     {
+                        yy=new QCString(def->definition.data());
+                      //   VhdlDocGen::deleteAllChars(*yy,'"');   
+                     } 
+                      else   
+                        yy=new QCString(verilogScanYYtext);
                       c_lval.cstr[0]='\0';                                                   
                      qlist.append(yy);
                     }
@@ -1098,12 +1126,11 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 					if(!g_parseCode)
 					 addText(verilogScanYYtext,verilogScanYYleng);
 				    }
-				  /*	
-				  	if(!def && !)// && !def->definition.isEmpty())
+				  	
+				  	if(!def)// && !def->definition.isEmpty())
 					if(Config_getBool("WARNINGS"))
 					 warn(yyFileName,yyLineNr,"\n macro %s is not defined",verilogScanYYtext);		  
-				  */			  
-					return  LETTER_TOK;	
+							  return  LETTER_TOK;	
 				
 					}
 
@@ -1200,16 +1227,16 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>{STRENGTH0} { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);   return  STR0_TOK;} REJECT;}
 <Start>{STRENGTH1} { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng); return  STR1_TOK;}REJECT;}
 <Start>{GATETYPE}  { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);  return  GATE_TOK;}REJECT;}
-<*>{LL}*"//%"[^{}\n][^\n]*\n/{LL}*"//%" { // found multiline comment
+<*>"//%"[^{}\n][^\n]*\n/{LL}*"//%" { // found multiline comment
                      QCString text(verilogScanYYtext);
                      if(!g_parseCode){
                      if(iDocLine==-1){
                        iDocLine=yyLineNr; 
                      }
                       
-                      Entry* pTemp=VerilogDocGen::getEntryAtLine(curRoots,iDocLine);
+  //                    Entry* pTemp=VerilogDocGen::getEntryAtLine(curRoots,iDocLine);
     
-   /*                   
+/*                      
   if (pTemp)
   { // found one line comment, add it to the entry on this line
     pTemp->briefLine=yyLineNr;
@@ -1217,9 +1244,9 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
     VhdlDocGen::prepareComment(pTemp->brief);
   }
     else 
-	*/
-	if(!checkMultiComment(text))
-	{ 
+  */  
+   if(!checkMultiComment(text)) 
+    { 
       strComment+=verilogScanYYtext;
 	  multLineComment=true;
 	}			                     
@@ -1228,41 +1255,29 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                       
      }
 					 if(g_parseCode) {
-					     int v=text.find("//%");
-					     if(v>0)
-					     {
-					     QCString left=text.left(v);
-					     qlist.append(new QCString(left));
-					     text=text.right(text.length()-v);
-					    }
+					 if(Config_getBool("STRIP_CODE_COMMENTS"))
+					      qlist.append(new QCString(verilogScanYYtext)); 
+					 else{
 					     QStringList ql=QStringList::split('\n',text,false);
-					     QCString trial=(QCString)ql[0];
-					     qlist.append(new QCString(trial.data()));   
+					     //QCString trial=(QCString)ql[0];
+					     qlist.append(new QCString((QCString)ql[0]));   
 					     qlist.append(new QCString("\n"));   
 					     if(ql.count()>1)
 					     qlist.append(new QCString((QCString)ql[1]));   			     
-					  
+					  }
 					  }
 					 c_lval.ctype=' ';
   BEGIN(tagComment);
   }
 
-<tagComment>{LL}*"//%"[^\n]* {
+<tagComment>"//%"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
   if(!g_parseCode)
    strComment+=verilogScanYYtext;
   
    if(g_parseCode) 
    { 
-      QCString text(verilogScanYYtext);
-      int v=text.find("//%");
-      if(v>0)
-	  {
-	   QCString left=text.left(v);
-	   qlist.append(new QCString(left));
-	   text=text.right(text.length()-v);
-	  }
-     qlist.append(new QCString(text)); 
+     qlist.append(new QCString(verilogScanYYtext)); 
    } 
   BEGIN(tagComment);
 }
@@ -1297,8 +1312,6 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
   {
     handleVerilogCommentBlock(qcs,TRUE,iDocLine);
   }
-   //printf("--> end: handleCommentBlock line %d\n",yyLineNr);
-  //  bufferClear();
  }//if
   if(g_parseCode) // && !Config_getBool("STRIP_CODE_COMMENTS"))
    { 
@@ -1307,27 +1320,26 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 
 } 
 
+
 <Start>{COMMENT} {
        QCString text(verilogScanYYtext); 
+				//fprintf(stderr,"\n %s",text.data());
 					  int b=text.contains(vlogComment);
-					  if(b && !g_parseCode)
-					  {  
+					  if(b && !g_parseCode){  
                        strComment+=verilogScanYYtext;
                         if (iDocLine==-1) iDocLine=yyLineNr;
                          VhdlDocGen::prepareComment(strComment);
                    
-                         if(multLineComment)
-						 {
+                         if(multLineComment){
                           handleVerilogCommentBlock(strComment,FALSE,iDocLine);
                           multLineComment=false;
                          }
                          else{
                            if(!checkMultiComment(text))
                             handleVerilogCommentBlock(strComment,true,iDocLine);
-                         
+                          }//else 
                          }
-                         }    
-                       strComment.resize(0);      
+                           strComment.resize(0);      
                          
 					 
 					 if(g_parseCode)
@@ -1339,18 +1351,10 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 
 <Start>{STRING}    {
                   //   fprintf(stderr,"\n [%s : %c %d] string\n",verilogScanYYtext,verilogScanYYtext[verilogScanYYleng-2],verilogScanYYleng);
-                      QCString temp(verilogScanYYtext);
-                      
+
                       if((verilogScanYYleng > 2) && verilogScanYYtext[verilogScanYYleng-2] != 92) {
                       addText(verilogScanYYtext,verilogScanYYleng);
-                      if(!g_parseCode)
-                        yyLineNr+=temp.contains('\n');
-                      if(g_parseCode) 
-                       {
-                        qlist.append(new QCString(temp.data()));
-                        c_lval.ctype=verilogScanYYtext[0];
-                       }
-                      
+                      if(g_parseCode) { qlist.append(new QCString(verilogScanYYtext));c_lval.ctype=verilogScanYYtext[0];}
                       return  STRING_TOK;
                       }
                       if(verilogScanYYleng == 2){ 
@@ -1451,15 +1455,6 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>"@" { parseToken(verilogScanYYtext);return  AT_TOK;}
 <Start>"#" { parseToken(verilogScanYYtext);	return  PARA_TOK;}
 <Start>"$" { if(g_parseCode) parseToken(verilogScanYYtext); return  DOLLAR_TOK;}
-<Start>"/" {
- 					  char c=yy_hold_char;
-                         if(c !='/'){ 
-						 parseToken(verilogScanYYtext);
-						 return  ENV_TOK;
-                         }
-						 unput('/');// found "//"
-						 REJECT;}
-
 <Start>"/*" {
                  vbufreset(); 
 				 addText(verilogScanYYtext,verilogScanYYleng);
@@ -1481,18 +1476,19 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <StartComment>[^*]*[*]+    {
                        QCString tt(verilogScanYYtext);
 					   int len=tt.length();
-					  if(!g_parseCode){
+					  
 					   if(verilogScanYYtext[len-1]=='*' && tt.contains('\n'))
 					        {
 					         QCString ss=tt;
 					         VhdlDocGen::deleteAllChars(ss,' ');
+					         VhdlDocGen::deleteAllChars(ss,'\t');
 					         if(ss.data()  && ss.at(ss.length()-2)=='\n')
 					         {
 					          tt=tt.left(len-1);
 					          len--;
 					          }
 					         }
-					   }
+					   
 					   addText(tt.data(),len);
                        char c=yy_hold_char;
                          if(c =='/'){
@@ -1525,7 +1521,6 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                       	 vbufreset();
                          BEGIN(Start);
                 }
-
 %%
 
 //------ -------------------------------------------------------------------------------------------------
@@ -1614,7 +1609,6 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
        pconv=new MyParserConv();
        resetScanner(NULL,pconv);
           groupEnterFile(fileName,yyLineNr);
-     
        int ok=pconv->parse(pconv);
 	 //  globalMemberList.clear();
 	   qlist.clear();
@@ -1632,19 +1626,20 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                    int endLine,
                    bool inlineFragment,
                    MemberDef *memberDef,
-                     bool showLineNumbers
+                   bool showLineNumbers
                   )
 				  { 
               
 				 //  Definition *di=(Definition*)fileDef;
 				   QCString pPuffer(" ",1);
+				   assert(fileDef);
                    QCString ff(fileDef->getDefFileName());
                    BufStr preBuf(input.length());
                         
                    if (Config_getBool("ENABLE_PREPROCESSING") && startLine==-1)
                      {
-                        if(ff.data())
-                        fprintf(stderr,"\nPreprocessing code of file %s...\n",ff.data());
+                       // if(ff.data())
+                        //fprintf(stderr,"\nPreprocessing code of file %s...\n",ff.data());
                         preprocessVerilogFile(ff,preBuf,0,-1);
                          preBuf.addChar('\0');
                        pPuffer+=preBuf.data();              
@@ -1654,6 +1649,8 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                     pPuffer+=input.data();
                   // printf("%s",pPuffer.data());
                       initVerilogParser(0,true);
+                       VerilogDocGen::buildGlobalVerilogVariableDict(fileDef,true);
+                  
                    if(memberDef)// write code for function body
                    {
                     ClassDef *dd=memberDef->getClassDef();
@@ -1774,14 +1771,18 @@ static void parseGlobalMember(){
           return;
         }
     
-    
-         Entry* pTemp=VerilogDocGen::makeNewEntry(name.data(),Entry::VARIABLE_SEC,VerilogDocGen::FEATURE,defineLineContinue,true);
+       //  VhdlDocGen::deleteAllChars(args,'\\');
+         Entry* op=getCurrVerilog();
+         bool bGlobal=op;
+         Entry* pTemp=VerilogDocGen::makeNewEntry(name.data(),Entry::VARIABLE_SEC,VerilogDocGen::FEATURE,defineLineContinue,bGlobal);
          pTemp->args=args;
          pTemp->type="feature";
-         if(getCurrVerilog()!=0) return; // found definition outside a module(not global)
-       
+     
+        //    if(getCurrVerilog()!=0) return; // found definition outside a module(not global)
+       if(!bGlobal){ 
          Entry *pNew=new Entry(*pTemp);
          globalMemberList.insert(pNew->name,pNew);
+         }
         }
 
 }// parseGlobalMember
@@ -1923,12 +1924,17 @@ QCString checkComment(QCString& q)
 
  void composeString(QCString& q)
 {
-  QRegExp ep("[`a-zA-Z0-9_]+");
+  QRegExp ep("[`a-zA-Z0-9_'?]+");
   QRegExp ep2("[\\s]+");
  //  j = reg.match(temp.data(),0,&len);
+ int index=q.find("§");
+ if(index>-1)
+  q=q.remove(index,1);
+ 
  int len;
  int j=ep.match(q.data(),0,&len );
  while(j>=0){
+ int hj=q.length();
  QCString left=q.left(len);
   qlist.append(new QCString(left.data())); 
   q=q.right(q.length()-len);
@@ -1943,6 +1949,8 @@ QCString checkComment(QCString& q)
   }
   
  j=ep.match(q.data(),0,&len);
+ if(j>0)
+  len=1;
  }
 if(!q.isEmpty()) 
  qlist.append(new QCString(q.data())); 

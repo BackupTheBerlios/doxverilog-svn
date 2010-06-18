@@ -125,7 +125,8 @@ static void adjustMemberName(QCString& nn);
 // returns the entry found at line
 static Entry* getEntryAtLine(const Entry* ce,int line);
 static QList<Entry>* getEntryAtLine1(const Entry* ce,int line);
-
+static void buildGlobalVerilogVariableDict(const FileDef* fileDef,bool clear=FALSE,int level=0);
+static MemberDef* findInstMember(QCString& cl,QCString& inst,QCString& key,bool b);
 
 };
 

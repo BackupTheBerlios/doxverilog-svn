@@ -85,7 +85,9 @@ void codifyVerilogString(char* c,char* color=NULL);
 bool generateVerilogMemLink(QCString &clName,QCString& memberName,int type);
 bool generateVerilogClassOrGlobalLink(char *clName);
 void writeVerilogFont(const char *s,const char* text);
-void generateVerilogMemLink(QCString &clName,QCString& memberName);
+
+//void generateVerilogMemLink(QCString &clName,QCString& memberName);
+bool generateVerilogCompMemLink(QCString &cl,QCString& inst,QCString & key, bool b);
 
 bool writeVerilogColoredWord(const QCString& word );
 void printVerilogBuffer(bool b=false);
