@@ -491,7 +491,7 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 		 //VhdlDocGen::writeLink(mdef,ol);
         if(true)
 		{
-		nn=mdef->name().lower();
+		nn=mdef->name();
 		kl=getClass(nn);
 	  //if(kl==NULL){
 	    ol.startBold();
@@ -525,6 +525,12 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 	    ol.endEmphasis();
         ol.popGeneratorState();
 		}
+		if(largs.data())
+			{
+				ol.docify(" ");
+			ol.docify(largs.data());
+			}
+
         } 
 		break;
   default: break;
@@ -615,16 +621,20 @@ void buildVariableDict(ClassDef *inst, ClassDef *cl)
 		  {
             MemberListIterator mnii(*instPort);
             MemberDef *md;
-             for (mnii.toFirst();(md=mnii.current());++mnii)
-                instPortDict.insert(md->name().data(),md);
+			for (mnii.toFirst();(md=mnii.current());++mnii){
+				//printf("\n Inst: %s %s %s",md->name().data(),md->getOutputFileBase().data(),md->getReference().data());
+				 instPortDict.insert(md->name().data(),md);
+				}
 		  }
 
 	  if(classPort)
 		  {
              MemberListIterator mnii(*classPort);
 			 MemberDef *md;
-             for (mnii.toFirst();(md=mnii.current());++mnii)
-                classPortDict.insert(md->name().data(),md);
+			 for (mnii.toFirst();(md=mnii.current());++mnii){
+			//	 printf("\n Class: %s %s %s",md->name().data(),md->getOutputFileBase().data(),md->getReference().data());
+				 classPortDict.insert(md->name().data(),md);
+				 }
 		  }
 }//funct
 

@@ -567,19 +567,25 @@ bool generateVerilogCompMemLink(QCString &cl,QCString& inst,QCString & key, bool
 {
    MemberDef *md=0;
    md=VerilogDocGen::findInstMember(cl,inst,key,b);
-    
+  if(md){ 
+    ClassDef *ddd=md->getClassDef();
+    QCString nkll=md->getOutputFileBase();
+    QCString nklll=ddd->name();
+    }
     if (md && md->isLinkable()) // is it a linkable class
     {
-   	 if(b && !cl.isEmpty())
+   	 if(!cl.isEmpty())
    	 {
-   	   writeMultiLineCodeLink(*g_code,md->getReference(),md->getOutputFileBase(),md->anchor(),cl);
+   	   writeMultiLineCodeLink(*g_code,md->getReference(),md->getOutputFileBase(),md->anchor(),md->name());
        return true;
      }
+  /*  
      if(b && !inst.isEmpty())
      {
        writeMultiLineCodeLink(*g_code,md->getReference(),md->getOutputFileBase(),md->anchor(),inst);
        return true;
      }
+   */ 
     }
    return false;
 }

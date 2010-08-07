@@ -8,7 +8,7 @@
  * documentation under the   terms of the GNU General Public License is hereby
  * granted. No representations are made about the suitability of this software 
  * for any purpose. It is provided "as is" without express or implied warranty.
- * See  the GNU   General Public License for more details.
+ * See  the GNU General Public License for more details.
  *
  * Documents   produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
@@ -2578,6 +2578,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           //fprintf(stderr,"End of include file\n");
 					  //printDict();
 					  //printf("Include stack depth=%d\n",g_includeStack.count());
+  					  outputChar('\0');// prevents buffer overrun
   					  if (g_includeStack.isEmpty())
 					  {
 					    //fprintf(stderr,"Terminating scanner!\n");
@@ -2617,7 +2618,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                          //   lineStr.sprintf("` %d \"%s\" 2",g_yyLineNr,g_yyFileName.data());
                                          //   outputArray(lineStr.data(),lineStr.length());
 					    
-					    delete fs; fs=0;
+					  //  delete fs; fs=0;
 					  }
   					}
 <*>"/*"					{
@@ -2936,7 +2937,7 @@ void preprocessVerilogFile(const char *fileName,BufStr &output,const char* codeF
     fclose(preYYVerilogin);
   else
     portable_pclose(preYYVerilogin);
-  output.addChar('\0');
+  
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
     char *orgPos=output.data()+orgOffset;

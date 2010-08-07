@@ -953,10 +953,8 @@ module_instance : identifier11  LBRACE_TOK  list_of_port_connections  RBRACE_TOK
 				 ;
 
 identifier11:identifier xrange { 
-                            const char *name=$<cstr>1;
-                            QCString firstName(name);
-							int u=getVerilogEndLine();
-							QCString secName(getVerilogString());
+                            QCString secName($<cstr>0);
+							QCString firstName($<cstr>1);;
 							 if(moduleParamName.isEmpty()){
 							   moduleParamName=secName;
 							  moduleLine=c_lloc.last_line;
@@ -980,7 +978,7 @@ ordered_port_connection_list : ordered_port_connection
                              | ordered_port_connection_list COMMA_TOK ordered_port_connection
 							 ;
 
-ordered_port_connection : attribute_instance  expression 
+ordered_port_connection : attribute_instance  expression { vbufreset(); }
                        
 						;
 							 
@@ -2065,7 +2063,7 @@ void parseModule(){
 
 void parseModuleInst(QCString& first, QCString& sec) {
  
-if(currVerilogType==VerilogDocGen::DEFPARAM || generateItem ) return;
+if(currVerilogType==VerilogDocGen::DEFPARAM ) return; //|| generateItem 
 
 
 
@@ -2104,7 +2102,8 @@ while(sec.stripPrefix(" "));
  else {
   Entry* pTemp=VerilogDocGen::makeNewEntry(sec.data(),Entry::VARIABLE_SEC,VerilogDocGen::COMPONENT,moduleLine);
   pTemp->type=first;
- 
+ if(generateItem) 
+  pTemp->args="[generate]";
  if(sec==first)return;
 if(currentVerilog)
  if(!findExtendsComponent(currentVerilog->extends,sec)){	
@@ -2587,12 +2586,19 @@ void parseString(){
 				     }
 					 else if(currVerilogType==VerilogDocGen::COMPONENT){
 					    QCString tt(getVerilogString());
-					    if(tt.contains('('))
-					     b=generateVerilogCompMemLink(currVerilogClass,currVerilogInst,identVerilog,true);
+					    
+							
+						if(tt.contains('(') || !tt.contains('.'))
+					     b=generateVerilogCompMemLink(currVerilogClass,currVerilogInst,identVerilog,false);
 				        else if(!b)   
-				         b=generateVerilogCompMemLink(currVerilogClass ,currVerilogInst,identVerilog,false);
-				        if(!b)   
-				         b=generateVerilogCompMemLink(currVerilogClass,currVerilogInst,identVerilog,true);    
+				         b=generateVerilogCompMemLink(currVerilogClass ,currVerilogInst,identVerilog,true);
+						
+						if(!b){
+							  codifyVerilogString(identVerilog.data(),"vhdlchar");
+				         b=true;
+						 }
+						//if(!b)   
+				        // b=generateVerilogCompMemLink(currVerilogClass,currVerilogInst,identVerilog,false);    
 					   }
 				  
 				      else if(currVerilogType==VerilogDocGen::PORT)
