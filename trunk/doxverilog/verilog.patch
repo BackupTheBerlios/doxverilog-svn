@@ -1,162 +1,118 @@
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/doxygen_css.h doxygen-1.7.0/src/doxygen_css.h 
---- oldsrc170/src/doxygen_css.h	2010-05-23 11:08:58.000000000 -0700
-+++ doxygen-1.7.0/src/doxygen_css.h	2010-06-18 12:56:30.000000000 -0700
-@@ -242,6 +242,10 @@
- "\n"
- "/* @group Code Colorization */\n"
- "\n"
-+"span.undoc { \n"
-+"	color: #a5a5a5 \n"
-+"}\n"
-+"\n"
- "span.keyword {\n"
- "	color: #008000\n"
- "}\n"
-@@ -654,3 +658,8 @@
- "	padding: 5px 5px 5px 10px;\n"
- "}\n"
- "\n"
-+".pre {white-space: pre;}\n"
-+".nowrap {white-space: nowrap;}\n"
-+".pre-wrap {white-space: pre-wrap;}\n"
-+".pre-line {white-space: pre-line;}\n"
-+"\n"
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/definition.cpp doxygen-1.7.0/src/definition.cpp 
---- oldsrc170/src/definition.cpp	2010-06-10 04:50:16.000000000 -0700
-+++ doxygen-1.7.0/src/definition.cpp	2010-06-18 12:56:30.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: index.cpp,v 1.30 1999/03/06 22:15:39 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -37,6 +37,7 @@
- #include "parserintf.h"
- #include "marshal.h"
- #include "debug.h"
+--- doxNew/src/classdef.cpp	2011-08-11 21:45:38.000000000 +0200
++++ doxy175/src/classdef.cpp	2011-12-10 11:14:28.000000000 +0100
+@@ -38,6 +38,7 @@
+ #include "searchindex.h"
+ #include "vhdldocgen.h"
+ #include "layout.h"
 +#include "verilogdocgen.h"
  
- #define START_MARKER 0x4445465B // DEF[
- #define END_MARKER   0x4445465D // DEF]
-@@ -115,6 +116,8 @@
-   if (name!="<globalScope>") 
+ //-----------------------------------------------------------------------------
+ 
+@@ -382,19 +383,22 @@
+                                    )
+ {
+   //printf("insertInternalMember(%s) isHidden()=%d\n",md->name().data(),md->isHidden());
++  static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
++ 
+   if (md->isHidden()) return;
+ 
+-  if (getLanguage()==SrcLangExt_VHDL)
+-  {
+-    QCString title=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),FALSE);
+-    if (!m_impl->vhdlSummaryTitles.find(title))
+-    {
+-      m_impl->vhdlSummaryTitles.append(title,new QCString(title));
+-    }
+-  }
+-
+-  if (1 /*!isReference()*/) // changed to 1 for showing members of external
+-                            // classes when HAVE_DOT and UML_LOOK are enabled.
++  if(optVerilog)
++	  {
++	  QCString tti=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),false);
++      //  VhdlDocGen::deleteAllChars(tti,' '); // Always Construct
++  
++        QStringList qsl=this->getList();
++        int i=qsl.findIndex(tti);
++        if(i<0)
++          this->addListType(tti);
++	  }
++  
++  if (!isReference())
    {
-     //extractNamespaceName(m_name,m_localName,ns);
-+  QCString z(stripScope(n));
-+  VerilogDocGen::adjustMemberName(z);
-     localName=stripScope(n);
+     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+ 
+@@ -2241,7 +2245,7 @@
+           ol.startTypewriter();
+           ol.docify(" [");
+           QStrList sl;
+-          if (lang==SrcLangExt_VHDL) 
++          if (lang==SrcLangExt_VHDL || lang==SrcLangExt_VERILOG) 
+           {
+             sl.append(VhdlDocGen::trVhdlType(md->getMemberSpecifiers())); //append vhdl type
+           }
+
+--- doxNew/src/config.l	2011-11-12 17:06:02.000000000 +0100
++++ doxy175/src/config.l	2011-12-09 17:20:42.000000000 +0100
+@@ -1484,8 +1484,21 @@
+     Config_getBool("INHERIT_DOCS")          = FALSE;
+     Config_getBool("HIDE_SCOPE_NAMES")      = TRUE;
+     Config_getBool("EXTRACT_PRIVATE")       = TRUE;
++  } 
++
++if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++  {
++      fprintf(stderr,"\n Only the Verilog  files will be tailored correctly  !\n");
++  } 
++ 
++ if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG") && !Config_getBool("OPTIMIZE_OUTPUT_VHDL")){
++   // must be set for parsing verilog files
++   Config::instance()->addBool("OPTIMIZE_OUTPUT_VHDL"," ",true);
++   Config::instance()->addBool("EXTRACT_ALL"," ",true);
++   
    }
-   else
-@@ -303,6 +306,15 @@
-   }
+ 
++
  }
  
-+
-+void Definition::addListType(QCString q)
-+	{
-+      qsl.append(q);
-+	}
-+
-+QStringList& Definition::getList() {return qsl;}
-+   
-+
- void Definition::setName(const char *name)
- {
-   if (name==0) return;
-@@ -532,7 +544,7 @@
-   bool usePipe = !filter.isEmpty() && filterSourceFiles;
-   if (!usePipe) // no filter given or wanted
-   {
--    f = portable_fopen(fileName,"r");
-+    f = fopen(fileName,"r");
-   }
-   else // use filter
-   {
+ void Config::init()
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/definition.h doxygen-1.7.0/src/definition.h 
---- oldsrc170/src/definition.h	2010-03-27 12:09:30.000000000 -0700
-+++ doxygen-1.7.0/src/definition.h	2010-06-18 14:44:46.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: definition.h,v 1.21 2001/03/19 19:27:40 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -21,6 +21,7 @@
- #include "qtbc.h"
- #include <qlist.h>
- #include <qdict.h>
-+#include "qstringlist.h"
- #include <sys/types.h>
- 
- #include "lockingptr.h"
-@@ -309,14 +310,17 @@
-     virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
-     virtual void writeSummaryLinks(OutputList &) {}
-     QCString pathFragment() const;
-+	void addListType(QCString q);
-+    
- 
-+	QStringList& getList();
-     /*! Writes the documentation anchors of the definition to 
-      *  the Doxygen::tagFile stream.
-      */
-     void writeDocAnchorsToTagFile();
-+    void setLocalName(const QCString name);
- 
-   protected:
--    void setLocalName(const QCString name);
- 
-     virtual void flushToDisk() const;
-     virtual void loadFromDisk() const;
-@@ -342,6 +346,7 @@
-     QCString m_name;
-     bool m_isSymbol;
-     QCString m_symbolName;
-+	QStringList qsl;
- 
- };
- 
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/index.cpp doxygen-1.7.0/src/index.cpp 
---- oldsrc170/src/index.cpp	2010-06-10 14:29:52.000000000 -0700
-+++ doxygen-1.7.0/src/index.cpp	2010-06-18 14:48:02.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: index.cpp,v 1.63 2001/03/19 19:27:40 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -42,6 +42,7 @@
+C:\.Trash-1000>diff -u doxNew/src/index.cpp doxy175/src/index.cpp 
+--- doxNew/src/index.cpp	2011-08-01 16:24:24.000000000 +0200
++++ doxy175/src/index.cpp	2011-11-12 20:29:36.000000000 +0100
+@@ -42,8 +42,8 @@
  #include "pagedef.h"
  #include "dirdef.h"
  #include "vhdldocgen.h"
 +#include "verilogdocgen.h"
- 
+ #include "layout.h"
+-
  #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
  #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
-@@ -1646,9 +1647,11 @@
- {
+ 
+@@ -1518,6 +1518,11 @@
+   }
+   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::ClassAnnotated);
+   QCString title = lne->title();
++  if(Config_getBool("OPTIMIZE_OUTPUT_VHDL")) 
++  {
++	  VhdlDocGen::findConstraintFile(lne);
++       title="Module List";
++  }
+   startFile(ol,"annotated",0,title,HLI_Annotated);
+   startTitle(ol,0);
+   //QCString longTitle = title;
+@@ -1697,8 +1702,7 @@
    static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
-   static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-+ static bool verilogOpt = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
-+ 
    ClassDef *cd=0;
  
--  if (vhdlOpt && (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
-+  if (vhdlOpt && (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md) || verilogOpt))
+-  if (md->getLanguage()==SrcLangExt_VHDL && 
+-      (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
++  if (md->getLanguage()==SrcLangExt_VHDL || md->getLanguage()==SrcLangExt_VERILOG) // &&  (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
    {
      VhdlDocGen::adjustRecordMember(md);
    }
-@@ -2320,6 +2323,8 @@
+@@ -2429,6 +2433,8 @@
           MemberDef *md)
  {
    static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
@@ -165,25 +121,16 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/index.cpp doxygen-1.7.0/src/index.cpp
    bool isLinkable = md->isLinkable();
    ClassDef *cd=0;
    NamespaceDef *nd=0;
-@@ -2329,7 +2334,17 @@
+@@ -2438,6 +2444,8 @@
        cd->isLinkable()       &&
        cd->templateMaster()==0)
    {
 + if(optVerilog) 
 +  VhdlDocGen::adjustRecordMember(md); 
      QCString n = md->name();
-+  /*
-+  if(optVerilog)
-+	  {
-+       QRegExp ep("[a-zA-Z_]");
-+	   int k=n.find(ep);
-+	   if(
-+	  }
-+*/	
      uchar charCode = (uchar)n.at(0);
      uint letter = charCode<128 ? tolower(charCode) : charCode;
-     if (!n.isEmpty()) 
-@@ -2434,11 +2449,18 @@
+@@ -2543,11 +2551,18 @@
    }
  }
  
@@ -204,275 +151,85 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/index.cpp doxygen-1.7.0/src/index.cpp
    for (i=0;i<s.length();i++)
    {
      c=s.at(i);
-@@ -2626,7 +2648,6 @@
-           for (li.toFirst();(dl=li.current());++li)
-           {
-             Definition *d = dl->first();
--            QCString id = d->localName();
-             t << "<div class=\"SRResult\" id=\"SR_"
-               << searchId(d->localName()) << "\">" << endl;
-             t << " <div class=\"SREntry\">\n";
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/util.cpp doxygen-1.7.0/src/util.cpp 
---- oldsrc170/src/util.cpp	2010-06-14 02:15:32.000000000 -0700
-+++ doxygen-1.7.0/src/util.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -50,6 +50,8 @@
- #include "portable.h"
- #include "parserintf.h"
- #include "bufstr.h"
-+#include <qstringlist.h>
-+#include "verilogdocgen.h"
- 
- #define ENABLE_TRACINGSUPPORT 0
- 
-@@ -4131,7 +4133,34 @@
-     )
- {
-   QCString tsName = name;
-+
-+    static bool verilogOpt = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
-+
-+   // finds links in verilog for desigunit::member
-+if(verilogOpt)
-+  {
-+  // QCString temp=name;
-+   if(tsName.contains("::"))
-+   {
-+	   QStringList ql=QStringList::split(QCString("::",2),tsName,false);
-+	   ClassDef *cd=getClass(ql[0].data());
-+
-+	   if(cd){
-+		   QCString memName=(QCString)ql[1];
-+		   QCString className=(QCString)ql[0];
-+		   MemberDef* mdd=VerilogDocGen::findMember(className,memName,-1);
-+		   if(mdd){
-+            *resMember=mdd;
-+           return true;		  
-+		   }
-+     }
-+   }
-+  }
-+
-+  bool memberScopeFirst = tsName.find('#')!=-1;
-+
-   //bool memberScopeFirst = tsName.find('#')!=-1;
-+
-   QCString fullName = substitute(tsName,"#","::");
-   fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
- 
-@@ -4448,8 +4477,15 @@
-   else // probably a member reference
-   {
-     MemberDef *md;
-+	   static bool verilogOpt = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
-+
-     bool res = resolveRef(scName,lr,inSeeBlock,resContext,&md);
--    if (md) resAnchor=md->anchor();
-+     if (md)  {
-+ 	 resAnchor=md->anchor();
-+   if(verilogOpt)
-+      *resContext=md;
-+	}
-+
-     return res;
-   }
- }
-@@ -6392,6 +6428,7 @@
-   { "fortran",     "fortran", SrcLangExt_F90    },
-   { "vhdl",        "vhdl",    SrcLangExt_VHDL   },
-   { "dbusxml",     "dbusxml", SrcLangExt_XML    },
-+   { "verilog",        "v",    SrcLangExt_VERILOG   },
-   { 0,             0,        (SrcLangExt)0      }
- };
- 
-@@ -6452,6 +6489,7 @@
-   updateLanguageMapping(".py",    "python");
-   updateLanguageMapping(".f",     "fortran");
+C:\.Trash-1000>diff -u doxNew/src/util.cpp doxy175/src/util.cpp 
+--- doxNew/src/util.cpp	2011-08-14 00:43:12.000000000 +0200
++++ doxy175/src/util.cpp	2011-11-12 17:06:04.000000000 +0100
+@@ -6264,6 +6264,11 @@
+   { "python",      "python",  SrcLangExt_Python  },
+   { "fortran",     "fortran", SrcLangExt_Fortran },
+   { "vhdl",        "vhdl",    SrcLangExt_VHDL    },
++  { "ucf",        "vhd",    SrcLangExt_VHDL   },
++  { "qsf",        "vhd",    SrcLangExt_VHDL   },
++  { "ucf",        "v",    SrcLangExt_VERILOG   },
++  { "qsf",        "v",    SrcLangExt_VERILOG   },
++  { "v",        "v",    SrcLangExt_VERILOG    },
+   { "dbusxml",     "dbusxml", SrcLangExt_XML     },
+   { "tcl",         "tcl",     SrcLangExt_Tcl     },
+   { 0,             0,        (SrcLangExt)0       }
+@@ -6329,6 +6334,11 @@
    updateLanguageMapping(".f90",   "fortran");
-+  updateLanguageMapping(".v",  "verilog");
    updateLanguageMapping(".vhd",   "vhdl");
    updateLanguageMapping(".vhdl",  "vhdl");
++  updateLanguageMapping(".ucf",  "vhdl");
++  updateLanguageMapping(".qsf",  "vhdl");
++  updateLanguageMapping(".ucf",  "v");
++  updateLanguageMapping(".qsf",  "v");
++  updateLanguageMapping(".v",  "v");
+   updateLanguageMapping(".tcl",   "tcl");
    //updateLanguageMapping(".xml",   "dbusxml");
-@@ -6560,15 +6598,19 @@
-   delete visitor;
-   delete root;
-   QCString result = s.data();
-+  //fprintf(stderr,"%s : %d",result.data(),result.length());
-   int i=0;
-   if (result.length()>80)
-   {
-+     result.append(" ");
-     for (i=80;i<100;i++) // search for nice truncation point
-     {
--      if (isspace(result.at(i)) || 
--          result.at(i)==',' || 
--          result.at(i)=='.' || 
--          result.at(i)=='?')
-+	//fprintf(stderr,"\n %d %d %c ",result.at(i),i,result.at(i));
-+	char cc=result.at(i);
-+	 if (isspace(cc) || 
-+          cc==',' || 
-+          cc=='.' || 
-+          cc=='?')
-       {
-         break;
-       }
+ }
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/util.h doxygen-1.7.0/src/util.h 
---- oldsrc170/src/util.h	2010-06-01 12:37:46.000000000 -0700
-+++ doxygen-1.7.0/src/util.h	2010-06-18 12:56:32.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: util.h,v 1.49 2001/03/19 19:27:42 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -100,6 +100,7 @@
-   SrcLangExt_Python = 0x0800,
-   SrcLangExt_F90    = 0x1000,
-   SrcLangExt_VHDL   = 0x2000,
-+  SrcLangExt_VERILOG   = 0x3000,
-   SrcLangExt_XML    = 0x4000
+C:\.Trash-1000>diff -u doxNew/src/util.h doxy175/src/util.h 
+--- doxNew/src/util.h	2011-08-08 19:38:00.000000000 +0200
++++ doxy175/src/util.h	2011-11-12 17:06:04.000000000 +0100
+@@ -102,7 +102,8 @@
+   SrcLangExt_Fortran = 0x1000,
+   SrcLangExt_VHDL    = 0x2000,
+   SrcLangExt_XML     = 0x4000,
+-  SrcLangExt_Tcl     = 0x8000
++  SrcLangExt_Tcl     = 0x8000,
++  SrcLangExt_VERILOG = 0x10000
  };
  
+ QCString langToString(SrcLangExt lang);
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/doxygen.cpp doxygen-1.7.0/src/doxygen.cpp 
---- oldsrc170/src/doxygen.cpp	2010-06-11 05:04:28.000000000 -0700
-+++ doxygen-1.7.0/src/doxygen.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -77,6 +77,8 @@
- #include "vhdlscanner.h"
- #include "vhdldocgen.h"
- #include "eclipsehelp.h"
-+#include "verilogscanner.h"
-+#include "preVerilog.h"
- 
- #include "layout.h"
- 
-@@ -6964,6 +6966,8 @@
- static void computeMemberRelations()
- {
-   MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
-+ // fprintf(stderr," [\n  members %d ]\n",Doxygen::memberNameSDict->count());
-+  int ii=Doxygen::memberNameSDict->count();
-   MemberName *mn;
-   for ( ; (mn=mnli.current()) ; ++mnli ) // for each member name
-   {
-@@ -8566,16 +8570,24 @@
-     ParserInterface *parser = Doxygen::parserManager->getParser(extension);
- 
-     QFileInfo fi(fileName);
--    BufStr preBuf(fi.size()+4096);
-+    BufStr preBuf(fi.size()+1024);
- 
-     if (Config_getBool("ENABLE_PREPROCESSING") && 
-         parser->needsPreprocessing(extension))
-     {
-       BufStr inBuf(fi.size()+4096);
-       msg("Preprocessing %s...\n",s->data());
-+     if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG")) 
-+	 {
-+	//   readInputFile(fileName,preBuf);
-+	   preprocessVerilogFile(fileName,preBuf,0,-1);
-+	 }
-+	 else 
-+	 {
-       readInputFile(fileName,inBuf);
-       preprocessFile(fileName,inBuf,preBuf);
-     }
-+	}
-     else // no preprocessing
-     {
-       msg("Reading %s...\n",s->data());
-@@ -8590,7 +8602,7 @@
-     convBuf.addChar('\0');
- 
-     // use language parse to parse the file
--    parser->parseInput(fileName,convBuf.data(),root);
-+    parser->parseInput(fileName,preBuf.data(),root);
- 
-     // store the Entry tree in a file and create an index to
-     // navigate/load entries
-@@ -9093,6 +9105,7 @@
-   //Doxygen::symbolMap->setAutoDelete(TRUE);
- 
-   Doxygen::runningTime.start();
-+  initVerilogPreprocessor();
-   initPreprocessor();
- 
-   Doxygen::parserManager = new ParserManager;
-@@ -9101,7 +9114,7 @@
-   Doxygen::parserManager->registerParser("fortran", new FortranLanguageScanner);
-   Doxygen::parserManager->registerParser("vhdl",    new VHDLLanguageScanner);
-   Doxygen::parserManager->registerParser("dbusxml", new DBusXMLScanner);
--
-+   Doxygen::parserManager->registerParser("v", new VerilogScanner);
-   // register any additional parsers here...
- 
-   initDefaultExtensionMapping();
-@@ -9158,6 +9171,7 @@
-   delete Doxygen::xrefLists;
-   delete Doxygen::parserManager;
-   cleanUpPreprocessor();
-+  cleanUpVerilogPreprocessor();
-   delete theTranslator;
-   delete g_outputList;
-   Mappers::freeMappers();
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldocgen.cpp 
---- oldsrc170/src/vhdldocgen.cpp	2010-03-20 15:57:12.000000000 -0700
-+++ doxygen-1.7.0/src/vhdldocgen.cpp	2010-06-18 14:27:26.000000000 -0700
+C:\.Trash-1000>diff -u doxNew/src/vhdldocgen.cpp doxy175/src/vhdldocgen.cpp 
+--- doxNew/src/vhdldocgen.cpp	2011-08-01 10:30:56.000000000 +0200
++++ doxy175/src/vhdldocgen.cpp	2011-11-13 16:44:26.000000000 +0100
 @@ -42,11 +42,13 @@
  #include "definition.h"
  #include "searchindex.h"
  #include "outputlist.h"
+-#include "parserintf.h"
 + #include "verilogdocgen.h"
- 
++
  /* --------------------------------------------------------------- */
  
  //#define theTranslator_vhdlType theTranslator->trVhdlType
  #define theTranslator_vhdlType VhdlDocGen::trVhdlType
-+#define COL_SIZE 100 
++#define COL_SIZE 80 
  
  static QDict<QCString> g_vhdlKeyDict0(17,FALSE); 
  static QDict<QCString> g_vhdlKeyDict1(17,FALSE); 
-@@ -55,7 +57,8 @@
- static  QCString g_vhdlkeyword("vhdlkeyword");
+@@ -56,6 +58,9 @@
  static  QCString g_vhdltype("comment");
  static  QCString g_vhdllogic("vhdllogic");
--
-+static bool checkString(QCString & qcs,OutputList& ol);
-+static QCString* getColorOfWord(int col);
+ 
++static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
++//static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
++
  // keywords
  static const char* g_vhdlKeyWordMap0[] = 
  { 
-@@ -75,7 +78,7 @@
-   "range", "record", "register", "reject", "report", "return","select", 
-   "severity", "shared", "signal", "subtype", "then", "to", "transport", 
-   "type","unaffected", "units", "until", "use","variable", "wait", "when", 
--  "while", "with","true","false","protected",0
-+  "while", "with","true","false","protected","context","force","release",0
- };
- 
- // type
-@@ -83,7 +86,7 @@
- { 
-   "natural","unsigned","signed","string","boolean", "bit","character",
-   "std_ulogic","std_ulogic_vector","sTd_logic","std_logic_vector","integer",
--  "real","zzz",0
-+  "real","sfixed","ufixed"," UNRESOLVED_ufixed"," UNRESOLVED_sfixed",0
- };
- 
- // logic
-@@ -155,10 +158,32 @@
+@@ -155,11 +160,33 @@
    return 0;
  }
  
 -/*!
 - * returns the parsed entry at line xxx
 - */
- 
++
 + bool checkString(QCString &name,OutputList& ol)
 +{
 +  if (name.isEmpty()) return FALSE;
@@ -487,8 +244,8 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
 +  }
 +    return false;
 +  }
-+
-+
+ 
+ 
 +QCString* getColorOfWord(int col)
 +{
 +  switch(col)
@@ -498,10 +255,11 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
 +   default:return 0;
 +  }
 +}
- 
++
  void VhdlDocGen::debugClassName(ClassSDict* mDict)
  {
-@@ -635,6 +660,13 @@
+   // for each class
+@@ -637,6 +664,13 @@
  
  QCString VhdlDocGen::getClassTitle(const ClassDef *cd)
  {
@@ -515,50 +273,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    QCString pageTitle;
    if (cd==0) return "";
    pageTitle+=cd->displayName();
-@@ -841,13 +873,38 @@
-   QCString qmem;
-   QCString temp(str);
-   QCString st(str);
--
--  //QRegExp semi(",");
--  //QRegExp r(":");
-+  QRegExp re("[\\s:(]");
-+  QStringList strList;
- 
-   // colon position
-   j = temp.find(':');
--  if (j < 0) return FALSE; // no input definition
-+      VhdlDocGen::deleteAllChars(st,';');
-+      strList=QStringList::split(re,st);
-+	  assert(strList.count()>1);
-+      QCString key=(QCString)strList[0];	 
-+	  QCString* ss=VhdlDocGen::findKeyWord(key);
-+      if(ss)
-+		  {
-+           QCString typeName=(QCString)strList[1];
-+		   QStringList q1=QStringList::split(',',typeName);
-+		    for(uint ii=0;ii<q1.count();ii++)
-+		    ql.insert(0,new QCString((QCString)q1[ii]));          
-+		
-+		    ql.insert(0,new QCString(key));
-+		     if(strList.count()>2)
-+			   {
-+			   int i=st.find(typeName.data())+typeName.length();
-+			   st.remove(0,i);
-+			   buffer+=st;
-+			   }
-+			 return true;
-+		  }
-+  
-+  
-+  if (j < 0)
-+	  {
-+		  return FALSE;
-+	  }// no input definition
-   st=st.left(j); // name only
-   index=st.find(signal,0,FALSE);
-   if (index > -1) // found "signal "
-@@ -967,10 +1024,16 @@
+@@ -967,10 +1001,16 @@
  void VhdlDocGen::prepareComment(QCString& qcs)
  {
    QCString temp;
@@ -575,7 +290,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
  
  #if 0
    index=qcs.find(start,0,TRUE);
-@@ -1168,6 +1231,13 @@
+@@ -1168,6 +1208,13 @@
  
  QCString VhdlDocGen::getProtectionName(int prot)
  {
@@ -589,7 +304,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    if (prot==VhdlDocGen::ENTITYCLASS)
      return "entity";
    else if (prot==VhdlDocGen::ARCHITECTURECLASS)
-@@ -1182,6 +1252,13 @@
+@@ -1182,6 +1229,13 @@
  
  QCString VhdlDocGen::trTypeString(int type)
  {
@@ -603,34 +318,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    switch(type)
    {
      case VhdlDocGen::LIBRARY:        return "Library"; 
-@@ -1211,6 +1288,8 @@
-     case VhdlDocGen::COMPONENT_INST: return "Component Instantiation"; 
-     case VhdlDocGen::ALIAS:          return "Alias";
-     case VhdlDocGen::CONFIG:         return "Configuration";                                     
-+    case VhdlDocGen::CONTEXT:        return "Context Declaration"; 
-+	case VhdlDocGen::PROTECT:        return "Protect Declaration"; 
-     default:                         return "";
-   }
- } // convertType
-@@ -1221,7 +1300,8 @@
- 
- bool VhdlDocGen::deleteCharRev(QCString &s,char c)
- {
--  int index=s.findRev(c,-1,FALSE);
-+c=c & 0x7f;
-+int index=s.findRev(c,-1,FALSE);
-   if (index > -1)
-   {
-     QString qcs=s.remove(index,1);
-@@ -1233,6 +1313,7 @@
- 
- void VhdlDocGen::deleteAllChars(QCString &s,char c)
- {
-+ c=c & 0x7f; 
-   int index=s.findRev(c,-1,FALSE);
-   while (index > -1)
-   {
-@@ -1263,9 +1344,16 @@
+@@ -1264,9 +1318,16 @@
  
  QCString VhdlDocGen::getProcessNumber()
  {
@@ -648,7 +336,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    sprintf(buf,"%d",stringCounter++);
    qcs.append(&buf[0]);
    return qcs;
-@@ -1277,18 +1365,19 @@
+@@ -1278,16 +1339,18 @@
  
  void VhdlDocGen::writeFormatString(QCString& qcs,OutputList&ol,const MemberDef* mdef)
  {
@@ -660,22 +348,22 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
 +  const QCString *ss;
    QCString find=qcs;
    QCString temp=qcs;
-+  int col=0;
-+
-+  bool bString=false;
    char buf[2];
    buf[1]='\0';
 -
--  int j;
--  int len;
-+  int j,len;
+   int j;
+   int len;
++    int col=0;
++ 
    j = reg.match(temp.data(),0,&len);
--
+ 
    ol.startBold();
-   if (j>=0)
+@@ -1295,8 +1358,24 @@
    {
-@@ -1296,6 +1385,20 @@
+     while (j>=0)
      {
++     bool bString=false;
++    
        find=find.left(j);
        buf[0]=temp[j];
 +	  if(buf[0]=='"' && temp.length()>1)
@@ -695,7 +383,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
        ss=VhdlDocGen::findKeyWord(find);
        bool k=VhdlDocGen::isNumber(find); // is this a number
        if (k)
-@@ -1310,19 +1413,34 @@
+@@ -1313,19 +1392,33 @@
        {
  	if (j>0)
  	{
@@ -705,14 +393,13 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
        }
 +      if(!bString)
        VhdlDocGen::startFonts(&buf[0],"vhdlchar",ol);
- 
-+	  col+=j+1;
-+      if(col>COL_SIZE)
++      col+=j+1;
++      if( col > COL_SIZE)
 +	  {
 +		  ol.docify(". . . .");
 +		  return;
 +	  }
-+
+ 
        QCString st=temp.remove(0,j+1);
        find=st;
        temp=st;
@@ -730,18 +417,17 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
      VhdlDocGen::startFonts(find,"vhdlchar",ol);     
    }
    ol.endBold();
-@@ -1334,12 +1452,26 @@
+@@ -1337,10 +1430,24 @@
  
  bool VhdlDocGen::isNumber(const QCString& s)
  {
-- // static bool veriOpt=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
 +    static bool optVerilog=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
 +
    static QRegExp regg("[0-9][0-9eEfFbBcCdDaA_.#-]*");
 +  static QRegExp reggVerilog("[0-9]+[']*[0-9a-fA-FhHoOxXzZ._?]*");
 +  static QRegExp reggVerilog1("['][0-9a-fA-FhHoOxXzZ._?]+");
   
-   if (s.isEmpty()) return false;
+   if (s.isEmpty()) return FALSE;
    int j,len;
 +    if(optVerilog){
 +    QCString t=s;
@@ -754,11 +440,9 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
 +}  
 +  else 
    j = regg.match(s.data(),0,&len);
-+  
-   if ((j==0) && (len==(int)s.length())) return true; 
-   return false;
-  
-@@ -1369,6 +1501,15 @@
+   if ((j==0) && (len==(int)s.length())) return TRUE; 
+   return FALSE;
+@@ -1371,6 +1478,15 @@
  
  void VhdlDocGen::formatString(QCString & qcs, OutputList& ol,const MemberDef* mdef)
  { 
@@ -774,7 +458,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    QCString temp(qcs.length());  
    qcs.stripPrefix(":");
    qcs.stripPrefix("is");
-@@ -1579,6 +1720,8 @@
+@@ -1581,6 +1697,8 @@
      const ArgumentList* al,
      bool /*type*/)
  {
@@ -783,28 +467,82 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    if (al==0) return;
    bool sem=FALSE;    
    ol.enableAll();
-@@ -1605,14 +1748,20 @@
- 	ol.docify(" ");
-       } 
-       // linkifyText(TextGeneratorOLImpl(ol),md->getClassDef(),md->getBodyDef(),md->name(),arg->type);
+@@ -1598,37 +1716,47 @@
+   for (;(arg=ali.current());++ali)
+   { 
+     ol.startParameterType(first,"");  
+-    //if (first) ol.writeChar('(');
+-    if (VhdlDocGen::isProcedure(md))
++   // if (first) ol.writeChar('(');
++    if (!VhdlDocGen::isProcess(md))
+     {
+-      startFonts(arg->defval,"keywordtype",ol);
++      if (TRUE) //VhdlDocGen::isProcedure(md))
++      {
++	startFonts(arg->defval,"keywordtype",ol);
++	ol.docify(" ");
++      } 
++      // linkifyText(TextGeneratorOLImpl(ol),md->getClassDef(),md->getBodyDef(),md->name(),arg->type);
 +         if(optVerilog)  
 +      VerilogDocGen::adjustMemberName(arg->name);
 +   
-       VhdlDocGen::writeFormatString(arg->name,ol,md);
++      VhdlDocGen::writeFormatString(arg->name,ol,md);
        ol.docify(" ");
- 
-       if (VhdlDocGen::isProcedure(md))
+-    } 
++    
+     ol.endParameterType();
+-
+-    ol.startParameterName(TRUE);
+-    VhdlDocGen::writeFormatString(arg->name,ol,md);
+-    ol.docify(" ");
+-
+-    if (VhdlDocGen::isProcedure(md))
+-      startFonts(arg->attrib,"stringliteral",ol);
+-    else if (VhdlDocGen::isVhdlFunction(md))
+-      startFonts(QCString("in"),"stringliteral",ol);
+-
+-
++ ol.startParameterName(true);
++	
++      if (VhdlDocGen::isProcedure(md))
 +	   {
-+  	   if(!optVerilog )
- 	startFonts(arg->attrib,"stringliteral",ol);
-       else
- 	startFonts(QCString("in"),"stringliteral",ol);
-     }
-+	}
++  	  	   if(!optVerilog )
++	startFonts(arg->attrib,"stringliteral",ol);
++      else
++	startFonts(QCString("in"),"stringliteral",ol);
++    }
++	
      ol.docify(" ");
      ol.disable(OutputGenerator::Man);
      ol.startEmphasis();
-@@ -1705,19 +1854,21 @@
+     ol.enable(OutputGenerator::Man);
+     if (!VhdlDocGen::isProcess(md))
+       startFonts(arg->type,"vhdlkeyword",ol);
++    else
++      startFonts(arg->name,"vhdlkeyword",ol);
+     ol.disable(OutputGenerator::Man);
+     ol.endEmphasis();
+     ol.enable(OutputGenerator::Man);
+ 
+     if (--index) 
+     {
+-      ol.docify(" , ");    
++   //   ol.docify(" , ");    
+       ol.endParameterName(FALSE,FALSE,FALSE);
+     }
+     else
+@@ -1639,8 +1767,9 @@
+ 
+     sem=TRUE;        
+     first=FALSE;
++    }
+   }
+-  //ol.endParameterList(); 
++  ol.endParameterList(); 
+ 
+ } // writeDocFunProc
+ 
+@@ -1711,6 +1840,14 @@
  {
    static ClassDef *cdef;
    //static GroupDef* gdef;
@@ -819,44 +557,28 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    if (cd && cdef!=cd)
    { // only one inline link
      VhdlDocGen::writeInlineClassLink(cd,ol);
-     cdef=cd;
-   }
- 
--  /*
--  if (gd && gdef==gd) return;
--  if (gd && gdef!=gd)
--  {
--    gdef=gd;
--  }
--*/
-+ 
-   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),0,FALSE,VhdlDocGen::LIBRARY);
-   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),0,FALSE,VhdlDocGen::USE);
-   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),0,FALSE,VhdlDocGen::FUNCTION);
-@@ -1739,6 +1890,11 @@
+@@ -1745,7 +1882,8 @@
    VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::COMPONENT_INST,FALSE),0,FALSE,VhdlDocGen::COMPONENT_INST);
    VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::ALIAS,FALSE),0,FALSE,VhdlDocGen::ALIAS);
-   
-+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::PROTECT,FALSE),0,FALSE,VhdlDocGen::PROTECT);
-+ 
-+   // context must be added to global file definitions.  
-+   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONTEXT,FALSE),0,FALSE,VhdlDocGen::CONTEXT);
-+ 
+   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::MISCELLANEOUS),0,FALSE,VhdlDocGen::MISCELLANEOUS);
+-  
++  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,fd,gd,theTranslator_vhdlType(VhdlDocGen::UCF_CONST,FALSE),0,FALSE,VhdlDocGen::UCF_CONST);
++
    // configurations must be added to global file definitions.  
    VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),0,FALSE,VhdlDocGen::CONFIG);
  }
-@@ -1754,6 +1910,10 @@
+@@ -1773,6 +1911,10 @@
      {
-       mdd->setMemberSpecifiers(VhdlDocGen::CONFIG);        
-     }
-+    else if (strcmp(mdd->typeString(),"context")==0)
+       mdd->setMemberSpecifiers(VhdlDocGen::MISCELLANEOUS);        
+     } 
++    else if (stricmp(mdd->typeString(),"ucf_const")==0)
 +    {
-+  	 mdd->setMemberSpecifiers(VhdlDocGen::CONTEXT);        
-+    }
-     else if (strcmp(mdd->typeString(),"library")==0)
-     {
-       mdd->setMemberSpecifiers(VhdlDocGen::LIBRARY);        
-@@ -1769,8 +1929,18 @@
++		mdd->setMemberSpecifiers(VhdlDocGen::UCF_CONST);        
++    } 
+   }
+ }
+ 
+@@ -1780,8 +1922,18 @@
  void VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition *d, OutputList &ol)
  {
    ClassDef *cd=(ClassDef*)d;
@@ -877,18 +599,37 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    {
      QCString nn=mdef->typeString();
      nn=nn.stripWhiteSpace();
-@@ -1796,12 +1966,50 @@
+@@ -1815,12 +1967,64 @@
    if (mdef->isVariable())
    { 
      //ol.docify(mdef->name().data());
-+      if(optVerilog){
-+      ol.startFontClass("stringliteral");
+-    writeLink(mdef,ol);
++      if(optVerilog)
++      {
++     
++      
++  if (VhdlDocGen::isConstraint(mdef))
++  {
++      	if(mdef->name().contains("dummy")==0)
++        writeLink(mdef,ol);
++           ol.docify(" ");     
++		  QCString largs(mdef->argsString());
++      QCString  ttype = VhdlDocGen::splitString(largs, '#');		
++		ttype=largs;
++		 VhdlDocGen::formatString(ttype,ol,mdef);
++		 return;
++  } else{
++   ol.startFontClass("stringliteral");
 +      writeLink(mdef,ol);
 +      ol.endFontClass();
-+   }
++      }
++      
++      }
 +  else 
-      writeLink(mdef,ol);
++     writeLink(mdef,ol);
      ol.docify(" ");
++      
++      
 +      
 +   if(mdef->getMemberSpecifiers()==VerilogDocGen::FEATURE)
 +   {
@@ -903,11 +644,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
 +	   arg.append("{ . . . }");
 +	   VhdlDocGen::formatString(arg,ol,mdef);
 +	 }
-+	 else if(mdef->getMemberSpecifiers()==VhdlDocGen::CONTEXT)
-+		 {
-+		   QCString arg=mdef->argsString();
-+		   VhdlDocGen::formatString(arg,ol,mdef);
-+		 }
++	
 +	 else{
 +     QCString ttype=mdef->typeString();
 +	 ttype.stripPrefix("feature");
@@ -929,16 +666,19 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
      {
        QCString largs=mdef->argsString();
        VhdlDocGen::formatString(largs,ol,mdef);
-@@ -1987,7 +2195,7 @@
-     case VhdlDocGen::PORT:
+@@ -2012,9 +2216,10 @@
        writeLink(mdef,ol);
+       ol.docify(" ");
        ol.insertMemberAlign();
 -      if (mm==VhdlDocGen::GENERIC)
 +      if (false)
        {
  	ol.startBold();
- 	ol.docify(" ");
-@@ -1998,7 +2206,7 @@
++	ol.docify(" ");
+ 	VhdlDocGen::formatString(ltype,ol,mdef);
+ 	ol.endBold();
+       }
+@@ -2022,7 +2227,7 @@
        {
  	ol.docify(" ");
  	ol.startBold();
@@ -947,39 +687,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
  	ol.endBold();
  	ol.docify(" ");
  	VhdlDocGen::formatString(largs,ol,mdef);
-@@ -2055,6 +2263,7 @@
-       } 
-       break;
-     case VhdlDocGen::SIGNAL:
-+	case VhdlDocGen::PROTECT:
-     case VhdlDocGen::ATTRIBUTE:
-     case VhdlDocGen::TYPE:
-     case VhdlDocGen::SUBTYPE:
-@@ -2086,6 +2295,14 @@
- 	VhdlDocGen::formatString(ltype,ol,mdef);
-       ol.endBold();    
-       break;
-+	  	case VhdlDocGen::CONTEXT:
-+        ol.startBold();
-+        writeLink(mdef,ol);
-+        if (largs.isEmpty()) ol.docify("     : ");    
-+        ol.insertMemberAlign();
-+      if (!largs.isEmpty())
-+	   VhdlDocGen::formatString(largs,ol,mdef);
-+      ol.endBold();    
-     default: break;
-   }
- 
-@@ -2220,7 +2437,7 @@
- 
-   if (title) 
-   {
--    ol.startMemberHeader(ml->listTypeAsString());
-+    ol.startMemberHeader(title);
-     ol.parseText(title);
-     ol.endMemberHeader();
-     ol.docify(" ");
-@@ -2277,6 +2494,7 @@
+@@ -2305,6 +2510,7 @@
    {
      nn=nn.mid(j,nn.length());
      mdef->setName(nn.data());
@@ -987,12 +695,15 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    }
  }//adjustRecordMember
  
-@@ -2288,9 +2506,19 @@
-   //static ClassDef *prev = 0;
-   //if (prev == cd)  return TRUE;
-   //if (cd != prev) prev=cd;
+@@ -2313,8 +2519,22 @@
+ bool VhdlDocGen::writeClassType( ClassDef * cd,
+                                  OutputList &ol ,QCString & cname)
+ {
++  //static ClassDef *prev = 0;
++  //if (prev == cd)  return TRUE;
++  //if (cd != prev) prev=cd;
 +  static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
- 
++
 +  QCString qcs;
 +  if(optVerilog){
 +   if(cd->protection()==Public)
@@ -1008,7 +719,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    cname=VhdlDocGen::getClassName(cd);
    ol.startBold();
    ol.writeString(qcs.data());
-@@ -2302,6 +2530,10 @@
+@@ -2325,6 +2545,10 @@
  
  QCString VhdlDocGen::trVhdlType(int type,bool sing)
  {
@@ -1019,19 +730,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    switch(type)
    {
      case VhdlDocGen::LIBRARY:      
-@@ -2379,7 +2611,10 @@
-     case VhdlDocGen::CONFIG:        
-       if (sing) return "Configuration";       
-       return "Configurations";
--      
-+   case VhdlDocGen::PROTECT:
-+	  return "Protect Directives";
-+   case VhdlDocGen::CONTEXT:
-+	  return "Context Declaration";
-     default:                       
-       return "Class";
-   }
-@@ -2402,6 +2637,12 @@
+@@ -2426,6 +2650,12 @@
  
  QCString VhdlDocGen::trDesignUnitListDescription()
  {
@@ -1044,7 +743,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    return "Here is a list of all design unit members with links to "
           "the Entities and Packages they belong to:"; 
  }
-@@ -2418,6 +2659,9 @@
+@@ -2442,6 +2672,9 @@
  
  QCString VhdlDocGen::trFunctionAndProc()
  {
@@ -1054,7 +753,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
    return "Functions/Procedures/Processes";
  }
  
-@@ -2458,13 +2702,25 @@
+@@ -2482,13 +2715,25 @@
  
  void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList& ol)
  {
@@ -1081,59 +780,651 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.cpp doxygen-1.7.0/src/vhdldo
        if (memdef && memdef->isLinkable()) 
        { 
  	ol.startBold();
+@@ -2507,9 +2752,11 @@
+   //  Definition d=(Definition)mdef;
+   //	QCString fdd=mdef->getDefFileExtension();
+   //	QCString scope=mdef->getScopeString();
++  //assert(false);
+   QCString codeFragment=mdef->documentation();
+   //FileDef *fd=mdef->getFileDef();
+-
++fprintf(stderr,"%s",codeFragment.data());
++//assert(false);
+   //int start=mdef->getStartBodyLine();
+   //int end=mdef->getEndBodyLine();
+   QStringList qsl=QStringList::split("\n",codeFragment);
+@@ -2536,36 +2783,238 @@
+ void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
+ {
+   //  Definition d=(Definition)mdef;
++  //static bool optVerilog = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++ 
+   QCString fdd=mdef->getDefFileExtension();
+   QCString scope=mdef->getScopeString();
+   QCString codeFragment=mdef->documentation();
+-  FileDef *fd=mdef->getFileDef();
+-  int start=mdef->getStartBodyLine();
++ int start=mdef->getStartBodyLine();
+   int end=mdef->getEndBodyLine();
+   QStringList qsl=QStringList::split("\n",codeFragment);
+-
+-  ParserInterface *pIntf = Doxygen::parserManager->getParser(fdd.data());
+-  pIntf->resetCodeParserState();
+-
+-  ol.startParagraph();
++  
++  //fprintf(stderr,"\n <<%s %s %d %d>>\n\n",codeFragment.data(),scope.data(),start,end);
++  //assert(false);
++  //ol.startParagraph();
+   ol.startCodeFragment();
+-  pIntf->parseCode(ol,               // codeOutIntf
+-                   scope,            // scope
+-                   codeFragment,     // input
+-                   FALSE,            // isExample
+-                   0,                // exampleName
+-                   fd,               // fileDef
+-                   start,            // startLine
+-                   end,              // endLine
+-                   TRUE,             // inlineFragment
+-                   mdef,             // memberDef
+-                   FALSE             // show line numbers
+-                   );
++ int len = qsl.count();	
++  QCString lineNumber;
++  int j;
++  for (j=0;j<len;j++)
++  {
++    lineNumber.sprintf("%05d",start++);
++    lineNumber+=" ";
++    ol.startBold();
++    ol.docify(lineNumber.data());
++    ol.endBold();
++    ol.insertMemberAlign();
++    QCString q=(QCString)qsl[j];
++    VhdlDocGen::writeFormatString(q,ol,mdef);
++	ol.docify("\n"); 
++  }
+   ol.endCodeFragment();
+-  ol.endParagraph();
++  //ol.endParagraph();
+ 
+   mdef->writeSourceDef(ol,cname);
+   mdef->writeSourceRefs(ol,cname);
+   mdef->writeSourceReffedBy(ol,cname);
+ }
+ 
++ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,bool altera)
++ {
++   QCString ucFile(input);
++   int lineNo=0;
++   QCString  newLine="\n";
++   QCString comment("##");
++   QCString brief;
++
++   while(!ucFile.isEmpty())
++   {
++	   int i=ucFile.find("\n"); 
++	   if(i<0) break;
++       lineNo++;
++	   QCString temp=ucFile.left(i);
++	   temp=temp.stripWhiteSpace();
++	   bool bb=temp.stripPrefix("//");
++	   if(!temp.isEmpty())
++	   {
++		   if(temp.stripPrefix("##")  )
++		   {
++		    brief+=temp;
++			brief.append("\\n");
++		   }
++	      else if(!temp.stripPrefix("#") && !bb)
++		   {	      
++		  if(altera)
++		  {
++			  int i=temp.find("-name");
++			  if(i>0)
++			  temp=temp.remove(0,i+5);
++
++			  temp.stripPrefix("set_location_assignment");
++
++               initUCF(entity,0,temp,lineNo,fileName,brief);
++		  }
++		  else{			  
++			  QRegExp ee("[\\s=]");
++			  int i=temp.find(ee);
++			  QCString ff=temp.left(i);			  
++			  temp.stripPrefix(ff.data());
++			   ff.append("#");			  		  
++			   if(!temp.isEmpty())
++			  {
++				  initUCF(entity,ff.data(),temp,lineNo,fileName,brief);
++		      }
++		  }
++		   }
++	   }//temp
++	   
++	   ucFile=ucFile.remove(0,i+1);
++   }// while 
++ }
++
++static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCString & fileName,QCString & brief)
++{
++	if(qcs.isEmpty())return; 
++  QRegExp sp("\\s");
++  QRegExp reg("[\\s=]");
++ QCString n;
++ // bool bo=(stricmp(type,qcs.data())==0);
++
++  VhdlDocGen::deleteAllChars(qcs,';');
++   qcs=qcs.stripWhiteSpace();  
++  
++  int i= qcs.find(reg); 
++	   if(i<0) return;
++  if(i==0)
++  { 
++	  n=type;
++	  VhdlDocGen::deleteAllChars(n,'#');
++	  type="";
++  }  
++  else
++	  n=qcs.left(i);
++	  qcs=qcs.remove(0,i+1);
++	 //  qcs.prepend("|");
++
++  qcs.stripPrefix("=");
++
++  Entry* current=new Entry;
++
++  current->spec=VhdlDocGen::UCF_CONST;
++  current->section=Entry::VARIABLE_SEC;
++   current->bodyLine=line;
++  current->fileName=fileName;
++  current->type="ucf_const";
++//if(!bo) 
++  //current->args=type;
++  current->args+=qcs;
++  current->lang=  SrcLangExt_VHDL ;
++ 
++  // adding dummy name for constraints like VOLTAGE=5,TEMPERATURE=20 C 
++  if(n.isEmpty())
++  {
++	  n="dummy";
++	  n+=VhdlDocGen::getRecordNumber();
++  }
++
++  current->name= n+"_";
++	current->name.append(VhdlDocGen::getRecordNumber().data());
++	
++   if(!brief.isEmpty())
++   {
++   current->brief=brief;
++   current->briefLine=line;
++   current->briefFile=fileName;
++   brief.resize(0);
++   }
++
++  root->addSubEntry(current);
++}
++
++
++void VhdlDocGen::writeUCFLink(const MemberDef* mdef,OutputList &ol)
++{
++	
++  QCString largs(mdef->argsString());
++  QCString n= VhdlDocGen::splitString(largs, '#');
++ // VhdlDocGen::adjustRecordMember(mdef);
++  bool equ=(n.length()==largs.length());
++
++  if(!equ)
++  {
++         ol.writeString(n.data());
++	     ol.docify(" ");
++         ol.insertMemberAlign();
++  }
++		
++         if(mdef->name().contains("dummy")==0)
++           VhdlDocGen::writeLink(mdef,ol);
++           if(equ)
++              ol.insertMemberAlign();
++		   ol.docify(" ");
++           VhdlDocGen::formatString(largs,ol,mdef);
++}
++ 
++QCString VhdlDocGen::splitString(QCString& str,  char c)
++{
++	QCString n=str;
++      int i=str.find(c);
++	  if(i>0) 
++	  {
++		   n=str.left(i);
++		   str=str.remove(0,i+1);
++	  }
++return n;
++}
++
++bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
++{
++  
++	static  bool findConst=false;
++
++   if(findConst) return false;
++	FileName *fn=Doxygen::inputNameList->first();
++   //LayoutNavEntry *cc = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files);
++  
++  LayoutNavEntry *kk = lne->parent();//   find(LayoutNavEntry::Files);
++ // LayoutNavEntry *kks = kk->parent();//   find(LayoutNavEntry::Files);
++   QCString file;
++  QCString co("Constraints");
++  while (fn)
++  {
++    FileDef *fd=fn->first();
++	if(fd->name().contains(".ucf") || fd->name().contains(".qsf"))
++	{
++	 file = convertNameToFile(fd->name().data(),false,false);
++	 LayoutNavEntry *ucf=new LayoutNavEntry(lne,LayoutNavEntry::MainPage,true,file,co,"");  
++     kk->addChild(ucf);
++	 findConst=true;
++     break;
++  }
++	fn=Doxygen::inputNameList->next();
++  }
++
++	return  false;
++}
++
++void VhdlDocGen::writeCodeFragment (OutputList& ol,int start, QCString & codeFragment,const MemberDef* mdef)
++{
++   QStringList qsl=QStringList::split("\n",codeFragment);
++ ol.startCodeFragment();
++ int len = qsl.count();	
++  QCString lineNumber;
++  int j;
++  for (j=0;j<len;j++)
++  {
++    lineNumber.sprintf("%05d",start++);
++    lineNumber+=" ";
++    ol.startBold();
++    ol.docify(lineNumber.data());
++    ol.endBold();
++    ol.insertMemberAlign();
++    QCString q=(QCString)qsl[j];
++    VhdlDocGen::writeFormatString(q,ol,mdef);
++	ol.docify("\n"); 
++  }
++  ol.endCodeFragment();
++}
+\ No newline at end of file
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/vhdldocgen.h doxygen-1.7.0/src/vhdldocgen.h 
---- oldsrc170/src/vhdldocgen.h	2010-02-19 12:09:48.000000000 -0800
-+++ doxygen-1.7.0/src/vhdldocgen.h	2010-06-18 12:56:32.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: vhdlscanner.h,v 1.9 2001/03/19 19:27:39 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -66,6 +66,7 @@
-       USE,
-       PROCESS,
-       PORT,
-+	  PROTECT,
-       DOCUMENT, //18 0x12
-       UNITS,	  
-       GENERIC,
-@@ -75,7 +76,8 @@
-       VFILE,   
+C:\.Trash-1000>diff -u doxNew/src/vhdldocgen.h doxy175/src/vhdldocgen.h 
+--- doxNew/src/vhdldocgen.h	2011-03-06 10:24:14.000000000 +0100
++++ doxy175/src/vhdldocgen.h	2011-11-13 11:41:54.000000000 +0100
+@@ -27,6 +27,7 @@
+ #include <qcstring.h>
+ 
+ #include "memberlist.h"
++#include "layout.h"
+ 
+ class QStringList;
+ class Entry;
+@@ -76,7 +77,8 @@
        SHAREDVARIABLE,
        CONFIG,
--      ALIAS
-+      ALIAS,
-+	  CONTEXT=0x199
+       ALIAS,
+-      MISCELLANEOUS
++      MISCELLANEOUS,
++      UCF_CONST
      };
  
      VhdlDocGen();
-@@ -188,6 +190,10 @@
-     { return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
-     static bool isCompInst(const MemberDef *mdef) 
-     { return mdef->getMemberSpecifiers()==VhdlDocGen::COMPONENT_INST; }
-+     static bool isProtect(const MemberDef *mdef) 
-+		 { return mdef->getMemberSpecifiers()==VhdlDocGen::PROTECT; }
-+     static bool isContext(const MemberDef *mdef) 
-+		 { return mdef->getMemberSpecifiers()==VhdlDocGen::CONTEXT; }
+@@ -138,6 +140,8 @@
+                                      OutputList &ol);
  
-     //-----------------------------------------------------
-     // translatable items
+     //static void writeVhdlComponentList(OutputList &ol,int type);
++       static bool isConstraint(const MemberDef *mdef) 
++    { return mdef->getMemberSpecifiers()==VhdlDocGen::UCF_CONST; }   
+      static bool isMisc(const MemberDef *mdef) 
+     { return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }   
+     static bool isConfig(const MemberDef *mdef) 
+@@ -268,14 +272,22 @@
+     static bool isNumber(const QCString& s);
+     static QCString getProtectionName(int prot);
+ 	static void writeSource(MemberDef *mdef,OutputList& ol,QCString &);
+-  private:
++	static QCString splitString(QCString & str,  char c);
++    static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
++	
++	
++    static bool findConstraintFile( LayoutNavEntry *lne);
++    static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
++    static void writeCodeFragment(MemberDef *mdef,OutputList& ol);
++    static void writeCodeFragment(OutputList& ol,int actualStart, QCString & codeFragment,const MemberDef* mdef);
++  
++private:
+     static void getFuncParams(QList<Argument>&, const char* str);
+     static bool compareArgList(ArgumentList*,ArgumentList*);
+     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
+     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
+     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
+-     static void writeCodeFragment(MemberDef *mdef,OutputList& ol);
+-
++   
+ };
+ 
+ #endif
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/filedef.cpp doxygen-1.7.0/src/filedef.cpp 
---- oldsrc170/src/filedef.cpp	2010-06-04 08:54:24.000000000 -0700
-+++ doxygen-1.7.0/src/filedef.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: filedef.cpp,v 1.55 2001/03/19 19:27:40 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
+C:\.Trash-1000>diff -u doxNew/src/memberdef.cpp doxy175/src/memberdef.cpp 
+--- doxNew/src/memberdef.cpp	2011-08-14 12:01:26.000000000 +0200
++++ doxy175/src/memberdef.cpp	2011-11-12 20:15:44.000000000 +0100
+@@ -41,7 +41,7 @@
+ #include "objcache.h"
+ #include "vhdlscanner.h"
+ #include "vhdldocgen.h"
+-
++#include "verilogdocgen.h"
+ #define START_MARKER 0x4D454D5B // MEM[
+ #define END_MARKER   0x4D454D5D // MEM]
+ 
+@@ -1768,7 +1768,9 @@
+   bool hasParameterList = FALSE;
+   bool inFile = container->definitionType()==Definition::TypeFile;
+   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
+-
++  //static bool optVhdl          = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
++   static bool optVerilog       = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++    
+   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
+   //    name().data(),hasDocs,container->definitionType(),inGroup);
+ 
+@@ -1777,7 +1779,7 @@
+ 
+   makeResident();
+   SrcLangExt lang = getLanguage();
+-  bool optVhdl = lang==SrcLangExt_VHDL;
++  bool optVhdl =( lang==SrcLangExt_VHDL || lang==SrcLangExt_VERILOG);
+   LockingPtr<MemberDef> lock(this,this);
+ 
+   QCString scopeName = scName;
+@@ -2016,6 +2018,16 @@
+     QStrList sl;
+     if (optVhdl)
+     {
++       if(optVerilog){
++       if(this->getMemberSpecifiers() != VerilogDocGen::SIGNAL)
++          sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
++	   else
++		   {
++		   QCString largs=this->argsString();
++		   sl.append(largs);
++		   }
++	   }
++       else  
+       sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
+     }
+     else
+@@ -2155,9 +2167,9 @@
+       !inbodyDocumentation().isEmpty())
+   { 
+     // write vhdl inline code with or without option INLINE_SOURCE
+-    if (optVhdl && VhdlDocGen::isMisc(this)) 
++    if (optVhdl && (VhdlDocGen::isMisc(this)   ) )
+     {
+-      VhdlDocGen::writeSource(this,ol,cname);
++    	    VhdlDocGen::writeSource(this,ol,cname);
+       return;
+     }
+     else
+@@ -3948,6 +3960,11 @@
+   m_isLinkableCached = 0;
+ }
+ 
++QCString MemberDef::getDefinition() const
++{ 
++ return m_impl->def; 
++}
++
+ void MemberDef::setDefinition(const char *d)
+ { 
+   makeResident();
+
+C:\.Trash-1000>diff -u doxNew/src/memberdef.h doxy175/src/memberdef.h 
+--- doxNew/src/memberdef.h	2011-08-08 11:19:02.000000000 +0200
++++ doxy175/src/memberdef.h	2011-11-12 17:06:04.000000000 +0100
+@@ -363,7 +363,7 @@
+     void findSectionsInDocumentation();
+     
+     bool visited;
+-   
++    QCString getDefinition() const;
+   protected:
+     void flushToDisk() const;
+     void loadFromDisk() const;
+
+C:\.Trash-1000>diff -u doxNew/src/definition.cpp doxy175/src/definition.cpp 
+--- doxNew/src/definition.cpp	2011-08-03 13:26:56.000000000 +0200
++++ doxy175/src/definition.cpp	2011-11-13 12:40:24.000000000 +0100
+@@ -37,7 +37,8 @@
+ #include "parserintf.h"
+ #include "marshal.h"
+ #include "debug.h"
+-
++#include "verilogdocgen.h"
++#include "vhdldocgen.h"
+ #define START_MARKER 0x4445465B // DEF[
+ #define END_MARKER   0x4445465D // DEF]
+ 
+@@ -305,6 +306,15 @@
+   }
+ }
+ 
++
++void Definition::addListType(QCString q)
++	{
++      qsl.append(q);
++	}
++
++QStringList& Definition::getList() {return qsl;}
++   
++
+ void Definition::setName(const char *name)
+ {
+   if (name==0) return;
+@@ -544,6 +554,7 @@
+                       int &startLine,int &endLine,QCString &result)
+ {
+   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
++  static bool vhdlOpt           = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
+   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
+   QCString filter = getFileFilter(fileName,TRUE);
+@@ -560,7 +571,7 @@
+     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+     f = portable_popen(cmd,"r");
+   }
+-  bool found = lang==SrcLangExt_VHDL   || 
++  bool found = lang==SrcLangExt_VHDL   || SrcLangExt_VERILOG   || 
+                lang==SrcLangExt_Tcl    || 
+                lang==SrcLangExt_Python || 
+                lang==SrcLangExt_Fortran;  
+@@ -867,8 +878,17 @@
+       //printf("Read:\n`%s'\n\n",codeFragment.data());
+       MemberDef *thisMd = 0;
+       if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
+-      ol.startCodeFragment();
+-      pIntf->parseCode(ol,               // codeOutIntf
++      
++	  if(this->getLanguage()==SrcLangExt_VHDL || this->getLanguage()==SrcLangExt_VERILOG)
++	  {
++       if(thisMd)		 
++		  VhdlDocGen::writeCodeFragment(ol,actualStart,codeFragment,thisMd);
++		  return;
++	  }
++	  
++	  ol.startCodeFragment();
++     
++	  pIntf->parseCode(ol,               // codeOutIntf
+                        scopeName,        // scope
+                        codeFragment,     // input
+                        FALSE,            // isExample
+
+C:\.Trash-1000>diff -u doxNew/src/definition.h doxy175/src/definition.h 
+--- doxNew/src/definition.h	2011-07-30 12:08:40.000000000 +0200
++++ doxy175/src/definition.h	2011-11-12 17:06:02.000000000 +0100
+@@ -21,6 +21,7 @@
+ #include "qtbc.h"
+ #include <qlist.h>
+ #include <qdict.h>
++#include "qstringlist.h"
+ #include <sys/types.h>
+ 
+ #include "lockingptr.h"
+@@ -315,15 +316,18 @@
+     virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
+     virtual void writeSummaryLinks(OutputList &) {}
+     QCString pathFragment() const;
++	void addListType(QCString q);
++    
+ 
++	QStringList& getList();
+     /*! Writes the documentation anchors of the definition to 
+      *  the Doxygen::tagFile stream.
+      */
+     void writeDocAnchorsToTagFile();
++  void setLocalName(const QCString name);
+ 
+   protected:
+-    void setLocalName(const QCString name);
+-
++  
+     virtual void flushToDisk() const;
+     virtual void loadFromDisk() const;
+     virtual void makeResident() const;
+@@ -348,6 +352,7 @@
+     QCString m_name;
+     bool m_isSymbol;
+     QCString m_symbolName;
++	QStringList qsl;
+ 
+ };
+ 
+C:\.Trash-1000>diff -u doxNew/src/classdef.h doxy175/src/classdef.h 
+
+C:\.Trash-1000>diff -u doxNew/src/doxygen_css.h doxy175/src/doxygen_css.h 
+--- doxNew/src/doxygen_css.h	2011-07-26 21:43:12.000000000 +0200
++++ doxy175/src/doxygen_css.h	2011-11-13 09:37:52.000000000 +0100
+@@ -944,3 +944,12 @@
+ "  }\n"
+ "}\n"
+ "\n"
++".pre {white-space: pre;}\n"
++".nowrap {white-space: nowrap;}\n"
++".pre-wrap {white-space: pre-wrap;}\n"
++".pre-line {white-space: pre-line;}\n"
++"\n"
++"span.undoc { \n"
++"	color: #a5a5a5 \n"
++"}\n"
++"\n"
+\ No newline at end of file
+
+C:\.Trash-1000>diff -u doxNew/src/doxygen.cpp doxy175/src/doxygen.cpp 
+--- doxNew/src/doxygen.cpp	2011-08-11 12:21:54.000000000 +0200
++++ doxy175/src/doxygen.cpp	2011-11-12 17:06:02.000000000 +0100
+@@ -80,8 +80,9 @@
+ #include "vhdlscanner.h"
+ #include "vhdldocgen.h"
+ #include "eclipsehelp.h"
++#include "verilogscanner.h"
++#include "preVerilog.h"
+ #include "cite.h"
+-
+ #include "layout.h"
+ 
+ #define RECURSE_ENTRYTREE(func,var) \
+@@ -1175,6 +1176,29 @@
+         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
+     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
++    cd->setLanguage(root->lang);    
++    cd->setHidden(root->hidden);        
++    cd->setArtificial(root->artificial);        
++    cd->setTypeConstraints(root->typeConstr);   
++    //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());    
++
++    ArgumentList *tArgList =    
++      getTemplateArgumentsFromName(fullName,root->tArgLists);   
++    //printf("class %s template args=%s\n",fullName.data(),     
++    //    tArgList ? tempArgListToString(tArgList).data() : "<none>");          
++    cd->setTemplateArguments(tArgList);         
++    cd->setProtection(root->protection);        
++    cd->setIsStatic(root->stat);        
++
++    // file definition containing the class cd          
++    cd->setBodySegment(root->bodyLine,root->endBodyLine);       
++    cd->setBodyDef(fd);         
++
++    // see if the class is found inside a namespace     
++    //bool found=addNamespace(root,cd);         
++
++    // the empty string test is needed for extract all case     
++    cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);    
+     cd->insertUsedFile(root->fileName);
+ 
+     // add class to the list
+@@ -8876,8 +8900,16 @@
+     {
+       BufStr inBuf(fi.size()+4096);
+       msg("Preprocessing %s...\n",s->data());
++     if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG")) 
++	 {
++	//   readInputFile(fileName,preBuf);
++	   preprocessVerilogFile(fileName,preBuf,0,-1);
++	 }
++	 else 
++	 {
+       readInputFile(fileName,inBuf);
+       preprocessFile(fileName,inBuf,preBuf);
++      }
+     }
+     else // no preprocessing
+     {
+@@ -9410,6 +9442,7 @@
+   //Doxygen::symbolMap->setAutoDelete(TRUE);
+ 
+   Doxygen::runningTime.start();
++  initVerilogPreprocessor();
+   initPreprocessor();
+ 
+   Doxygen::parserManager = new ParserManager;
+@@ -9418,8 +9451,7 @@
+   Doxygen::parserManager->registerParser("fortran", new FortranLanguageScanner);
+   Doxygen::parserManager->registerParser("vhdl",    new VHDLLanguageScanner);
+   Doxygen::parserManager->registerParser("dbusxml", new DBusXMLScanner);
+-  Doxygen::parserManager->registerParser("tcl",     new TclLanguageScanner);
+-
++   Doxygen::parserManager->registerParser("v", new VerilogScanner);
+   // register any additional parsers here...
+ 
+   initDefaultExtensionMapping();
+@@ -9479,6 +9511,7 @@
+   delete Doxygen::xrefLists;
+   delete Doxygen::parserManager;
+   cleanUpPreprocessor();
++  cleanUpVerilogPreprocessor();
+   delete theTranslator;
+   delete g_outputList;
+   Mappers::freeMappers();
+@@ -10354,7 +10387,7 @@
+ 
+   /**************************************************************************
+    *             Gather information                                         * 
+-   **************************************************************************/
++   ***************************+#include "qstringlist.h"***********************************************/
+   
+   msg("Building group list...\n");
+   buildGroupList(rootNav);
+
+C:\.Trash-1000>diff -u doxNew/src/filedef.cpp doxy175/src/filedef.cpp 
+--- doxNew/src/filedef.cpp	2011-08-08 19:44:00.000000000 +0200
++++ doxy175/src/filedef.cpp	2011-11-12 17:06:04.000000000 +0100
 @@ -36,6 +36,7 @@
  #include "vhdldocgen.h"
  #include "debug.h"
@@ -1142,29 +1433,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/filedef.cpp doxygen-1.7.0/src/filedef.c
  
  //---------------------------------------------------------------------------
  
-@@ -842,6 +843,10 @@
- /*! Adds member definition \a md to the list of all members of this file */
- void FileDef::insertMember(MemberDef *md)
- {
-+ 
-+ static bool optVerilog       = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
-+
-+
-   if (md->isHidden()) return;
-   //printf("%s:FileDef::insertMember(%s (=%p) list has %d elements)\n",
-   //    name().data(),md->name().data(),md,allMemberList.count());
-@@ -880,8 +885,10 @@
-     case MemberDef::EnumValue:    // enum values are shown inside their enums
-       break;
-     case MemberDef::Define:       
-+		if(!optVerilog){
-       addMemberToList(MemberList::decDefineMembers,md);
-       addMemberToList(MemberList::docDefineMembers,md);
-+			}     
-       break;
-     default:
-        err("FileDef::insertMembers(): "
-@@ -1577,11 +1584,16 @@
+@@ -1619,11 +1620,16 @@
  void FileDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
  {
    static bool optVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
@@ -1182,183 +1451,37 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/filedef.cpp doxygen-1.7.0/src/filedef.c
      }
      else
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/layout.cpp doxygen-1.7.0/src/layout.cpp 
---- oldsrc170/src/layout.cpp	2010-05-02 09:37:02.000000000 -0700
-+++ doxygen-1.7.0/src/layout.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: layout.cpp,v 1.2 2001/03/19 19:27:41 root Exp $
-+ * 
-  *
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
+C:\.Trash-1000>diff -u doxNew/src/layout.cpp doxy175/src/layout.cpp 
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/classdef.cpp doxygen-1.7.0/src/classdef.cpp 
---- oldsrc170/src/classdef.cpp	2010-06-11 13:28:48.000000000 -0700
-+++ doxygen-1.7.0/src/classdef.cpp	2010-06-18 16:05:36.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: classdef.cpp,v 1.54 2001/03/19 19:27:39 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -38,6 +38,7 @@
- #include "searchindex.h"
- #include "vhdldocgen.h"
- #include "layout.h"
-+#include "verilogdocgen.h"
- 
- //-----------------------------------------------------------------------------
- 
-@@ -361,8 +362,21 @@
-                                    )
- {
-   //printf("insertInternalMember(%s) isHidden()=%d\n",md->name().data(),md->isHidden());
-+  static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-+ 
-   if (md->isHidden()) return;
- 
-+  if(optVerilog)
-+	  {
-+	  QCString tti=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),false);
-+      //  VhdlDocGen::deleteAllChars(tti,' '); // Always Construct
-+  
-+        QStringList qsl=this->getList();
-+        int i=qsl.findIndex(tti);
-+        if(i<0)
-+          this->addListType(tti);
-+	  }
-+  
-   if (!isReference())
-   {
-     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
-@@ -1362,12 +1376,15 @@
- 
- void ClassDef::writeSummaryLinks(OutputList &ol)
- {
-+   static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-+ 
-   ol.pushGeneratorState();
-   ol.disableAllBut(OutputGenerator::Html);
-   QListIterator<LayoutDocEntry> eli(
-       LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-   LayoutDocEntry *lde;
-   bool first=TRUE;
-+  if(!vhdlOpt){
-   for (eli.toFirst();(lde=eli.current());++eli)
-   {
-     if (lde->kind()==LayoutDocEntry::ClassNestedClasses && 
-@@ -1387,6 +1404,17 @@
-         writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
-       }
-     }
-+  }// for
-+	  }// if
-+  else
-+	  {
-+	  QStringList qsl=this->getList();
-+	  uint len=qsl.count();
-+	  for(uint i=0;i<len;i++)
-+		  {
-+		  QCString qq=(QCString)qsl[i];
-+		  writeSummaryLink(ol,qq.data(),qq.data(),first);
-+		  }
-   }
-   if (!first)
-   {
+C:\.Trash-1000>diff -u doxNew/src/groupdef.cpp doxy175/src/groupdef.cpp 
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/groupdef.cpp doxygen-1.7.0/src/groupdef.cpp 
---- oldsrc170/src/groupdef.cpp	2010-04-24 04:05:12.000000000 -0700
-+++ doxygen-1.7.0/src/groupdef.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: groupdef.cpp,v 1.29 2001/03/19 19:27:40 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -36,6 +36,7 @@
- #include "dot.h"
- #include "vhdldocgen.h"
- #include "layout.h"
-+#include "verilogdocgen.h"
- 
- //---------------------------------------------------------------------------
- 
-@@ -1362,10 +1363,14 @@
- void GroupDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
- {
-   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-+   static bool optVerilog = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
- 
-   MemberList * ml = getMemberList(lt);
-   if (optimizeVhdl && ml) 
-   {
-+      if(optVerilog)
-+        VerilogDocGen::writeVerilogDeclarations(ml,ol,this,0);
-+        else
-     VhdlDocGen::writeVhdlDeclarations(ml,ol,this,0,0);
-     return;
-   }
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/config.l doxygen-1.7.0/src/config.l 
---- oldsrc170/src/config.l	2010-06-10 04:49:58.000000000 -0700
-+++ doxygen-1.7.0/src/config.l	2010-06-18 12:56:32.000000000 -0700
-@@ -1,6 +1,6 @@
- /******************************************************************************
-  *
-- * $Id: config_templ.l,v 1.8 2001/01/01 10:15:16 root Exp $
-+ * 
-  *
-  * Copyright (C) 1997-2010 by Dimitri van Heesch.
-  *
-@@ -1305,6 +1305,8 @@
-     filePatternList.append("*.f");
+C:\.Trash-1000>diff -u doxNew/src/config.l doxy175/src/config.l 
+--- doxNew/src/config.l	2011-08-03 12:37:54.000000000 +0200
++++ doxy175/src/config.l	2011-11-12 17:06:02.000000000 +0100
+@@ -1325,7 +1325,8 @@
+     filePatternList.append("*.for");
      filePatternList.append("*.vhd");
      filePatternList.append("*.vhdl");
+-    filePatternList.append("*.tcl");
 +    filePatternList.append("*.v");
 +    
      if (portable_fileSystemIsCaseSensitive())
      {
        // unix => case sensitive match => also include useful uppercase versions
-@@ -1326,6 +1328,7 @@
+@@ -1347,7 +1348,7 @@
        filePatternList.append("*.F");
        filePatternList.append("*.VHD");
        filePatternList.append("*.VHDL");
+-      filePatternList.append("*.TCL");
 +      filePatternList.append("*.v"); 
      }
    }
  
-@@ -1434,6 +1437,20 @@
-     annotationFromBrief.append("the");
-   }
- 
-+  
-+  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
-+  {
-+    fprintf(stderr,"\n Only the Verilog  files will be tailored correctly  !\n");
-+  } 
-+ 
-+ if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG") && !Config_getBool("OPTIMIZE_OUTPUT_VHDL")){
-+   // must be set for parsing verilog files
-+   Config::instance()->addBool("OPTIMIZE_OUTPUT_VHDL"," ",true);
-+   Config::instance()->addBool("EXTRACT_ALL"," ",true);
-+  }
-+
-+
-+  
-   // some default settings for vhdl
-   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
-       (Config_getBool("INLINE_INHERITED_MEMB") || 
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/configoptions.cpp doxygen-1.7.0/src/configoptions.cpp 
---- oldsrc170/src/configoptions.cpp	2010-06-04 08:49:32.000000000 -0700
-+++ doxygen-1.7.0/src/configoptions.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -310,6 +310,14 @@
+C:\.Trash-1000>diff -u doxNew/src/configoptions.cpp doxy175/src/configoptions.cpp 
+--- doxNew/src/configoptions.cpp	2011-08-03 15:54:50.000000000 +0200
++++ doxy175/src/configoptions.cpp	2011-11-12 17:06:04.000000000 +0100
+@@ -327,6 +327,14 @@
                   FALSE
                  );
    //----
@@ -1374,150 +1497,10 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/configoptions.cpp doxygen-1.7.0/src/con
                   "EXTENSION_MAPPING",
                   "Doxygen selects the parser to use depending on the extension of the files it\n"
 
-G:\dox17>diff -i -u -b -B  oldsrc170/src/memberdef.cpp doxygen-1.7.0/src/memberdef.cpp 
---- oldsrc170/src/memberdef.cpp	2010-05-13 03:11:22.000000000 -0700
-+++ doxygen-1.7.0/src/memberdef.cpp	2010-06-18 12:56:32.000000000 -0700
-@@ -40,7 +40,7 @@
- #include "objcache.h"
- #include "vhdlscanner.h"
- #include "vhdldocgen.h"
--
-+#include "verilogdocgen.h"
- #define START_MARKER 0x4D454D5B // MEM[
- #define END_MARKER   0x4D454D5D // MEM]
- 
-@@ -1683,6 +1683,8 @@
-   bool inFile = container->definitionType()==Definition::TypeFile;
-   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
-   static bool optVhdl          = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-+   static bool optVerilog       = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
-+    
-   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
-   //    name().data(),hasDocs,container->definitionType(),inGroup);
-   if ( !hasDocs ) return;
-@@ -1921,6 +1923,16 @@
-     QStrList sl;
-     if (optVhdl)
-     {
-+       if(optVerilog){
-+       if(this->getMemberSpecifiers() != VerilogDocGen::SIGNAL)
-+          sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
-+	   else
-+		   {
-+		   QCString largs=this->argsString();
-+		   sl.append(largs);
-+		   }
-+	   }
-+       else  
-       sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
-     }
-     else
-@@ -3715,6 +3727,11 @@
-   m_isLinkableCached = 0;
- }
- 
-+QCString MemberDef::getDefinition() const
-+{ 
-+ return m_impl->def; 
-+}
-+
- void MemberDef::setDefinition(const char *d)
- { 
-   makeResident();
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/memberdef.h doxygen-1.7.0/src/memberdef.h 
---- oldsrc170/src/memberdef.h	2010-04-24 04:05:12.000000000 -0700
-+++ doxygen-1.7.0/src/memberdef.h	2010-06-18 12:56:32.000000000 -0700
-@@ -353,7 +353,7 @@
-     void findSectionsInDocumentation();
-     
-     bool visited;
--   
-+    QCString getDefinition() const;
-   protected:
-     void flushToDisk() const;
-     void loadFromDisk() const;
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.pro doxygen-1.7.0/src/libdoxygen.pro 
---- oldsrc170/src/libdoxygen.pro	2010-06-14 14:07:20.000000000 -0700
-+++ doxygen-1.7.0/src/libdoxygen.pro	2010-06-18 12:56:32.000000000 -0700
-@@ -1,5 +1,5 @@
- #
--# This file was generated from libdoxygen.pro.in on Mon Jun 14 23:07:20 CEST 2010
-+# This file was generated from libdoxygen.pro.in on Tue Feb 16 22:05:51 CET 2010
- #
- 
- #
-@@ -52,7 +52,6 @@
- 		filedef.h \
- 		filename.h \
- 		formula.h \
--		ftextstream.h \
- 		ftvhelp.h \
- 		groupdef.h \
- 		htags.h \
-@@ -89,6 +88,7 @@
- 		perlmodgen.h \
- 		lodepng.h \
- 		pre.h \
-+        		preVerilog.h \        
-                 printdocvisitor.h \
-                 pycode.h \
-                 pyscanner.h \
-@@ -150,6 +150,9 @@
- 		translator_za.h \
- 		unistd.h \
- 		util.h \
-+		verilogscanner.h \
-+		verilogdocgen.h \
-+		verilogparser.hpp \
- 		version.h \
- 		vhdlcode.h \
- 		vhdldocgen.h \
-@@ -184,7 +187,6 @@
- 		filedef.cpp \
- 		filename.cpp \
- 		formula.cpp \
--		ftextstream.cpp \
- 		ftvhelp.cpp \
- 		fortrancode.cpp \
- 		fortranscanner.cpp \    
-@@ -219,6 +221,7 @@
- 		pagedef.cpp \
- 		perlmodgen.cpp \
- 		pre.cpp \
-+		preVerilog.cpp \
- 		pycode.cpp \
- 		pyscanner.cpp \    
- 		qhp.cpp \
-@@ -234,6 +237,9 @@
-                 textdocvisitor.cpp \
- 		translator.cpp \
- 		util.cpp \
-+		verilogscanner.cpp \
-+		verilogparser.cpp \
-+		verilogdocgen.cpp \
- 		version.cpp \
- 		vhdlcode.cpp \
- 		vhdldocgen.cpp \
-@@ -256,4 +262,4 @@
- TARGET                     =  doxygen
- OBJECTS_DIR                =  ../objects
- 
--TMAKE_MOC = /usr/bin/moc
-+TMAKE_MOC = /Developer/qt/bin/moc
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.pro.in doxygen-1.7.0/src/libdoxygen.pro.in 
---- oldsrc170/src/libdoxygen.pro.in	2010-04-30 03:45:26.000000000 -0700
-+++ doxygen-1.7.0/src/libdoxygen.pro.in	2010-06-18 12:56:32.000000000 -0700
-@@ -1,5 +1,5 @@
- #
--# $Id: libdoxygen.pro.in,v 1.1 2001/03/19 19:27:41 root Exp $
-+# 
- #
- # Copyright (C) 1997-2010 by Dimitri van Heesch.
- #
-@@ -91,6 +91,7 @@
+C:\.Trash-1000>diff -u doxNew/src/libdoxygen.pro.in doxy175/src/libdoxygen.pro.in 
+--- doxNew/src/libdoxygen.pro.in	2011-08-03 12:28:25.000000000 +0100
++++ doxy175/src/libdoxygen.pro.in	2011-11-12 17:06:04.000000000 +0000
+@@ -101,6 +101,7 @@
                  fortrancode.h \
                  fortranscanner.h \
                  dbusxmlscanner.h \
@@ -1525,7 +1508,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.pro.in doxygen-1.7.0/src/lib
  		qhp.h \
  		qhpxmlwriter.h \
  		qtbc.h \
-@@ -147,6 +148,9 @@
+@@ -161,6 +162,9 @@
  		unistd.h \
  		util.h \
  		version.h \
@@ -1535,7 +1518,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.pro.in doxygen-1.7.0/src/lib
  		vhdlcode.h \
  		vhdldocgen.h \
  		vhdlscanner.h \
-@@ -215,6 +219,7 @@
+@@ -231,6 +235,7 @@
  		pagedef.cpp \
  		perlmodgen.cpp \
  		pre.cpp \
@@ -1543,7 +1526,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.pro.in doxygen-1.7.0/src/lib
  		pycode.cpp \
  		pyscanner.cpp \    
  		qhp.cpp \
-@@ -231,6 +236,9 @@
+@@ -248,6 +253,9 @@
  		translator.cpp \
  		util.cpp \
  		version.cpp \
@@ -1553,48 +1536,31 @@ G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.pro.in doxygen-1.7.0/src/lib
  		vhdlcode.cpp \
  		vhdldocgen.cpp \
  		vhdlscanner.cpp \
-
-G:\dox17>diff -i -u -b -B  oldsrc170/src/libdoxygen.t doxygen-1.7.0/src/libdoxygen.t 
---- oldsrc170/src/libdoxygen.t	2010-01-01 03:53:12.000000000 -0800
-+++ doxygen-1.7.0/src/libdoxygen.t	2010-06-18 12:56:32.000000000 -0700
-@@ -1,5 +1,5 @@
- #
--# $Id: libdoxygen.t,v 1.1 2001/03/19 19:27:41 root Exp $
-+# 
- #
- # Copyright (C) 1997-2010 by Dimitri van Heesch.
- #
-@@ -97,6 +97,16 @@
+C:\.Trash-1000>diff -u doxNew/src/libdoxygen.t doxy175/src/libdoxygen.t 
+--- doxNew/src/libdoxygen.t	2011-08-03 12:37:56.000000000 +0200
++++ doxy175/src/libdoxygen.t	2011-11-12 17:06:04.000000000 +0100
+@@ -100,7 +100,15 @@
  	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
  	-rm ce_parse.c	
  
+-#$ GenerateDep("layout.cpp","layout_default.h");
 +
 +#$ GenerateDep("verilogscanner.cpp","verilogscanner.l");
-+	$(LEX) -8  -PverilogScanYY -t verilogscanner.l | $(INCBUFSIZE) >verilogscanner.cpp
++	$(LEX) -d -8  -PverilogScanYY -t verilogscanner.l | $(INCBUFSIZE) >verilogscanner.cpp
 +
 +#$ GenerateDep("verilogparser.cpp","verilogparser.y");
 +	$(YACC)  -v -d verilogparser.y -o verilogparser.cpp 
 +
 +#$ GenerateDep("preVerilog.cpp","preVerilog.l");
 +	$(LEX) -PpreYYVerilog -t preVerilog.l | $(INCBUFSIZE) >preVerilog.cpp 
-+
+ 
  TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
  
- index_xsd.h: index.xsd
 
-G:\dox17>diff -i -u -b -B  oldsrc170/winbuild/Doxygen.vcproj doxygen-1.7.0/winbuild/Doxygen.vcproj 
---- oldsrc170/winbuild/Doxygen.vcproj	2010-06-10 04:36:16.000000000 -0700
-+++ doxygen-1.7.0/winbuild/Doxygen.vcproj	2010-06-18 12:56:32.000000000 -0700
-@@ -53,7 +53,7 @@
- 				Name="VCCLCompilerTool"
- 				AdditionalOptions="/Zm200 "
- 				Optimization="0"
--				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-+				AdditionalIncludeDirectories="..\src;..\qtools;..\libpng;..\libmd5;.;&quot;G:\dox163\doxygen-svn\winbuild\Debug&quot;"
- 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
- 				MinimalRebuild="true"
- 				BasicRuntimeChecks="3"
-@@ -1578,6 +1578,30 @@
+C:\.Trash-1000>diff -u doxNew/winbuild/Doxygen.vcproj doxy175/winbuild/Doxygen.vcproj 
+--- doxNew/winbuild/Doxygen.vcproj	2011-08-04 19:42:24.000000000 +0200
++++ doxy175/winbuild/Doxygen.vcproj	2011-11-13 11:12:52.000000000 +0100
+@@ -1584,6 +1584,30 @@
  				</FileConfiguration>
  			</File>
  			<File
@@ -1625,7 +1591,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/winbuild/Doxygen.vcproj doxygen-1.7.0/winbu
  				RelativePath="..\src\pycode.cpp"
  				>
  			</File>
-@@ -1878,6 +1902,48 @@
+@@ -1900,6 +1924,48 @@
  				</FileConfiguration>
  			</File>
  			<File
@@ -1674,7 +1640,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/winbuild/Doxygen.vcproj doxygen-1.7.0/winbu
  				RelativePath="..\src\version.cpp"
  				>
  				<FileConfiguration
-@@ -2305,6 +2371,10 @@
+@@ -2343,6 +2409,10 @@
  				>
  			</File>
  			<File
@@ -1685,7 +1651,7 @@ G:\dox17>diff -i -u -b -B  oldsrc170/winbuild/Doxygen.vcproj doxygen-1.7.0/winbu
  				RelativePath="..\src\printdocvisitor.h"
  				>
  			</File>
-@@ -2577,6 +2647,14 @@
+@@ -2623,6 +2693,14 @@
  				>
  			</File>
  			<File
@@ -1701,11 +1667,12 @@ G:\dox17>diff -i -u -b -B  oldsrc170/winbuild/Doxygen.vcproj doxygen-1.7.0/winbu
  				>
  			</File>
 
-G:\dox17>diff -i -u -b -B  oldsrc170/winbuild/runbison.bat doxygen-1.7.0/winbuild/runbison.bat 
---- oldsrc170/winbuild/runbison.bat	2007-01-21 09:29:44.000000000 -0800
-+++ doxygen-1.7.0/winbuild/runbison.bat	2010-06-18 12:56:34.000000000 -0700
+C:\.Trash-1000>diff -u doxNew/winbuild/runbison.bat doxy175/winbuild/runbison.bat 
+--- doxNew/winbuild/runbison.bat	2007-01-21 18:29:44.000000000 +0100
++++ doxy175/winbuild/runbison.bat	2011-11-12 17:37:08.000000000 +0100
 @@ -1,3 +1,4 @@
  bison -l -d -p cppExpYY %1\..\src\constexp.y -o %1\..\src\ce_parse.c
  del %1\..\src\ce_parse.c
  bison -l -p cppExpYY %1\..\src\constexp.y -o %1\..\src\ce_parse.cpp
 +bison -d -t -v %1\..\src\verilogparser.y -o %1\..\src\verilogparser.cpp
+\ No newline at end of file
