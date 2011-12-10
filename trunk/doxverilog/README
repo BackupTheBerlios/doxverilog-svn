@@ -28,19 +28,20 @@ System Requirements
 Installation
 ============
 
-install the doxygen-1.7.0 sources
+install the doxygen-1.7.5 sources
 
 1. copy the Verilog files verilogparser.y verlogscanner.l and the source files to the doxygen-1.7.0\src directory
 
 2. copy the patch file verilog.patch to directory doxygen-1.7.0
 
-3. open a shell in the doxygen-1.7.0 directory
+3. open a shell in the doxygen-1.7.5 directory
 
-3.1 configure doxygen
+3.2  make  patch  # patch -p1 -F3 < verilog.patch
+
+3.2 configure doxygen
     sh configure
   
-3.2  make  patch  # patch -p1 < verilog.patch
-   
+  
 4 compile  the source files
   make all
 
@@ -111,6 +112,6 @@ module XOR2 ( OUT, I0, I1 );
 endmodule
 
 ----------------------------------------------------------------------------------------------
-tested under Windows XP/ Open Suse 11.0
+tested on Windows XP/ Ubuntu 10.10
 
 compiled with Microsoft Visual C++ 2008 Express Edition 8.0 and g++ 4.3 
