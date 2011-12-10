@@ -88,6 +88,37 @@ Doxverilog Release 2.5
 -patch is now against doxygen-1.7.0
 -include patches 002987 002982 002904
 
+-----------------------------------------------------------------------------------------------
+
+Doxverilog Release 2.6
+-patch is now against doxygen-1.7.5 (official release)
+
+You can now include a constraint file  in your project (Altera .qsf or Xilinx .ucf). 
+When you include such a file, an extra button will appear.
+For including a constraint file, you must add ".qsf"  or ".ucf" in config option "FILE_PATTERNS".
+
+FILE_PATTERNS  = *.v  *.ucf (*.qsf for altera)
+ 
+A comment in a constraint file begins with ##
+ 
+#------------------------global ALTERA settings --------------------------------------------------------
+##  The projects top level entity is...
+set_global_assignment -name TOP_LEVEL_ENTITY protoype
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "11:33:21  JANUARY 01, 2011"
+                           ....
+
+
+Every peace of VERILOG code, in particular sequential statements can be documented with the following command:
+ 
+ //% @brief init values
+ //%\code init
+   initial
+    begin
+        count = 1;
+        first_rising_edge = 1;
+        clk_last_value = 0;
+    end
+ //%\endcode
 
 
 
