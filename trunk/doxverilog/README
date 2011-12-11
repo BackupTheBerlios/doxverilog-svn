@@ -30,9 +30,9 @@ Installation
 
 install the doxygen-1.7.5 sources
 
-1. copy the Verilog files verilogparser.y verlogscanner.l and the source files to the doxygen-1.7.0\src directory
+1. copy the Verilog files verilogparser.y verlogscanner.l and the source files to the doxygen-1.7.5\src directory
 
-2. copy the patch file verilog.patch to directory doxygen-1.7.0
+2. copy the patch file verilog.patch to directory doxygen-1.7.5
 
 3. open a shell in the doxygen-1.7.5 directory
 
