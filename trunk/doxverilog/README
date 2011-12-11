@@ -112,6 +112,6 @@ module XOR2 ( OUT, I0, I1 );
 endmodule
 
 ----------------------------------------------------------------------------------------------
-tested on Windows XP/ Ubuntu 10.10
+tested on Windows XP/ Ubuntu 11.04
 
-compiled with Microsoft Visual C++ 2008 Express Edition 8.0 and g++ 4.3 
+compiled with Microsoft Visual C++ 2008 Express Edition 8.0 and g++ 4.4.5
