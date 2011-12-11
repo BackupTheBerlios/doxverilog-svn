@@ -29,6 +29,7 @@
 #include "doxygen.h"
 #include "searchindex.h"
 #include "commentscan.h"
+#include "layout.h"
 
 // sets the member spec variable for global variables
 // needed for writing file declarations
@@ -163,6 +164,16 @@ QCString VerilogDocGen::convertTypeToString(int type,bool sing)
   if(sing) 
     return "Configuration";
   return "Configurations"; 
+ case(VhdlDocGen::UCF_CONST): 
+  if(sing) 
+    return "Constraint";
+  return "Constraints"; 
+ case(VhdlDocGen::MISCELLANEOUS): 
+  if(sing) 
+    return "Miscellaneous";
+    return "Miscellaneous"; 
+  
+
   default: return "";
   }
   return "";
@@ -185,6 +196,14 @@ QCString VerilogDocGen::convertTypeToString(int type,bool sing)
           mdd->setMemberSpecifiers(VerilogDocGen::LIBRARY);
 	 else if(type=="configuration") 
 		 mdd->setMemberSpecifiers(VerilogDocGen::CONFIGURATION);
+		  else if (stricmp(mdd->typeString(),"misc")==0)
+    {
+      mdd->setMemberSpecifiers(VhdlDocGen::MISCELLANEOUS);        
+    } 
+    else if (stricmp(mdd->typeString(),"ucf_const")==0)
+    {
+		mdd->setMemberSpecifiers(VhdlDocGen::UCF_CONST);        
+    } 
    }
   } 
                     
@@ -288,7 +307,8 @@ void VerilogDocGen::writeVerilogDeclarations(MemberList* ml,OutputList& ol,Group
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::MODULE,FALSE),0,FALSE,VerilogDocGen::MODULE);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FEATURE,FALSE),0,FALSE,VerilogDocGen::FEATURE);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INCLUDE,FALSE),0,FALSE,VerilogDocGen::INCLUDE);
-	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FUNCTION,FALSE),0,FALSE,VerilogDocGen::FUNCTION);
+        
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FUNCTION,FALSE),0,FALSE,VerilogDocGen::FUNCTION);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::ALWAYS,FALSE),0,FALSE,VerilogDocGen::ALWAYS);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::TASK,FALSE),0,FALSE,VerilogDocGen::TASK);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INPUT,FALSE),0,FALSE,VerilogDocGen::INPUT);
@@ -296,8 +316,11 @@ void VerilogDocGen::writeVerilogDeclarations(MemberList* ml,OutputList& ol,Group
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::OUTPUT,FALSE),0,FALSE,VerilogDocGen::OUTPUT);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PARAMETER,FALSE),0,FALSE,VerilogDocGen::PARAMETER);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::COMPONENT,FALSE),0,FALSE,VerilogDocGen::COMPONENT);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::SIGNAL,FALSE),0,FALSE,VerilogDocGen::SIGNAL);
- 
+    
+    
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VhdlDocGen::MISCELLANEOUS,FALSE),0,FALSE,VhdlDocGen::MISCELLANEOUS);
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VhdlDocGen::UCF_CONST,FALSE),0,FALSE,VhdlDocGen::UCF_CONST);
+   
  	 }
 
 
@@ -401,6 +424,16 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
    if(gd)gd=NULL;
    switch(mm)
    {
+       
+       case VhdlDocGen::MISCELLANEOUS:
+      VhdlDocGen::writeCodeFragment(mdef,ol);
+      break;
+      case VhdlDocGen::UCF_CONST: 
+		  mm=mdef->name().findRev('_');
+        if(mm>0)		 
+		  mdef->setName(mdef->name().left(mm));
+		  VhdlDocGen::writeUCFLink(mdef,ol);
+        break;
    case VerilogDocGen::INCLUDE: 
      bool ambig;
      largs=mdef->name();
@@ -863,6 +896,7 @@ MemberDef *md;
 void VerilogDocGen::initEntry(Entry *e)
 {
   e->fileName +=getVerilogParsingFile();
+  e->lang=SrcLangExt_VERILOG;
   initGroupInfo(e);
 }
 
@@ -981,4 +1015,40 @@ ol.docify(":");
 		VhdlDocGen::formatString(largs,ol,mdef);
 		ol.endTextBlock(true);
 		ol.endBold();
+}
+
+void VerilogDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
+{
+  //  Definition d=(Definition)mdef;
+  static bool optVerilog = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
+ /*
+  if(optVerilog){
+  VerilogDocGen::writeSource(mdef,ol,cname);
+   return; 
+   
+  }
+  */
+  QCString fdd=mdef->getDefFileExtension();
+  QCString scope=mdef->getScopeString();
+  QCString codeFragment=mdef->documentation();
+  //FileDef *fd=mdef->getFileDef();
+  FileDef *fd=mdef->getBodyDef();
+  QCString defFileName;
+  assert(fd);
+  int start=mdef->getStartBodyLine();
+  int end=mdef->getEndBodyLine();
+  QStringList qsl=QStringList::split("\n",codeFragment);
+
+  ParserInterface *pIntf = Doxygen::parserManager->getParser(fdd.data());
+  pIntf->resetCodeParserState();
+
+  ol.startParagraph();
+  ol.startCodeFragment();
+ 
+  ol.endCodeFragment();
+  ol.endParagraph();
+
+  mdef->writeSourceDef(ol,cname);
+  mdef->writeSourceRefs(ol,cname);
+  mdef->writeSourceReffedBy(ol,cname);
 }

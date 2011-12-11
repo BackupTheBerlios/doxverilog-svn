@@ -61,7 +61,7 @@ public:
 	  PRIMITIVE,
 	  COMPONENT, //0x7
 	  PORT,
-      PARAMETER,
+          PARAMETER,
 	  ALWAYS,
 	  TASK,
 	  OUTPUT,
@@ -79,7 +79,7 @@ public:
 
 // functions for  verilog parser ---------------------
 
-
+static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
 static QCString convertTypeToString(int type,bool sing=true);
 
 static void writeVerilogDeclarations(MemberList* ml,OutputList &ol,

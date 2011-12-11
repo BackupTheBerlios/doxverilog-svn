@@ -128,6 +128,8 @@ void addSubEntry(Entry* root, Entry* e);
 %token IFNONE_TOK REALTIME_TOK DESIGN_TOK 
 %token ATL_TOK ATR_TOK OOR_TOK AAND_TOK SNNOT_TOK NOTSN_TOK AAAND_TOK
 %token DEFINE_TOK 
+
+%initial-action { yydebug=0; } 
 %start file 
 /* -------------- rules section -------------- */
 %%
@@ -135,7 +137,7 @@ file	: lines
 	    ;
 lines 	: {identVerilog.resize(0);} description  
            | lines  description {identVerilog.resize(0);}
-		   | module_or_generate_item // for parsing inline source code (functions/always/tasks)  caused problem with (* bla bla *)module
+	//	   | module_or_generate_item // for parsing inline source code (functions/always/tasks)  caused problem with (* bla bla *)module
 		   ;
 
 
@@ -2481,7 +2483,7 @@ void parseAlways(bool bBody)
 
 if(currVerilogType!=VerilogDocGen::ALWAYS || generateItem) return ;
 
-QRegExp regg1("[ \t]or[ \t]");
+QRegExp regg1("[\\s]");
 
 QCString mod(getVerilogString());
 QCString type; 
@@ -2494,27 +2496,41 @@ bool sem=false;
  VhdlDocGen::deleteAllChars(mod,')');
  VhdlDocGen::deleteAllChars(mod,';'); 
 
-if(mod.contains(","))
+bool semi=mod.contains(",");
+
+if(semi)
   ql=QStringList::split(",",mod,false);
  else
   ql=QStringList::split(regg1,mod,false);
  
 
  if(!parseCode) {
+ QCString temp;
  currentFunctionVerilog=VerilogDocGen::makeNewEntry(VhdlDocGen::getProcessNumber().data(),Entry::FUNCTION_SEC,VerilogDocGen::ALWAYS);
   currentFunctionVerilog->stat=TRUE;
   currentFunctionVerilog->fileName=getVerilogParsingFile();
   if(!bBody)
   for(uint j=0;j<ql.count();j++) {
   QCString ll=(QCString)ql[j];
-  if(ll=="or" || ll=="and" || ll=="xor") continue; 
-  if(sem)
-	  currentFunctionVerilog->args+=',';
+  temp+=ll;
+  if(ll=="or" || ll=="and" || ll=="xor")
+  {
+
+    continue; 
+  }
+
+	//  currentFunctionVerilog->args+=',';
 	  Argument *arg=new Argument;
       arg->name=ll.simplifyWhiteSpace();	
 	  currentFunctionVerilog->argList->append(arg);
+       if(!semi)
+      {
+      arg->name=mod;
+      currentFunctionVerilog->args=mod; 
+       return;
+      }
       currentFunctionVerilog->args+=ll; 
-      sem = true;
+
  }
  return;
 }
@@ -2542,7 +2558,7 @@ int c_lex(void){
 
 void c_error(const char * err){
    if(err){// && !parseCode){
-//  fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
+ //fprintf(stderr,"\n\nerror  at line [%d]... : in file [%s]\n\n",c_lloc.first_line,getVerilogParsingFile());
   vbufreset();
  // exit(0);
   }
@@ -2653,3 +2669,4 @@ bool findExtendsComponent(QList<BaseInfo> *extend,QCString& compName)
  return false;
 }// findExtendsComponent
 
+void resetVerilogBrief() {briefString.resize(0); }

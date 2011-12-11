@@ -21,7 +21,7 @@
 
 /****************************************************************************
  * Scanner for Verilog 2001 subset
- * Date: 02/2009             
+ * Date: 02/2009               
  * supports the IEEE Std 1364-2001 (Revision of IEEE Std 1364-1995)Verilog subset
  *
  *****************************************************************************/
@@ -59,12 +59,13 @@ static char* g_buf;
 
 static int inputPosition;
 static Entry* curRoots;
-
+static Entry   gBlock;
+static int num_chars;
 static int defineLineContinue=0;
 
 static int startComment;
 static int iSize=0;
-static const char* inString;
+static QCString inputVerilogString;
 static QFile inputFile;
 static QCString yyFileName;
 static QList<QCString> qlist;
@@ -102,7 +103,8 @@ static bool          g_includeCodeFragment;
 static const char *  g_currentFontClass;
 static bool          g_lexInit = FALSE;
 static bool          g_parseCode=FALSE;
-
+static bool gInit=false;
+static int iCodeLen;
 // ------------------< functions for verilog code scanner >---------------
 
 static void writeFont(const char *s,const char* text);
@@ -130,6 +132,7 @@ static void writeInclude(QCString);
 //-------------------------------------------------------------------
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_USER_ACTION num_chars +=verilogScanYYleng ;
 
 //-----------------------------------------------------------
 // dictionaries for keywords
@@ -171,7 +174,86 @@ static const char* VerilogKewWordMap1[] = {"$async$and$array","$async$and$plane"
 "$itor", "$rtoi","$signed", "$unsigned","$test$plusargs", "$value$plusargs","$q_initialize", "$q_add",
 "$q_remove", "$q_full","$q_exam","$period","$hold","$setup","$width","$skew","$reovery","$nochange","$timeskew","$setuphold","$fullskew",""};
 
+/*
+static void startCodeBlock(QCString qcs,int ii){
+   iCodeLen=num_chars;
+     int ff= getLR(iCodeLen);
+     iCodeLen=ff;
+   gBlock.reset();
+   int len=qcs.length();
+   QCString name=qcs.right(len-ii);// 
+   name=VhdlDocGen::getIndexWord(name.data(),1);
+    if(!name)
+         gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
+    else
+        gBlock.name=name;
+    gBlock.bodyLine=yyLineNr+1;
+    QCString q=strComment;
+   VhdlDocGen::prepareComment(q);
+   gBlock.brief+=q;
+   strComment.resize(0);
+}
+*/
 
+static void startCodeBlock(int index){
+    int ll=strComment.length();
+     iCodeLen=inputVerilogString.findRev(strComment.data(),num_chars)+ll;
+  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+   //assert(false);
+    gBlock.reset();
+   int len=strComment.length();
+   QCString name=strComment.right(len-index);// 
+    name=VhdlDocGen::getIndexWord(name.data(),1);
+    if(!name)
+      gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
+    else
+      gBlock.name=name;
+   strComment=strComment.left(index);
+    gBlock.startLine=yyLineNr+1;
+    gBlock.bodyLine=yyLineNr+1;
+    VhdlDocGen::prepareComment(strComment);
+   gBlock.brief+=strComment;
+}
+static void makeInlineDoc(int endCode)
+{
+     int len=endCode-iCodeLen;
+     QCString par=inputVerilogString.mid(iCodeLen,len);
+     gBlock.doc=par;
+     gBlock.inbodyDocs=par;
+     gBlock.section=Entry::VARIABLE_SEC;
+     gBlock.spec=VhdlDocGen::MISCELLANEOUS;
+     gBlock.fileName = yyFileName;
+     gBlock.endBodyLine=yyLineNr-1;
+     gBlock.lang=SrcLangExt_VHDL;
+     gBlock.fileName =yyFileName;
+     gBlock.lang=SrcLangExt_VHDL;
+     Entry *temp=new Entry(gBlock);
+     Entry* compound= getCurrVerilog();
+//     fprintf(stderr,"\n <<<%s %s \n %s \n %d %d %d\n\n>>>\n",compound->name.data(),gBlock.brief.data(),par.data(),endCode,iCodeLen,yyLineNr);
+
+    if(compound)
+    compound->addSubEntry(temp);
+  else
+  {
+     temp->type="misc"; // global code like library ieee...
+     curRoots->addSubEntry(temp);
+  }
+
+ gBlock.reset();
+ strComment.resize(0); 
+ resetVerilogBrief();
+
+}// makeInlineDoc
+
+static bool isConstraintFile(QCString fileName,char *type)
+{
+  int i=fileName.findRev(type);
+  int j=fileName.length();
+  int k=strlen(type);
+  if((i+k)==j)
+   return true;
+  return false;
+}
 
 
 static bool  checkMultiComment(QCString& qcs){
@@ -723,7 +805,7 @@ static void writeFont(const char *s,const char* text)
 /*! counts the number of lines in the input */
 static int countLines()
 {
-  const char *p=inString;
+  const char *p=inputVerilogString.data();
   char c;
   int count=1;
   while ((c=*p)) 
@@ -892,9 +974,9 @@ static void resetScanner(const char* s,MyParserConv* parse);
 static int verilogScanYYread(char *buf,int max_size)
 {
  int c=0;
-  while ( c < max_size && inString[inputPosition] )
+  while ( c < max_size && inputVerilogString.at(inputPosition) )
   {
-    *buf = inString[inputPosition++] ;
+    *buf = inputVerilogString.at(inputPosition++) ;
     c++; buf++;
   }
   
@@ -1233,7 +1315,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>{STRENGTH0} { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);   return  STR0_TOK;} REJECT;}
 <Start>{STRENGTH1} { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng); return  STR1_TOK;}REJECT;}
 <Start>{GATETYPE}  { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);  return  GATE_TOK;}REJECT;}
-<*>"//%"[^{}\n][^\n]*\n/{LL}*"//%" { // found multiline comment
+<*>B*"//%"[^{}\n][^\n]*\n/{LL}*"//%" { // found multiline comment
                      QCString text(verilogScanYYtext);
                      if(!g_parseCode){
                      if(iDocLine==-1){
@@ -1276,11 +1358,17 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
   BEGIN(tagComment);
   }
 
-<tagComment>"//%"[^\n]* {
+<tagComment>B*"//%"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
-  if(!g_parseCode)
+  if(!g_parseCode){
    strComment+=verilogScanYYtext;
-  
+   int index =strComment.find("\\code");
+    if(index>0)
+    {
+    startCodeBlock(index);
+    }
+   }
+   fprintf(stderr,"[[ \n %s ]]",strComment.data());
    if(g_parseCode) 
    { 
      qlist.append(new QCString(verilogScanYYtext)); 
@@ -1290,7 +1378,33 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 
 <tagComment>.|\n {
   // found end of comment block
-  if(!g_parseCode){
+ int index =strComment.find("\\code");
+  fprintf(stderr," %s ",strComment.data());
+ // assert(false);
+   if(!g_parseCode && index>0)
+  {
+    startCodeBlock(index);
+    /*
+    int ll=strComment.length();
+     iCodeLen=inputVerilogString.findRev(strComment.data(),num_chars)+ll;
+  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+    gBlock.reset();
+   int len=strComment.length();
+   QCString name=strComment.right(len-index);// 
+    name=VhdlDocGen::getIndexWord(name.data(),1);
+    if(!name)
+      gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
+    else
+      gBlock.name=name;
+   strComment=strComment.left(index);
+    gBlock.startLine=yyLineNr+1;
+    gBlock.bodyLine=yyLineNr+1;
+    VhdlDocGen::prepareComment(strComment);
+   gBlock.brief+=strComment;
+   */
+  }
+  else if(!g_parseCode)
+  {
    strComment+=verilogScanYYtext;
    VhdlDocGen::prepareComment(strComment);
    handleVerilogCommentBlock(strComment,FALSE,iDocLine);
@@ -1310,7 +1424,25 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <*>"//%"[^\n]* { // one line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qcs(verilogScanYYtext);
- if(!g_parseCode){
+ 
+  bool isEndCode=qcs.contains("\\endcode");
+  int index = qcs.find("\\code");
+
+   if(isEndCode && !g_parseCode)
+   {
+     fprintf(stderr,"\n ending code..");
+   
+    int end=inputVerilogString.find(qcs.data(),iCodeLen);
+    makeInlineDoc(end);
+   }
+   else if(index > 0 && !g_parseCode) {
+  // assert(false);
+   strComment=qcs;
+    startCodeBlock(index);
+    strComment.resize(0);
+    }
+  else if(!g_parseCode)
+  {
    VhdlDocGen::prepareComment(qcs);
    //printf("--> handleCommentBlock line %d\n",yyLineNr);
  
@@ -1319,6 +1451,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
     handleVerilogCommentBlock(qcs,TRUE,iDocLine);
   }
  }//if
+  
   if(g_parseCode) // && !Config_getBool("STRIP_CODE_COMMENTS"))
    { 
      qlist.append(new QCString(verilogScanYYtext)); 
@@ -1591,12 +1724,22 @@ void VerilogScanner::parsePrototype(const char *text){ }
 
 void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
 {
+        yyFileName=QCString(fileName);
+	
+      bool xilinx_ucf=isConstraintFile(yyFileName,".ucf");
+      bool altera_qsf=isConstraintFile(yyFileName,".qsf");
+   
+   // support XILINX(ucf) and ALTERA (qsf) file
+   //   printf("%s",fileBuf);
+     if(xilinx_ucf)  {  VhdlDocGen::parseUCF(fileBuf,root,yyFileName,false);  return; }
+     if(altera_qsf) { VhdlDocGen::parseUCF(fileBuf,root,yyFileName,true); return; }
+    
+     num_chars=0;
      QCString pPuffer(" ");
 	 pPuffer+=fileBuf;
 	 if(!g_lexInit)
 	 buildKeyMap();
 	 inputFile.setName(fileName);
-	 yyFileName=QCString(fileName);
 	   if(g_lexInit)
 		 verilogScanYYrestart( verilogScanYYin );
 	   g_lexInit=TRUE;
@@ -1608,7 +1751,7 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
        inputPosition=0;
 	   g_buf=new char[len+1024];
        assert(g_buf);
-       inString=pPuffer.data();
+       inputVerilogString=pPuffer.data();
        g_inputLines  = countLines();
 	   totLines=g_inputLines;
 	   yyLineNr=1;
@@ -1621,6 +1764,22 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
 	   delete [] g_buf;g_buf=0;
 	   delete pconv;	  	  
 }
+
+
+static void  parseConstraint(const QCString & input)
+{
+QStringList qsl=QStringList::split("\n",input);
+codifyLines(input.data());
+/*
+for(uint j=0;j<qsl.count();j++)
+{
+  QCString q=(QCString)qsl[j];
+  writeVWord(QCString& qcs)
+}
+*/
+}// parseConstraint
+
+
 
  void VerilogScanner::parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
@@ -1635,21 +1794,31 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                    bool showLineNumbers
                   )
 				  { 
-              
+				  num_chars=0;
+         
+  			
 				 //  Definition *di=(Definition*)fileDef;
 				   QCString pPuffer(" ",1);
+				   if(!fileDef)
+				   {
+				    fprintf(stderr," spe code << %s >> \n",input.data());
+				    return;
+                                     }
 				   assert(fileDef);
+				     yyFileName=fileDef->fileName();
+                    g_code = &codeOutIntf;
+                 
+				  
                    QCString ff(fileDef->getDefFileName());
                    BufStr preBuf(input.length());
                         
                    if (Config_getBool("ENABLE_PREPROCESSING") && startLine==-1)
                      {
-                       // if(ff.data())
-                        //fprintf(stderr,"\nPreprocessing code of file %s...\n",ff.data());
+                        if(ff.data())
+                        fprintf(stderr,"\nPreprocessing code of file %s...\n",ff.data());
                         preprocessVerilogFile(ff,preBuf,0,-1);
                          preBuf.addChar('\0');
-                       pPuffer+=preBuf.data();              
-                  
+                         pPuffer+=preBuf.data();              
                    }
                    else
                     pPuffer+=input.data();
@@ -1657,6 +1826,7 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                       initVerilogParser(0,true);
                        VerilogDocGen::buildGlobalVerilogVariableDict(fileDef,true);
                   
+		
                    if(memberDef)// write code for function body
                    {
                     ClassDef *dd=memberDef->getClassDef();
@@ -1666,8 +1836,7 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
 						startLine--;
             
                    }
-                      g_code = &codeOutIntf;
-                      inString   = pPuffer.data();
+                      inputVerilogString   = pPuffer.data();
                       inputPosition = 0;
 					  iSize=0;
                       g_buf=new char[input.length()+1024];
@@ -1687,8 +1856,7 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                         yyLineNr    = 1;
                          g_exampleName   = exampleName;
                         g_sourceFileDef = fileDef;
-                        yyFileName=fileDef->fileName();
-                        if (isExampleBlock && fileDef==0)
+                         if (isExampleBlock && fileDef==0)
                         {
                           // create a dummy filedef for the example
                          g_sourceFileDef = new FileDef("",exampleName);
@@ -1711,6 +1879,15 @@ void VerilogScanner::parseInput(const char *fileName,const char *fileBuf,Entry *
                       g_includeCodeFragment = inlineFragment;
                         if(!memberDef) startCodeLine();
              
+               bool xilinx_ucf=isConstraintFile(yyFileName,".ucf");
+                    bool altera_qsf=isConstraintFile(yyFileName,".qsf");
+
+                   if(xilinx_ucf || altera_qsf) 
+                     {
+                     parseConstraint(input);
+                     return;
+                     } 
+				   
                      
   		             verilogScanYYrestart( verilogScanYYin );
 				    g_parseCode=true;

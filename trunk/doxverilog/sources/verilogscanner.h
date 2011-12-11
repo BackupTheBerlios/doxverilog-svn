@@ -143,4 +143,5 @@ MemberDef* findGlobalMember(const QCString& memName);
 
  void addGlobalVerilogMember(const Entry *e);
 
+ void resetVerilogBrief();
 #endif

@@ -271,7 +271,7 @@ static FileState *checkAndOpenFile(const QCString &fileName)
 
     fs = new FileState;
     
-    QCString filterName = getFileFilter(absName);
+    QCString filterName = getFileFilter(absName,true);
     if (!filterName.isEmpty())
     {
       fs->isPlainFile = FALSE;
@@ -2890,7 +2890,7 @@ void preprocessVerilogFile(const char *fileName,BufStr &output,const char* codeF
     
   }
  
-  QCString inputFilter = getFileFilter(fileName);
+  QCString inputFilter = getFileFilter(fileName,true);
   if (inputFilter.isEmpty())
   {
     preYYVerilogin = fopen(fileName,"r");
