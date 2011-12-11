@@ -13,7 +13,7 @@ Introduction
 ============
  Doxverilog  is a nativ verilog parser (Verilog 2001) for Doxygen. After installing this patch you can
  documentate your verilog project  similar to VHDL in Doxygen. 
- Patch against the doxygen-1.7.0 version. 
+ Patch against the doxygen-1.7.5 version. 
 
 System Requirements
 ===================
@@ -22,7 +22,7 @@ System Requirements
   ----			---------------		---
   * bison		2.1 or higher		http://www.gnu.org/software/bison/bison.html
   * flex		2.5.35 or higher        http://flex.sourceforge.net
-  * doxygen sources     1.7.0 			http://www.doxygen.org/download.html
+  * doxygen sources     1.7.5 			http://www.doxygen.org/download.html
  	
  
 Installation
