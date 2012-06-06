@@ -7582,27 +7582,27 @@ Index: vhdlscanner.l
 \ No newline at end of file
 Index: libdoxygen.pro.in
 ===================================================================
---- libdoxygen.pro.in	2011-08-03 12:28:25.000000000 +0100
-+++ libdoxygen.pro.in	2011-11-12 17:06:04.000000000 +0000
-@@ -101,6 +101,7 @@
-                 fortrancode.h \
-                 fortranscanner.h \
-                 dbusxmlscanner.h \
-+                preVerilog.h \
- 		qhp.h \
- 		qhpxmlwriter.h \
- 		qtbc.h \
-@@ -161,6 +162,9 @@
+--- libdoxygen.pro.in	(revision 818)
++++ libdoxygen.pro.in	(working copy)
+@@ -99,6 +99,7 @@
+ 		perlmodgen.h \
+ 		lodepng.h \
+ 		pre.h \
++		preVerilog.h \
+                 printdocvisitor.h \
+                 pycode.h \
+                 pyscanner.h \
+@@ -165,6 +166,9 @@
+ 		types.h \
  		unistd.h \
  		util.h \
- 		version.h \
 +		verilogscanner.h \
 +		verilogdocgen.h \
 +		verilogparser.hpp \
+ 		version.h \
  		vhdlcode.h \
  		vhdldocgen.h \
- 		vhdlscanner.h \
-@@ -231,6 +235,7 @@
+@@ -237,6 +241,7 @@
  		pagedef.cpp \
  		perlmodgen.cpp \
  		pre.cpp \
@@ -7610,7 +7610,7 @@ Index: libdoxygen.pro.in
  		pycode.cpp \
  		pyscanner.cpp \    
  		qhp.cpp \
-@@ -248,6 +253,9 @@
+@@ -254,6 +259,9 @@
  		translator.cpp \
  		util.cpp \
  		version.cpp \
@@ -7619,11 +7619,11 @@ Index: libdoxygen.pro.in
 +		verilogdocgen.cpp \
  		vhdlcode.cpp \
  		vhdldocgen.cpp \
- 		vhdlscanner.cpp \
-Index: libdoxygen.pro.in
+ 		vhdlparser.cpp \
+Index: libdoxygen.t.in
 ===================================================================
---- libdoxygen.t	2011-08-03 12:37:56.000000000 +0200
-+++ libdoxygen.t	2011-11-12 17:06:04.000000000 +0100
+--- libdoxygen.t.in	2011-08-03 12:37:56.000000000 +0200
++++ libdoxygen.t.in	2011-11-12 17:06:04.000000000 +0100
 @@ -100,7 +100,15 @@
  	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
  	-rm ce_parse.c	
