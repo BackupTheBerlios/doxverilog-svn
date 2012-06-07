@@ -304,20 +304,23 @@ void VerilogDocGen::writeVerilogDeclarations(MemberList* ml,OutputList& ol,Group
 
 	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::LIBRARY,FALSE),0,FALSE,VerilogDocGen::LIBRARY); 
 	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::CONFIGURATION,FALSE),0,FALSE,VerilogDocGen::CONFIGURATION);   
-	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PORT,FALSE),0,FALSE,VerilogDocGen::PORT); 
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::MODULE,FALSE),0,FALSE,VerilogDocGen::MODULE);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FEATURE,FALSE),0,FALSE,VerilogDocGen::FEATURE);
+	      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FEATURE,FALSE),0,FALSE,VerilogDocGen::FEATURE);
+   
+	   VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PORT,FALSE),0,FALSE,VerilogDocGen::PORT); 
+   
+	   VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INPUT,FALSE),0,FALSE,VerilogDocGen::INPUT);
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INOUT,FALSE),0,FALSE,VerilogDocGen::INOUT);
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::OUTPUT,FALSE),0,FALSE,VerilogDocGen::OUTPUT);
+         VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PARAMETER,FALSE),0,FALSE,VerilogDocGen::PARAMETER);
+ 
+	   VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::MODULE,FALSE),0,FALSE,VerilogDocGen::MODULE);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INCLUDE,FALSE),0,FALSE,VerilogDocGen::INCLUDE);
            VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::SIGNAL,FALSE),0,FALSE,VerilogDocGen::SIGNAL);
   
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FUNCTION,FALSE),0,FALSE,VerilogDocGen::FUNCTION);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::ALWAYS,FALSE),0,FALSE,VerilogDocGen::ALWAYS);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::TASK,FALSE),0,FALSE,VerilogDocGen::TASK);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INPUT,FALSE),0,FALSE,VerilogDocGen::INPUT);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INOUT,FALSE),0,FALSE,VerilogDocGen::INOUT);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::OUTPUT,FALSE),0,FALSE,VerilogDocGen::OUTPUT);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PARAMETER,FALSE),0,FALSE,VerilogDocGen::PARAMETER);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::COMPONENT,FALSE),0,FALSE,VerilogDocGen::COMPONENT);
+       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::COMPONENT,FALSE),0,FALSE,VerilogDocGen::COMPONENT);
     
     
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VhdlDocGen::MISCELLANEOUS,FALSE),0,FALSE,VhdlDocGen::MISCELLANEOUS);
