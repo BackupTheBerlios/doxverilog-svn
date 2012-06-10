@@ -47,7 +47,7 @@ install the doxygen-1.8.1 sources(official release)
 ==================  WINDOWS =====================================	 
     For WINDOWS copy the patch file windows.patch to directory doxygen-1.8.1
     open a shell in the doxygen-1.8.1 directory
-    make  patch  # patch -F3 -p1  < windows.patch
+    make  patch  # patch -F3 -p0  < windows.patch
 	
 	Open doxygen-1.8.1\winbuild\Doxygen.vcproj with Visual C++ 2008 Express Edition
 

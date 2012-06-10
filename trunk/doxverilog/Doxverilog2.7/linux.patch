@@ -1,7 +1,7 @@
 Index: util.cpp
 ===================================================================
---- util.cpp	(Revision 818)
-+++ util.cpp	(Arbeitskopie)
+--- util.cpp	(revision 818)
++++ util.cpp	(working copy)
 @@ -6359,6 +6359,9 @@
    { "fortran",     "fortran", SrcLangExt_Fortran  },
    { "vhdl",        "vhdl",    SrcLangExt_VHDL     },
@@ -45,10 +45,220 @@ Index: util.cpp
      }
      else
      {
+Index: libdoxygen.t
+===================================================================
+--- libdoxygen.t	(revision 0)
++++ libdoxygen.t	(revision 0)
+@@ -0,0 +1,192 @@
++#
++# $Id: libdoxygen.t,v 1.1 2001/03/19 19:27:41 root Exp $
++#
++# Copyright (C) 1997-2012 by Dimitri van Heesch.
++#
++# Permission to use, copy, modify, and distribute this software and its
++# documentation under the terms of the GNU General Public License is hereby 
++# granted. No representations are made about the suitability of this software 
++# for any purpose. It is provided "as is" without express or implied warranty.
++# See the GNU General Public License for more details.
++#
++# Documents produced by Doxygen are derivative works derived from the
++# input used in their production; they are not affected by this license.
++#!
++#! doxygen.t: This is a custom template for building Doxygen
++#!
++#$ IncludeTemplate("lib.t");
++
++LEX        = /usr/bin/flex
++YACC       = /usr/bin/bison
++INCBUFSIZE = $(PERL) increasebuffer.pl
++
++#${
++sub GenerateDep {
++    my($obj,$src,$dep) = @_;
++    my(@objv,$srcv,$i,$s,$o,$d,$c);
++    @objv = split(/\s+/,$obj);
++    @srcv = split(/\s+/,$src);
++    for $i ( 0..$#objv ) {
++        $s = $srcv[$i];
++        $o = $objv[$i];
++        next if $s eq "";
++        $text .= $o . ": " . $s;
++	$text .= " ${linebreak}\n\t\t" . $dep if $dep ne "";
++        if ( $moc_output{$s} ne "" ) {
++            $text .= " ${linebreak}\n\t\t" . $moc_output{$s};
++        }
++        $d = &make_depend($s);
++        $text .= " ${linebreak}\n\t\t" . $d if $d ne "";
++	$text .= "\n";
++    }
++    chop $text;
++}
++#$} 
++
++####################
++
++#$ GenerateDep("scanner.cpp","scanner.l");
++	$(LEX) -PscanYY -t scanner.l | $(INCBUFSIZE) >scanner.cpp
++
++#$ GenerateDep("code.cpp","code.l");
++	$(LEX) -PcodeYY -t code.l | $(INCBUFSIZE) >code.cpp
++
++#$ GenerateDep("pyscanner.cpp","pyscanner.l");
++	$(LEX) -PpyscanYY -t pyscanner.l | $(INCBUFSIZE) >pyscanner.cpp
++
++#$ GenerateDep("pycode.cpp","pycode.l");
++	$(LEX) -PpycodeYY -t pycode.l | $(INCBUFSIZE) >pycode.cpp
++
++#$ GenerateDep("fortranscanner.cpp","fortranscanner.l");
++	$(LEX) -i -PfscanYY -t fortranscanner.l | $(INCBUFSIZE) >fortranscanner.cpp
++
++#$ GenerateDep("fortrancode.cpp","fortrancode.l");
++	$(LEX) -i -PfcodeYY -t fortrancode.l | $(INCBUFSIZE) >fortrancode.cpp
++
++#$ GenerateDep("vhdlcode.cpp","vhdlcode.l");
++	$(LEX) -i -PvhdlcodeYY -t vhdlcode.l | $(INCBUFSIZE) >vhdlcode.cpp
++
++#$ GenerateDep("tclscanner.cpp","tclscanner.l");
++	$(LEX) -i -PtclscanYY -t tclscanner.l | $(INCBUFSIZE) >tclscanner.cpp
++
++#$ GenerateDep("pre.cpp","pre.l");
++	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
++
++#$ GenerateDep("declinfo.cpp","declinfo.l");
++	$(LEX) -PdeclinfoYY -t declinfo.l | $(INCBUFSIZE) >declinfo.cpp
++
++#$ GenerateDep("defargs.cpp","defargs.l");
++	$(LEX) -PdefargsYY -t defargs.l | $(INCBUFSIZE) >defargs.cpp
++
++#$ GenerateDep("doctokenizer.cpp","doctokenizer.l");
++	$(LEX) -PdoctokenizerYY -t doctokenizer.l | $(INCBUFSIZE) >doctokenizer.cpp
++
++#$ GenerateDep("commentcnv.cpp","commentcnv.l");
++	$(LEX) -PcommentcnvYY -t commentcnv.l | $(INCBUFSIZE) >commentcnv.cpp
++
++#$ GenerateDep("commentscan.cpp","commentscan.l");
++	$(LEX) -PcommentScanYY -t commentscan.l | $(INCBUFSIZE) >commentscan.cpp
++
++#$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
++	$(LEX) -PcppExpYY -t constexp.l | $(INCBUFSIZE) >ce_lex.cpp 
++
++#$ GenerateDep("ce_parse.cpp","constexp.y");
++	$(YACC) -l -p cppExpYY constexp.y -o ce_parse.cpp 
++
++#$ GenerateDep("ce_parse.h","constexp.y");
++	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
++	-rm ce_parse.c
++
++#$ GenerateDep("vhdlscanner.cpp","vhdlscanner.l","vhdlparser.h");
++	$(LEX) -i -PvhdlScanYY -t vhdlscanner.l | $(INCBUFSIZE) >vhdlscanner.cpp
++
++#$ GenerateDep("vhdlparser.cpp","vhdlparser.y");
++	$(YACC) -l -p vhdlScanYY vhdlparser.y -o vhdlparser.cpp 	
++
++#$ GenerateDep("vhdlparser.h","vhdlparser.y");
++	$(YACC) -l -d -p vhdlScanYY vhdlparser.y -o vhdlparser.c 
++	-rm vhdlparser.c	
++
++#$ GenerateDep("verilogscanner.cpp","verilogscanner.l");
++	$(LEX)  -8  -PverilogScanYY -t verilogscanner.l | $(INCBUFSIZE) >verilogscanner.cpp
++
++#$ GenerateDep("verilogparser.cpp","verilogparser.y");
++	$(YACC)  -v verilogparser.y -o verilogparser.cpp 
++
++#$ GenerateDep("preVerilog.cpp","preVerilog.l");
++	$(LEX) -PpreYYVerilog -t preVerilog.l | $(INCBUFSIZE) >preVerilog.cpp 
++	
++#$ GenerateDep("layout.cpp","layout_default.h");
++
++TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
++
++index_xsd.h: index.xsd
++	cat index.xsd | $(TO_C_CMD) >index_xsd.h 
++
++compound_xsd.h: compound.xsd
++	cat compound.xsd | $(TO_C_CMD) >compound_xsd.h 
++
++layout_default.h: layout_default.xml
++	cat layout_default.xml | $(TO_C_CMD) >layout_default.h 
++
++header_html.h: header.html
++	cat header.html | $(TO_C_CMD) >header_html.h
++
++footer_html.h: footer.html
++	cat footer.html | $(TO_C_CMD) >footer_html.h
++
++search_functions_php.h: search_functions.php
++	cat search_functions.php | $(TO_C_CMD) >search_functions_php.h 
++
++search_opensearch_php.h: search_opensearch.php
++	cat search_opensearch.php | $(TO_C_CMD) >search_opensearch_php.h 
++
++search_js.h: search.js
++	cat search.js | $(TO_C_CMD) >search_js.h 
++
++search_css.h: search.css
++	cat search.css | $(TO_C_CMD) >search_css.h 
++
++doxygen_css.h: doxygen.css
++	cat doxygen.css | $(TO_C_CMD) >doxygen_css.h 
++
++navtree_js.h: navtree.js
++	cat navtree.js | $(TO_C_CMD) >navtree_js.h
++
++navindex_js.h: navindex.js
++	cat navindex.js | $(TO_C_CMD) >navindex_js.h
++
++resize_js.h: resize.js
++	cat resize.js | $(TO_C_CMD) >resize_js.h
++
++jquery_p1_js.h: jquery_p1.js
++	cat jquery_p1.js | $(TO_C_CMD) >jquery_p1_js.h
++
++jquery_p2_js.h: jquery_p2.js
++	cat jquery_p2.js | $(TO_C_CMD) >jquery_p2_js.h
++
++jquery_p3_js.h: jquery_p3.js
++	cat jquery_p3.js | $(TO_C_CMD) >jquery_p3_js.h
++
++jquery_ui_js.h: jquery_ui.js
++	cat jquery_ui.js | $(TO_C_CMD) >jquery_ui_js.h
++
++jquery_fx_js.h: jquery_fx.js
++	cat jquery_fx.js | $(TO_C_CMD) >jquery_fx_js.h
++
++navtree_css.h: navtree.css
++	cat navtree.css | $(TO_C_CMD) >navtree_css.h
++
++svgpan_js.h: svgpan.js
++	cat svgpan.js | $(TO_C_CMD) >svgpan_js.h
++
++dynsections_js.h: dynsections.js
++	cat dynsections.js | $(TO_C_CMD) >dynsections_js.h
++
++doxygen_bst.h: doxygen.bst
++	cat doxygen.bst | $(TO_C_CMD) >doxygen_bst.h
++
++bib2xhtml.h: bib2xhtml.pl
++	cat bib2xhtml.pl | $(TO_C_CMD) >bib2xhtml.h
++
++
+Index: rtfgen.h
+===================================================================
+--- rtfgen.h	(revision 818)
++++ rtfgen.h	(working copy)
+@@ -122,7 +122,7 @@
+     void writeAnchor(const char *fileName,const char *name);
+     void startCodeFragment();
+     void endCodeFragment();
+-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
++    void writeLineNumber(const char *,const char *,const char *,int l,bool b) { t << l << " "; }
+     void startCodeLine(bool) { col=0; }
+     void endCodeLine() { lineBreak(); }
+     void startEmphasis() { t << "{\\i ";  }
 Index: doxygen_css.h
 ===================================================================
---- doxygen_css.h	(Revision 818)
-+++ doxygen_css.h	(Arbeitskopie)
+--- doxygen_css.h	(revision 818)
++++ doxygen_css.h	(working copy)
 @@ -1130,4 +1130,9 @@
  "    display:inline;\n"
  "  }\n"
@@ -62,8 +272,8 @@ Index: doxygen_css.h
 +
 Index: navtree_js.h
 ===================================================================
---- navtree_js.h	(Revision 818)
-+++ navtree_js.h	(Arbeitskopie)
+--- navtree_js.h	(revision 818)
++++ navtree_js.h	(working copy)
 @@ -54,6 +54,7 @@
  "    node.expandToggle.href = \"javascript:void(0)\";\n"
  "    node.expandToggle.onclick = function() {\n"
@@ -83,7 +293,7 @@ Index: navtree_js.h
  "        $(node.getChildrenUL()).slideDown(\"fast\");\n"
  "      }\n"
  "      if (node.isLast) {\n"
-@@ -417,3 +420,47 @@
+@@ -417,3 +420,49 @@
  "  $(window).load(showRoot);\n"
  "}\n"
  "\n"
@@ -131,11 +341,26 @@ Index: navtree_js.h
 +"	}\n"
 + "}\n"
 + "\n"
++ "\n"
++ 
 \ No newline at end of file
+Index: latexgen.cpp
+===================================================================
+--- latexgen.cpp	(revision 818)
++++ latexgen.cpp	(working copy)
+@@ -2490,7 +2490,7 @@
+   t << "\\end{DoxyCode}\n";
+ }
+ 
+-void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
++void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l,bool b)
+ {
+   if (m_prettyCode)
+   {
 Index: definition.cpp
 ===================================================================
---- definition.cpp	(Revision 818)
-+++ definition.cpp	(Arbeitskopie)
+--- definition.cpp	(revision 818)
++++ definition.cpp	(working copy)
 @@ -196,6 +196,15 @@
    return FALSE;
  }
@@ -161,10 +386,43 @@ Index: definition.cpp
        {
          if (thisMd) VhdlDocGen::writeCodeFragment(ol,actualStart,codeFragment,thisMd);
          return;
+Index: libdoxygen.t.in
+===================================================================
+--- libdoxygen.t.in	(revision 818)
++++ libdoxygen.t.in	(working copy)
+@@ -107,6 +107,15 @@
+ 	$(YACC) -l -d -p vhdlScanYY vhdlparser.y -o vhdlparser.c 
+ 	-rm vhdlparser.c	
+ 	
++#$ GenerateDep("verilogscanner.cpp","verilogscanner.l");
++	$(LEX)  -8  -PverilogScanYY -t verilogscanner.l | $(INCBUFSIZE) >verilogscanner.cpp
++
++#$ GenerateDep("verilogparser.cpp","verilogparser.y");
++	$(YACC)  -v -d verilogparser.y -o verilogparser.cpp 
++
++#$ GenerateDep("preVerilog.cpp","preVerilog.l");
++	$(LEX) -PpreYYVerilog -t preVerilog.l | $(INCBUFSIZE) >preVerilog.cpp 
++	
+ #$ GenerateDep("layout.cpp","layout_default.h");
+ 
+ TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
+Index: mangen.h
+===================================================================
+--- mangen.h	(revision 818)
++++ mangen.h	(working copy)
+@@ -127,7 +127,7 @@
+     void writeAnchor(const char *,const char *) {}
+     void startCodeFragment();
+     void endCodeFragment();
+-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
++    void writeLineNumber(const char *,const char *,const char *,int l,bool b) { t << l << " "; }
+     void startCodeLine(bool) {}
+     void endCodeLine() { codify("\n"); col=0; }
+     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
 Index: configoptions.cpp
 ===================================================================
---- configoptions.cpp	(Revision 818)
-+++ configoptions.cpp	(Arbeitskopie)
+--- configoptions.cpp	(revision 818)
++++ configoptions.cpp	(working copy)
 @@ -336,6 +336,27 @@
                   FALSE
                  );
@@ -212,8 +470,8 @@ Index: configoptions.cpp
                   "RECURSIVE",
 Index: ftvhelp.cpp
 ===================================================================
---- ftvhelp.cpp	(Revision 818)
-+++ ftvhelp.cpp	(Arbeitskopie)
+--- ftvhelp.cpp	(revision 818)
++++ ftvhelp.cpp	(working copy)
 @@ -34,7 +34,9 @@
  #include "pagedef.h"
  #include "docparser.h"
@@ -477,8 +735,8 @@ Index: ftvhelp.cpp
  
 Index: vhdldocgen.h
 ===================================================================
---- vhdldocgen.h	(Revision 818)
-+++ vhdldocgen.h	(Arbeitskopie)
+--- vhdldocgen.h	(revision 818)
++++ vhdldocgen.h	(working copy)
 @@ -276,6 +276,10 @@
      static QCString  parseForBinding(QCString & entity,QCString & arch);
      static void addBaseClass(ClassDef* cd,ClassDef *ent);
@@ -490,10 +748,23 @@ Index: vhdldocgen.h
    private:
      static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
      static bool compareArgList(ArgumentList*,ArgumentList*);
+Index: htmlgen.h
+===================================================================
+--- htmlgen.h	(revision 818)
++++ htmlgen.h	(working copy)
+@@ -145,7 +145,7 @@
+                          { t << "<a name=\"" << name <<"\" id=\"" << name << "\"></a>"; }
+     void startCodeFragment() { t << PREFRAG_START; }
+     void endCodeFragment()   { t << PREFRAG_END; } 
+-    void writeLineNumber(const char *,const char *,const char *,int);
++    void writeLineNumber(const char *,const char *,const char *,int,bool l);
+     void startCodeLine(bool);
+     void endCodeLine();
+     void startEmphasis() { t << "<em>";  }
 Index: index.cpp
 ===================================================================
---- index.cpp	(Revision 818)
-+++ index.cpp	(Arbeitskopie)
+--- index.cpp	(revision 818)
++++ index.cpp	(working copy)
 @@ -43,6 +43,7 @@
  #include "dirdef.h"
  #include "vhdldocgen.h"
@@ -533,8 +804,8 @@ Index: index.cpp
        (cd=md->getClassDef())    && 
 Index: memberdef.h
 ===================================================================
---- memberdef.h	(Revision 818)
-+++ memberdef.h	(Arbeitskopie)
+--- memberdef.h	(revision 818)
++++ memberdef.h	(working copy)
 @@ -51,7 +51,7 @@
    public:
      
@@ -556,8 +827,8 @@ Index: memberdef.h
      void loadFromDisk() const;
 Index: definition.h
 ===================================================================
---- definition.h	(Revision 818)
-+++ definition.h	(Arbeitskopie)
+--- definition.h	(revision 818)
++++ definition.h	(working copy)
 @@ -19,6 +19,7 @@
  #define DEFINITION_H
  
@@ -587,10 +858,50 @@ Index: definition.h
  };
  
  class DefinitionList : public QList<Definition>, public DefinitionIntf
+Index: libdoxygen.pro.in
+===================================================================
+--- libdoxygen.pro.in	(revision 818)
++++ libdoxygen.pro.in	(working copy)
+@@ -99,6 +99,7 @@
+ 		perlmodgen.h \
+ 		lodepng.h \
+ 		pre.h \
++		preVerilog.h \
+                 printdocvisitor.h \
+                 pycode.h \
+                 pyscanner.h \
+@@ -165,6 +166,9 @@
+ 		types.h \
+ 		unistd.h \
+ 		util.h \
++		verilogscanner.h \
++		verilogdocgen.h \
++		verilogparser.hpp \
+ 		version.h \
+ 		vhdlcode.h \
+ 		vhdldocgen.h \
+@@ -237,6 +241,7 @@
+ 		pagedef.cpp \
+ 		perlmodgen.cpp \
+ 		pre.cpp \
++		preVerilog.cpp \
+ 		pycode.cpp \
+ 		pyscanner.cpp \    
+ 		qhp.cpp \
+@@ -254,6 +259,9 @@
+ 		translator.cpp \
+ 		util.cpp \
+ 		version.cpp \
++		verilogscanner.cpp \
++		verilogparser.cpp \
++		verilogdocgen.cpp \
+ 		vhdlcode.cpp \
+ 		vhdldocgen.cpp \
+ 		vhdlparser.cpp \
 Index: vhdlparser.y
 ===================================================================
---- vhdlparser.y	(Revision 818)
-+++ vhdlparser.y	(Arbeitskopie)
+--- vhdlparser.y	(revision 818)
++++ vhdlparser.y	(working copy)
 @@ -1245,7 +1245,7 @@
                    addVhdlType($2,getParsedLine(t_ATTRIBUTE),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,oo.data());
                  }
@@ -609,11 +920,24 @@ Index: vhdlparser.y
  entity_class: t_SIGNAL        { $$="signal";        }
  entity_class: t_VARIABLE      { $$="variable";      }
  entity_class: t_CONSTANT      { $$="constant";      }
+Index: latexgen.h
+===================================================================
+--- latexgen.h	(revision 818)
++++ latexgen.h	(working copy)
+@@ -131,7 +131,7 @@
+     void writeAnchor(const char *fileName,const char *name);
+     void startCodeFragment();
+     void endCodeFragment();
+-    void writeLineNumber(const char *,const char *,const char *,int l);
++    void writeLineNumber(const char *,const char *,const char *,int l,bool b);
+     void startCodeLine(bool hasLineNumbers);
+     void endCodeLine();
+     void startEmphasis() { t << "{\\em ";  }
 Index: vhdldocgen.cpp
 ===================================================================
---- vhdldocgen.cpp	(Revision 818)
-+++ vhdldocgen.cpp	(Arbeitskopie)
-@@ -1,2863 +1,3462 @@
+--- vhdldocgen.cpp	(revision 818)
++++ vhdldocgen.cpp	(working copy)
+@@ -1,2863 +1,3494 @@
 -/******************************************************************************
 - *
 - * Copyright (C) 1997-2012 by Dimitri van Heesch.
@@ -4803,25 +5127,40 @@ Index: vhdldocgen.cpp
 +  return qcs;
 +}
 +
++
++ bool checkString(QCString &name,OutputList& ol)
++{
++  if (name.isEmpty()) return FALSE;
++  name=name.simplifyWhiteSpace();
++  if (name.isEmpty()) return FALSE;
++  
++  int len=name.length();
++  if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
++  {
++      VhdlDocGen::startFonts(name,"keyword",ol);     
++      return true;
++  }
++    return false;
++  }
++
 +/*!
 + * writes a colored and formatted string
 + */
-+
-+void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberDef* mdef)
++void VhdlDocGen::writeFormatString(const QCString& qq,OutputList&ol,const MemberDef* mdef)
 +{
-+    static bool optVerilog=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
-+
-+  QRegExp reg("[\\[\\]\\.\\/\\:\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]");
-+  QCString qcs = s;
++  static bool optVerilog=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++  QRegExp reg("[\\[\\]\\/\\:\\<\\>\\s\\,\\;\\+\\-\\*\\|\\&\\=\\(\\)\"\\s]");
++  QCString qcs=qq;
 +  qcs+=QCString(" ");// parsing the last sign
-+ const  QCString *ss;
++  const QCString *ss;
 +  QCString find=qcs;
 +  QCString temp=qcs;
 +  char buf[2];
 +  buf[1]='\0';
-+
 +  int j;
 +  int len;
++    int col=0;
++ 
 +  j = reg.match(temp.data(),0,&len);
 +
 +  ol.startBold();
@@ -4829,12 +5168,25 @@ Index: vhdldocgen.cpp
 +  {
 +    while (j>=0)
 +    {
++     bool bString=false;
++    
 +      find=find.left(j);
 +      buf[0]=temp[j];
-+        if(optVerilog)
++	  if(buf[0]=='"' && temp.length()>1)
++	  {
++		int i=temp.find('"',1);
++		if(i>0){
++         find=temp.left(i+1);
++         j+=i;
++         bString=true;
++		}
++	  }
++	  
++	  if(optVerilog){
 +        ss=VerilogDocGen::findKeyWord(find);
-+      else
-+        ss=VhdlDocGen::findKeyWord(find);
++     }
++	  else
++      ss=VhdlDocGen::findKeyWord(find);
 +      bool k=VhdlDocGen::isNumber(find); // is this a number
 +      if (k)
 +      {
@@ -4844,39 +5196,40 @@ Index: vhdldocgen.cpp
 +      }
 +      else if (j != 0 && ss)
 +      {
-+        VhdlDocGen::startFonts(find,ss->data(),ol);
++	VhdlDocGen::startFonts(find,ss->data(),ol);
 +      }
 +      else
 +      {
-+        if (j>0)
-+        {
-+          VhdlDocGen::writeStringLink(mdef,find,ol);
-+        }
++	if (j>0)
++	{
++         if(!checkString(find,ol))	   
++	  VhdlDocGen::writeStringLink(mdef,find,ol);
++	}
 +      }
++      if(!bString)
 +      VhdlDocGen::startFonts(&buf[0],"vhdlchar",ol);
++      col+=j+1;
++      if( col > COL_SIZE)
++	  {
++		  ol.docify(". . . .");
++		  return;
++	  }
 +
 +      QCString st=temp.remove(0,j+1);
 +      find=st;
-+      if (!find.isEmpty() && find.at(0)=='"')
-+      {
-+        int ii=find.find('"',2);
-+        if (ii>1)
-+        {
-+          QCString com=find.left(ii+1);
-+          VhdlDocGen::startFonts(com,"keyword",ol);
-+          temp=find.remove(0,ii+1);
-+        }
-+      }
-+      else
-+      {
-+        temp=st;
-+      }
++      temp=st;
 +      j = reg.match(temp.data(),0,&len);
++	  bString=false;
 +    }//while
 +  }//if
 +  else
 +  {
-+    VhdlDocGen::startFonts(find,"vhdlchar",ol);
++      if(checkString(find,ol))
++	  {
++        printf("found"); 
++	  }
++	  else
++    VhdlDocGen::startFonts(find,"vhdlchar",ol);     
 +  }
 +  ol.endBold();
 +}// writeFormatString
@@ -5430,7 +5783,7 @@ Index: vhdldocgen.cpp
 +    }
 +    else
 +    {
-+      writeLink(mdef,ol);
++    writeLink(mdef,ol);
 +      if (VhdlDocGen::isLibrary(mdef) || VhdlDocGen::isPackage(mdef))
 +      {
 +        return;
@@ -5441,27 +5794,30 @@ Index: vhdldocgen.cpp
 +     if(optVerilog)
 +      {
 +       if(mdef->getMemberSpecifiers()==VerilogDocGen::FEATURE)
-+   {
-+	 QCString arg=mdef->getDefinition();
-+	 int kr=arg.find("\\?");	  
-+	 if(kr>=0)
-+	 {
++       {
++	   QCString arg=mdef->getDefinition();
++	   int kr=arg.find("\\?");	  
++	   if(kr>=0)
++	   {
 +       arg=arg.left(kr-2);
 +	   arg.stripPrefix("feature");
 +	   arg=arg.simplifyWhiteSpace();
 +	   arg.stripPrefix(mdef->name().data());
 +	   arg.append("{ . . . }");
 +	   VhdlDocGen::formatString(arg,ol,mdef);
-+	 }
-+	
-+	 else{
++	   }
++	 else
++	 {
 +     QCString ttype=mdef->typeString();
 +	 ttype.stripPrefix("feature");
 +	 VhdlDocGen::formatString(ttype,ol,mdef);
 +	 }
 +	 return;  
 +	  }
-+    }
++      if(mdef->getMemberSpecifiers()==VerilogDocGen::PARAMETER)  
++	   VhdlDocGen::formatString(largs,ol,mdef);
++	 return;
++	 }
 +    // QCString largs=mdef->argsString();
 +
 +    bool c=largs=="context";
@@ -6941,8 +7297,8 @@ Index: vhdldocgen.cpp
 +
 Index: filedef.cpp
 ===================================================================
---- filedef.cpp	(Revision 818)
-+++ filedef.cpp	(Arbeitskopie)
+--- filedef.cpp	(revision 818)
++++ filedef.cpp	(working copy)
 @@ -37,6 +37,7 @@
  #include "debug.h"
  #include "layout.h"
@@ -6951,7 +7307,21 @@ Index: filedef.cpp
  
  //---------------------------------------------------------------------------
  
-@@ -922,7 +923,7 @@
+@@ -44,11 +45,12 @@
+ {
+   public:
+     virtual void codify(const char *) {}
++	virtual void writeString(const char *) {}
+     virtual void writeCodeLink(const char *,const char *,
+                                const char *,const char *,
+                                const char *) {}
+     virtual void writeLineNumber(const char *,const char *,
+-                                 const char *,int) {}
++                                 const char *,int,bool b) {}
+     virtual void startCodeLine(bool) {}
+     virtual void endCodeLine() {}
+     virtual void startCodeAnchor(const char *) {}
+@@ -922,7 +924,7 @@
        break;
      case MemberDef::Define:       
        addMemberToList(MemberList::decDefineMembers,md);
@@ -6960,7 +7330,7 @@ Index: filedef.cpp
        break;
      default:
         err("FileDef::insertMembers(): "
-@@ -1622,14 +1623,18 @@
+@@ -1622,14 +1624,18 @@
  void FileDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
  {
    static bool optVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
@@ -6985,8 +7355,8 @@ Index: filedef.cpp
        ml->writeDeclarations(ol,0,0,this,0,title,0);
 Index: image.cpp
 ===================================================================
---- image.cpp	(Revision 818)
-+++ image.cpp	(Arbeitskopie)
+--- image.cpp	(revision 818)
++++ image.cpp	(working copy)
 @@ -491,18 +491,21 @@
  
  ColoredImage::ColoredImage(int width,int height,
@@ -7045,8 +7415,8 @@ Index: image.cpp
    free(m_data);
 Index: doxygen.cpp
 ===================================================================
---- doxygen.cpp	(Revision 818)
-+++ doxygen.cpp	(Arbeitskopie)
+--- doxygen.cpp	(revision 818)
++++ doxygen.cpp	(working copy)
 @@ -83,6 +83,8 @@
  #include "filestorage.h"
  #include "markdown.h"
@@ -7120,8 +7490,8 @@ Index: doxygen.cpp
  
 Index: config.l
 ===================================================================
---- config.l	(Revision 818)
-+++ config.l	(Arbeitskopie)
+--- config.l	(revision 818)
++++ config.l	(working copy)
 @@ -1330,7 +1330,8 @@
      filePatternList.append("*.f90");
      filePatternList.append("*.f");
@@ -7175,8 +7545,8 @@ Index: config.l
  void Config::init()
 Index: util.h
 ===================================================================
---- util.h	(Revision 818)
-+++ util.h	(Arbeitskopie)
+--- util.h	(revision 818)
++++ util.h	(working copy)
 @@ -388,6 +388,7 @@
    unsigned short height;
    unsigned char *content;
@@ -7187,8 +7557,8 @@ Index: util.h
  void writeColoredImgData(const char *dir,ColoredImgDataItem data[]);
 Index: image.h
 ===================================================================
---- image.h	(Revision 818)
-+++ image.h	(Arbeitskopie)
+--- image.h	(revision 818)
++++ image.h	(working copy)
 @@ -54,7 +54,7 @@
    public:
      ColoredImage(int width,int height,
@@ -7198,10 +7568,50 @@ Index: image.h
     ~ColoredImage();
      bool save(const char *fileName);
      static void hsl2rgb(double h,double s,double l,
+Index: outputlist.h
+===================================================================
+--- outputlist.h	(revision 818)
++++ outputlist.h	(working copy)
+@@ -33,7 +33,7 @@
+   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4),arg1,arg2,arg3,arg4)
+ #define FORALLPROTO5(arg1,arg2,arg3,arg4,arg5) \
+   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5),arg1,arg2,arg3,arg4,arg5)
+-  
++
+ class ClassDiagram;
+ class DotClassGraph;
+ class DotDirDeps;
+@@ -235,10 +235,12 @@
+     { forall(&OutputGenerator::startCodeLine,hasLineNumbers); }
+     void endCodeLine() 
+     { forall(&OutputGenerator::endCodeLine); }
+-    void writeLineNumber(const char *ref,const char *file,const char *anchor,
+-                         int lineNumber) 
+-    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
+-    void startEmphasis() 
++    
++	void writeLineNumber(const char *ref,const char *file,const char *anchor,
++                         int lineNumber,bool li=false) 
++    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber,li); }
++    
++	void startEmphasis() 
+     { forall(&OutputGenerator::startEmphasis); }
+     void endEmphasis() 
+     { forall(&OutputGenerator::endEmphasis); }
+@@ -519,7 +521,8 @@
+     FORALLPROTO4(const char *,const char *,const char *,bool);
+     FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
+     FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
+-  
++    FORALLPROTO5(const char *,const char *,const char *,int, bool);
++
+     OutputList(const OutputList &ol);
+     QList<OutputGenerator> *outputs;
+ };
 Index: classdef.cpp
 ===================================================================
---- classdef.cpp	(Revision 818)
-+++ classdef.cpp	(Arbeitskopie)
+--- classdef.cpp	(revision 818)
++++ classdef.cpp	(working copy)
 @@ -39,7 +39,7 @@
  #include "vhdldocgen.h"
  #include "layout.h"
@@ -7249,16 +7659,41 @@ Index: classdef.cpp
    {
      QCString title=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),FALSE);
      if (!m_impl->vhdlSummaryTitles.find(title))
-@@ -1450,7 +1467,7 @@
+@@ -1420,7 +1437,12 @@
+   static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
+   if (!inlineInheritedMembers && countAdditionalInheritedMembers()>0)
+   {
+-    ol.startMemberHeader("inherited");
++	  if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++	  {	
++		  ol.endMemberSections();
++	    	return;
++	  }
++	ol.startMemberHeader("inherited");
+     ol.parseText(theTranslator->trAdditionalInheritedMembers());
+     ol.endMemberHeader();
+     writeAdditionalInheritedMembers(ol);
+@@ -1449,8 +1471,8 @@
+       LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
    LayoutDocEntry *lde;
    bool first=TRUE;
-   
+-  
 -  if (getLanguage()!=SrcLangExt_VHDL)
-+  if (getLanguage()!=SrcLangExt_VHDL  ||  getLanguage()!=SrcLangExt_VERILOG)
++  bool hard=(getLanguage()==SrcLangExt_VHDL  ||  getLanguage()==SrcLangExt_VERILOG);
++  if (!hard)
    {
      for (eli.toFirst();(lde=eli.current());++eli)
      {
-@@ -1699,9 +1716,12 @@
+@@ -1473,7 +1495,7 @@
+       }
+     }
+   }
+-  else // VDHL only
++  else // VHDL only
+   {
+     SDict<QCString>::Iterator li(m_impl->vhdlSummaryTitles);
+     for (li.toFirst();li.current();++li)
+@@ -1699,9 +1721,12 @@
        {
          ol.parseText(header);
        }
@@ -7273,7 +7708,7 @@ Index: classdef.cpp
        }
        else
        {
-@@ -1720,7 +1740,11 @@
+@@ -1720,7 +1745,11 @@
          << "\">" << convertToXML(name()) << "</class>" << endl;
      }
      ol.startMemberItem(anchor(),FALSE);
@@ -7286,7 +7721,7 @@ Index: classdef.cpp
      QCString cname;
      if (localNames)
      {
-@@ -1755,7 +1779,7 @@
+@@ -1755,7 +1784,7 @@
        ol.docify(cname);
        ol.endBold();
      }
@@ -7295,7 +7730,7 @@ Index: classdef.cpp
      {
        ol.writeString(" ");
        ol.insertMemberAlign();
-@@ -2240,7 +2264,7 @@
+@@ -2240,7 +2269,7 @@
          {
            ol.writeString("<span class=\"mlabel\">");
            QStrList sl;
@@ -7304,7 +7739,7 @@ Index: classdef.cpp
            {
              sl.append(VhdlDocGen::trVhdlType(md->getMemberSpecifiers())); //append vhdl type
            }
-@@ -2251,7 +2275,8 @@
+@@ -2251,7 +2280,8 @@
              if (Config_getBool("INLINE_INFO") && md->isInline())        
                                         sl.append("inline");
              if (md->isExplicit())      sl.append("explicit");
@@ -7314,7 +7749,26 @@ Index: classdef.cpp
              if (prot==Protected)       sl.append("protected");
              else if (prot==Private)    sl.append("private");
              else if (prot==Package)    sl.append("package");
-@@ -3986,7 +4011,7 @@
+@@ -3141,7 +3171,7 @@
+   {
+     switch (m_impl->compType)
+     {
+-      case Class:     return isJavaEnum() ? "enum" : "class";
++      case Class:     return isJavaEnum() ? "enum1" : "class";
+       case Struct:    return "struct";
+       case Union:     return "union";
+       case Interface: return getLanguage()==SrcLangExt_ObjC ? "class" : "interface";
+@@ -3898,7 +3928,8 @@
+ void ClassDef::writeAdditionalInheritedMembers(OutputList &ol)
+ {
+   //printf("writeAdditionalInheritedMembers()\n");
+-  QListIterator<LayoutDocEntry> eli(
++  
++	QListIterator<LayoutDocEntry> eli(
+       LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
+   LayoutDocEntry *lde;
+   for (eli.toFirst();(lde=eli.current());++eli)
+@@ -3986,7 +4017,7 @@
    if (ml) 
    {
      //printf("%s: ClassDef::writeMemberDeclarations for %s\n",name().data(),ml->listTypeAsString().data());
@@ -7325,9 +7779,17 @@ Index: classdef.cpp
      }
 Index: htmlgen.cpp
 ===================================================================
---- htmlgen.cpp	(Revision 818)
-+++ htmlgen.cpp	(Arbeitskopie)
-@@ -746,18 +746,18 @@
+--- htmlgen.cpp	(revision 818)
++++ htmlgen.cpp	(working copy)
+@@ -42,6 +42,7 @@
+ #include "image.h"
+ #include "ftvhelp.h"
+ #include "bufstr.h"
++#include "verilogscanner.h"
+ 
+ 
+ //#define DBG_HTML(x) x;
+@@ -746,18 +747,18 @@
  
  static ColoredImgDataItem colored_tab_data[] =
  {
@@ -7358,10 +7820,64 @@ Index: htmlgen.cpp
  };
  
  static img_data_item search_client_data[] =
+@@ -1745,6 +1746,8 @@
+   }
+ }
+ 
++
++
+ void HtmlGenerator::writeChar(char c)
+ {
+   char cs[2];
+@@ -3076,10 +3079,10 @@
+ }
+ 
+ void HtmlGenerator::writeLineNumber(const char *ref,const char *filename,
+-                                    const char *anchor,int l)
++                                    const char *anchor,int l,bool b)
+ {
+   QCString lineNumber,lineAnchor;
+-  lineNumber.sprintf("%5d",l);
++  lineNumber.sprintf("%05d",l);
+   lineAnchor.sprintf("l%05d",l);
+ 
+   if (filename)
+@@ -3094,8 +3097,7 @@
+     codify(lineNumber);
+     endCodeAnchor();
+   }
+-  t << "&#160;";
++  codify(" ");
+ }
+ 
+ 
+-
+Index: outputgen.h
+===================================================================
+--- outputgen.h	(revision 818)
++++ outputgen.h	(working copy)
+@@ -49,7 +49,7 @@
+      *  tabs to the right number of spaces.
+      */
+     virtual void codify(const char *s) = 0;
+-
++ virtual void writeString(const char *text) = 0;
+     /*! Writes a link to an object in a code fragment.
+      *  \param ref      If this is non-zero, the object is to be found in
+      *                  an external documentation file.
+@@ -64,7 +64,7 @@
+                                const char *tooltip) = 0;
+ 
+     virtual void writeLineNumber(const char *ref,const char *file,
+-                                 const char *anchor,int lineNumber) = 0;
++		const char *anchor,int lineNumber,bool b=false ) = 0;
+     virtual void startCodeLine(bool hasLineNumbers) = 0;
+     virtual void endCodeLine() = 0;
+     virtual void startCodeAnchor(const char *label) = 0;
 Index: types.h
 ===================================================================
---- types.h	(Revision 818)
-+++ types.h	(Arbeitskopie)
+--- types.h	(revision 818)
++++ types.h	(working copy)
 @@ -43,7 +43,8 @@
    SrcLangExt_VHDL     = 0x02000,
    SrcLangExt_XML      = 0x04000,
@@ -7374,8 +7890,8 @@ Index: types.h
  struct Grouping 
 Index: memberdef.cpp
 ===================================================================
---- memberdef.cpp	(Revision 818)
-+++ memberdef.cpp	(Arbeitskopie)
+--- memberdef.cpp	(revision 818)
++++ memberdef.cpp	(working copy)
 @@ -42,7 +42,7 @@
  #include "vhdlscanner.h"
  #include "vhdldocgen.h"
@@ -7426,10 +7942,32 @@ Index: memberdef.cpp
      }
      else
      {
+Index: xmlgen.cpp
+===================================================================
+--- xmlgen.cpp	(revision 818)
++++ xmlgen.cpp	(working copy)
+@@ -274,7 +274,7 @@
+       m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), 
+       m_insideSpecialHL(FALSE) {}
+     virtual ~XMLCodeGenerator() { }
+-    
++    virtual void writeString(const char *) {}
+     void codify(const char *text) 
+     {
+       XML_DB(("(codify \"%s\")\n",text));
+@@ -377,7 +377,7 @@
+       XML_DB(("(writeCodeAnchor)\n"));
+     }
+     void writeLineNumber(const char *extRef,const char *compId,
+-                         const char *anchorId,int l)
++                         const char *anchorId,int l,bool b)
+     {
+       XML_DB(("(writeLineNumber)\n"));
+       // we remember the information provided here to use it 
 Index: translator_en.h
 ===================================================================
---- translator_en.h	(Revision 818)
-+++ translator_en.h	(Arbeitskopie)
+--- translator_en.h	(revision 818)
++++ translator_en.h	(working copy)
 @@ -463,7 +463,9 @@
       *  documentation blocks for defines
       */
@@ -7441,10 +7979,25 @@ Index: translator_en.h
  
      /*! This is used in the documentation of a file/namespace before the list 
       *  of documentation blocks for function prototypes
+@@ -1912,8 +1914,13 @@
+ 
+     /*! Header of a Java enum page (Java enums are represented as classes). */
+     virtual QCString trEnumReference(const char *name)
+-    { return QCString(name)+" Enum Reference"; }
++    { 
++     if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))	
++		return QCString(name)+" Module Reference"; 
+ 
++	 	return QCString(name)+" Enum Reference"; 
++	}
++
+     /*! Used for a section containing inherited members */
+     virtual QCString trInheritedFrom(const char *members,const char *what)
+     { return QCString(members)+" inherited from "+what; }
 Index: vhdlscanner.l
 ===================================================================
---- vhdlscanner.l	(Revision 818)
-+++ vhdlscanner.l	(Arbeitskopie)
+--- vhdlscanner.l	(revision 818)
++++ vhdlscanner.l	(working copy)
 @@ -103,10 +103,11 @@
  //static int           g_inputLines=0;      //!<number of line in the code fragment
  //static bool          g_needsTermination;
@@ -7580,65 +8133,15 @@ Index: vhdlscanner.l
 + 
 + 
 \ No newline at end of file
-Index: libdoxygen.pro.in
+Index: outputlist.cpp
 ===================================================================
---- libdoxygen.pro.in	(revision 818)
-+++ libdoxygen.pro.in	(working copy)
-@@ -99,6 +99,7 @@
- 		perlmodgen.h \
- 		lodepng.h \
- 		pre.h \
-+		preVerilog.h \
-                 printdocvisitor.h \
-                 pycode.h \
-                 pyscanner.h \
-@@ -165,6 +166,9 @@
- 		types.h \
- 		unistd.h \
- 		util.h \
-+		verilogscanner.h \
-+		verilogdocgen.h \
-+		verilogparser.hpp \
- 		version.h \
- 		vhdlcode.h \
- 		vhdldocgen.h \
-@@ -237,6 +241,7 @@
- 		pagedef.cpp \
- 		perlmodgen.cpp \
- 		pre.cpp \
-+		preVerilog.cpp \
- 		pycode.cpp \
- 		pyscanner.cpp \    
- 		qhp.cpp \
-@@ -254,6 +259,9 @@
- 		translator.cpp \
- 		util.cpp \
- 		version.cpp \
-+		verilogscanner.cpp \
-+		verilogparser.cpp \
-+		verilogdocgen.cpp \
- 		vhdlcode.cpp \
- 		vhdldocgen.cpp \
- 		vhdlparser.cpp \
-Index: libdoxygen.t.in
-===================================================================
---- libdoxygen.t.in	2011-08-03 12:37:56.000000000 +0200
-+++ libdoxygen.t.in	2011-11-12 17:06:04.000000000 +0100
-@@ -100,7 +100,15 @@
- 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
- 	-rm ce_parse.c	
+--- outputlist.cpp	(revision 818)
++++ outputlist.cpp	(working copy)
+@@ -312,6 +312,6 @@
+ FORALL4(const char *a1,const char *a2,const char *a3,int a4,a1,a2,a3,a4)
+ FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,const char *a5,a1,a2,a3,a4,a5)
+ FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,bool a5,a1,a2,a3,a4,a5)
++FORALL5(const char *a1,const char *a2,const char *a3,int a4,bool a5,a1,a2,a3,a4,a5)
  
--#$ GenerateDep("layout.cpp","layout_default.h");
-+
-+#$ GenerateDep("verilogscanner.cpp","verilogscanner.l");
-+	$(LEX) -d -8  -PverilogScanYY -t verilogscanner.l | $(INCBUFSIZE) >verilogscanner.cpp
-+
-+#$ GenerateDep("verilogparser.cpp","verilogparser.y");
-+	$(YACC)  -v -d verilogparser.y -o verilogparser.cpp 
-+
-+#$ GenerateDep("preVerilog.cpp","preVerilog.l");
-+	$(LEX) -PpreYYVerilog -t preVerilog.l | $(INCBUFSIZE) >preVerilog.cpp 
- 
- TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
- 
- 
+-
+ //--------------------------------------------------------------------------
