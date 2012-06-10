@@ -1404,7 +1404,7 @@ char *yytext;
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
+*    (at your option) any later version.
 *
 *
 * This program is distributed in the hope that it will be useful,
@@ -1449,7 +1449,9 @@ char *yytext;
 //--------------------------------------------------------------------------
 
 static ParserInterface *g_thisParser;
-
+static int ss1,ee1;
+static int yyEndModLine=0;
+static int yyEndModLine1;
 static int yyLineNr =1;
 static int yyPrevLine=1;
 static int yyEndLine=1;
@@ -1503,6 +1505,9 @@ static bool          g_lexInit = FALSE;
 static bool          g_parseCode=FALSE;
 static bool gInit=false;
 static int iCodeLen;
+
+
+
 // ------------------< functions for verilog code scanner >---------------
 
 static void writeFont(const char *s,const char* text);
@@ -1526,8 +1531,10 @@ static void parseGlobalMember();
 static void parseLib(char *);
 static QCString checkComment(QCString& q);
 static void composeString(QCString& q);
-static void writeInclude(QCString);
+static  void writeInclude(QCString);
 //-------------------------------------------------------------------
+
+
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_USER_ACTION num_chars +=verilogScanYYleng ;
@@ -1572,31 +1579,13 @@ static const char* VerilogKewWordMap1[] = {"$async$and$array","$async$and$plane"
 "$itor", "$rtoi","$signed", "$unsigned","$test$plusargs", "$value$plusargs","$q_initialize", "$q_add",
 "$q_remove", "$q_full","$q_exam","$period","$hold","$setup","$width","$skew","$reovery","$nochange","$timeskew","$setuphold","$fullskew",""};
 
-/*
-static void startCodeBlock(QCString qcs,int ii){
-   iCodeLen=num_chars;
-     int ff= getLR(iCodeLen);
-     iCodeLen=ff;
-   gBlock.reset();
-   int len=qcs.length();
-   QCString name=qcs.right(len-ii);// 
-   name=VhdlDocGen::getIndexWord(name.data(),1);
-    if(!name)
-         gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
-    else
-        gBlock.name=name;
-    gBlock.bodyLine=yyLineNr+1;
-    QCString q=strComment;
-   VhdlDocGen::prepareComment(q);
-   gBlock.brief+=q;
-   strComment.resize(0);
-}
-*/
+
+
 
 static void startCodeBlock(int index){
     int ll=strComment.length();
-     iCodeLen=inputVerilogString.findRev(strComment.data(),num_chars)+ll;
-  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+     iCodeLen=inputVerilogString.findRev(strComment.data())+ll;
+  //fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
    //assert(false);
     gBlock.reset();
    int len=strComment.length();
@@ -2003,9 +1992,10 @@ void writePrevVerilogWords(const QCString& qcs){
 //	printf("\n++++++++++++++++++ %s",qcs.data()); 
 //if(qcs.contains("`"))
 //	 printVerilogStringList();
-	 if(strcmp(qcs.data(),word->data()) != 0) {
+	 if(strcmp(qcs.data(),word->data()) != 0)
+	  {
       writeVWord(*word);
-      qlist.removeFirst();
+     qlist.removeFirst();
      }else { 
 //	   QCString *wsord=(QCString*)qlist.getFirst();
 	  qlist.removeFirst();
@@ -2220,7 +2210,7 @@ static int countLines()
   return count;
 }
 
-/*! writes a word to the output.
+/*! writes a word to the output. 
  *  If curr_class is defined, the word belongs to a class
  *  and will be linked.
  */
@@ -2291,6 +2281,13 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
 static void startCodeLine()
 {
   //if (g_currentFontClass) { g_code->endFontClass(); }
+
+bool isLine;
+if(ss1>ee1)
+  isLine=true;
+  else
+isLine=false; 
+  
   if (g_sourceFileDef)
   {
      if((yyLineNr % 500) == 0) 
@@ -2317,7 +2314,7 @@ static void startCodeLine()
       {
      	g_code->writeLineNumber(g_currentMemberDef->getReference(),
 	                        g_currentMemberDef->getOutputFileBase(),
-	                        g_currentMemberDef->anchor(),yyLineNr);
+	                        g_currentMemberDef->anchor(),yyLineNr,isLine);
         setCurrentDoc(
                                 g_currentMemberDef->qualifiedName(),
 	                        g_sourceFileDef->getSourceFileBase(),
@@ -2327,7 +2324,7 @@ static void startCodeLine()
       {
         g_code->writeLineNumber(d->getReference(),
 	                        d->getOutputFileBase(),
-	                        0,yyLineNr);
+	                        0,yyLineNr,isLine);
         setCurrentDoc(
                                 d->qualifiedName(),
 	                        g_sourceFileDef->getSourceFileBase(),
@@ -2336,7 +2333,7 @@ static void startCodeLine()
     }
     else
     {
-      g_code->writeLineNumber(0,0,0,yyLineNr);
+      g_code->writeLineNumber(0,0,0,yyLineNr,isLine);
     }
   }
   g_code->startCodeLine(yyLineNr); 
@@ -2385,7 +2382,6 @@ static int verilogScanYYread(char *buf,int max_size)
 // part of a word like (reg)ister
 static bool check(bool bb=true)
 {
-  bool b=true;
   char c=yy_hold_char;
  
   if(iSize==0){
@@ -2457,7 +2453,7 @@ static void parseToken(const char* s){
 
 #define EndOfText 8
 
-#line 2461 "c:\\.Trash-1000\\doxygen-svn\\src\\verilogscanner.cpp"
+#line 2457 "c:\\.Trash-1000\\doxygen-svn\\src\\verilogscanner.cpp"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -2608,10 +2604,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 1084 "..\\src\\verilogscanner.l"
+#line 1080 "..\\src\\verilogscanner.l"
 
 
-#line 2615 "c:\\.Trash-1000\\doxygen-svn\\src\\verilogscanner.cpp"
+#line 2611 "c:\\.Trash-1000\\doxygen-svn\\src\\verilogscanner.cpp"
 
 	if ( yy_init )
 		{
@@ -2726,14 +2722,14 @@ do_action:	/* This label is used only to access EOF actions. */
 	{ /* beginning of action switch */
 case 1:
 YY_RULE_SETUP
-#line 1086 "..\\src\\verilogscanner.l"
+#line 1082 "..\\src\\verilogscanner.l"
 {
     BEGIN(Start);  
 	}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 1092 "..\\src\\verilogscanner.l"
+#line 1088 "..\\src\\verilogscanner.l"
 {
                    if(yy_hold_char=='\\')
                    {
@@ -2763,7 +2759,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 1119 "..\\src\\verilogscanner.l"
+#line 1115 "..\\src\\verilogscanner.l"
 { 
                  if(g_parseCode)
                   { 
@@ -2783,7 +2779,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 1136 "..\\src\\verilogscanner.l"
+#line 1132 "..\\src\\verilogscanner.l"
 { // grey out undefined code
                    // QCString uu(verilogScanYYtext);
                     if(g_parseCode)
@@ -2795,7 +2791,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 1146 "..\\src\\verilogscanner.l"
+#line 1142 "..\\src\\verilogscanner.l"
 { 
               //    fprintf(stderr,"<[ %s ]>",verilogScanYYtext);
 				   QCString q(verilogScanYYtext);
@@ -2839,14 +2835,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 1187 "..\\src\\verilogscanner.l"
+#line 1183 "..\\src\\verilogscanner.l"
 {  
                     // assert(0);
                     } 
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 1191 "..\\src\\verilogscanner.l"
+#line 1187 "..\\src\\verilogscanner.l"
 {
 				    QCString s(verilogScanYYtext);
 				    DefineDict* gDict=getFileDefineDictVerilog();
@@ -2883,472 +2879,478 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 1225 "..\\src\\verilogscanner.l"
+#line 1221 "..\\src\\verilogscanner.l"
 {if(check())      return  IFNONE_TOK;REJECT;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 1226 "..\\src\\verilogscanner.l"
+#line 1222 "..\\src\\verilogscanner.l"
 {if(check()) {yyPrevLine=yyLineNr;addText(verilogScanYYtext,verilogScanYYleng); return  REALTIME_TOK;}REJECT;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 1227 "..\\src\\verilogscanner.l"
+#line 1223 "..\\src\\verilogscanner.l"
 {if(check())      return  DESIGN_TOK;REJECT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 1228 "..\\src\\verilogscanner.l"
+#line 1224 "..\\src\\verilogscanner.l"
 { parseLib(verilogScanYYtext);return LIBRARY_TOK; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 1229 "..\\src\\verilogscanner.l"
+#line 1225 "..\\src\\verilogscanner.l"
 {if(check())      return  CONFIG_TOK;REJECT;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 1230 "..\\src\\verilogscanner.l"
+#line 1226 "..\\src\\verilogscanner.l"
 { if(check()){return  ENDCONFIG_TOK;} REJECT;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 1231 "..\\src\\verilogscanner.l"
+#line 1227 "..\\src\\verilogscanner.l"
 {if(check())      return  INCLUDE_TOK;REJECT;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 1232 "..\\src\\verilogscanner.l"
+#line 1228 "..\\src\\verilogscanner.l"
 {if(check())      return  USE_TOK;REJECT;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 1233 "..\\src\\verilogscanner.l"
+#line 1229 "..\\src\\verilogscanner.l"
 { if(check())     return  LIBLIST_TOK;REJECT;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 1234 "..\\src\\verilogscanner.l"
+#line 1230 "..\\src\\verilogscanner.l"
 {if(check())      return  INSTANCE_TOK;REJECT;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 1235 "..\\src\\verilogscanner.l"
+#line 1231 "..\\src\\verilogscanner.l"
 { if(check())     return  CELL_TOK;REJECT;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 1236 "..\\src\\verilogscanner.l"
+#line 1232 "..\\src\\verilogscanner.l"
 {if(check())      return  SHOWCANCEL_TOK;REJECT;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 1237 "..\\src\\verilogscanner.l"
+#line 1233 "..\\src\\verilogscanner.l"
 { if(check())     return  NOSHOWCANCEL_TOK;REJECT;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 1238 "..\\src\\verilogscanner.l"
+#line 1234 "..\\src\\verilogscanner.l"
 {if(check())      return  PULSEONE_EVENT_TOK;REJECT;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 1239 "..\\src\\verilogscanner.l"
+#line 1235 "..\\src\\verilogscanner.l"
 { if(check())     return  PULSEON_DETECT_TOK;REJECT;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 1240 "..\\src\\verilogscanner.l"
+#line 1236 "..\\src\\verilogscanner.l"
 {if(check())      return  EDGE_TOK;REJECT;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 1241 "..\\src\\verilogscanner.l"
+#line 1237 "..\\src\\verilogscanner.l"
 {if(check())      return  NEGEDGE_TOK;REJECT;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 1242 "..\\src\\verilogscanner.l"
+#line 1238 "..\\src\\verilogscanner.l"
 { if(check()){return  POSEDGE_TOK;} REJECT;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 1243 "..\\src\\verilogscanner.l"
+#line 1239 "..\\src\\verilogscanner.l"
 {if(check())      return  FULLSKEW_TOK;REJECT;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 1244 "..\\src\\verilogscanner.l"
+#line 1240 "..\\src\\verilogscanner.l"
 {if(check())      return  RECREM_TOK;REJECT;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 1245 "..\\src\\verilogscanner.l"
+#line 1241 "..\\src\\verilogscanner.l"
 {if(check())      return  REMOVAL_TOK;REJECT;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 1246 "..\\src\\verilogscanner.l"
+#line 1242 "..\\src\\verilogscanner.l"
 {if(check())      return  TIMESKEW_TOK;REJECT;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 1247 "..\\src\\verilogscanner.l"
+#line 1243 "..\\src\\verilogscanner.l"
 {if(check())      return  NOCHANGE_TOK;REJECT;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 1248 "..\\src\\verilogscanner.l"
+#line 1244 "..\\src\\verilogscanner.l"
 {if(check())      return  DHOLD_TOK;REJECT;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 1249 "..\\src\\verilogscanner.l"
+#line 1245 "..\\src\\verilogscanner.l"
 { if(check())     return  DSETUP_TOK;REJECT;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 1250 "..\\src\\verilogscanner.l"
+#line 1246 "..\\src\\verilogscanner.l"
 {if(check())   return  DSETUPHOLD_TOK;REJECT;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 1251 "..\\src\\verilogscanner.l"
+#line 1247 "..\\src\\verilogscanner.l"
 {if(check())    return  DRECOVERY_TOK;REJECT;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 1252 "..\\src\\verilogscanner.l"
+#line 1248 "..\\src\\verilogscanner.l"
 {if(check())    return  DSKEW_TOK;REJECT;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 1253 "..\\src\\verilogscanner.l"
+#line 1249 "..\\src\\verilogscanner.l"
 {if(check())    return  DWIDTH_TOK;REJECT;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 1254 "..\\src\\verilogscanner.l"
+#line 1250 "..\\src\\verilogscanner.l"
 {if(check())    return  DPERIOD_TOK;REJECT;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 1255 "..\\src\\verilogscanner.l"
+#line 1251 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);  return  TIME_TOK;} REJECT; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 1256 "..\\src\\verilogscanner.l"
+#line 1252 "..\\src\\verilogscanner.l"
 {if(check())    return  SPECPARAM_TOK;REJECT;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 1257 "..\\src\\verilogscanner.l"
+#line 1253 "..\\src\\verilogscanner.l"
 {if(check())   return  ENDSPECIFY_TOK;REJECT;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 1258 "..\\src\\verilogscanner.l"
+#line 1254 "..\\src\\verilogscanner.l"
 {  if(check())   return  SPECIFY_TOK;REJECT;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 1259 "..\\src\\verilogscanner.l"
+#line 1255 "..\\src\\verilogscanner.l"
 { if(check()) {   yyEndLine=yyLineNr;  strncpy(c_lval.cstr,verilogScanYYtext,verilogScanYYleng);c_lval.cstr[verilogScanYYleng]='\0';return  END_TOK;}REJECT;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 1260 "..\\src\\verilogscanner.l"
+#line 1256 "..\\src\\verilogscanner.l"
 {if(check(false))  return  BEGIN_TOK; REJECT;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 1261 "..\\src\\verilogscanner.l"
+#line 1257 "..\\src\\verilogscanner.l"
 {if(check(false))  return  FORK_TOK; REJECT;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 1262 "..\\src\\verilogscanner.l"
+#line 1258 "..\\src\\verilogscanner.l"
 { if(check())     return  GENERATE_TOK;REJECT;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 1263 "..\\src\\verilogscanner.l"
+#line 1259 "..\\src\\verilogscanner.l"
 { if(check())     return  ENDGENERATE_TOK;REJECT;}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 1264 "..\\src\\verilogscanner.l"
+#line 1260 "..\\src\\verilogscanner.l"
 { if(check())     return  GENVAR_TOK;REJECT;}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 1265 "..\\src\\verilogscanner.l"
+#line 1261 "..\\src\\verilogscanner.l"
 { if(check())     return  DEFAULT_TOK;REJECT;}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 1266 "..\\src\\verilogscanner.l"
+#line 1262 "..\\src\\verilogscanner.l"
 { if(check()){ addText(verilogScanYYtext,verilogScanYYleng);     return  AUTO_TOK;}REJECT;}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 1267 "..\\src\\verilogscanner.l"
+#line 1263 "..\\src\\verilogscanner.l"
 { if(check()){ yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);    return  SIGNED_TOK;}REJECT;}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 1268 "..\\src\\verilogscanner.l"
+#line 1264 "..\\src\\verilogscanner.l"
 { if(check())     return  DEFAULT_TOK;REJECT;}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 1269 "..\\src\\verilogscanner.l"
+#line 1265 "..\\src\\verilogscanner.l"
 { if(check())     return  ENDCASE_TOK;REJECT;}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 1270 "..\\src\\verilogscanner.l"
+#line 1266 "..\\src\\verilogscanner.l"
 { if(check())    return  ELSE_TOK; REJECT;}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 1271 "..\\src\\verilogscanner.l"
+#line 1267 "..\\src\\verilogscanner.l"
 { if(check())    return  WHILE_TOK; REJECT;}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 1272 "..\\src\\verilogscanner.l"
+#line 1268 "..\\src\\verilogscanner.l"
 { if(check())    return  REPEAT_TOK;REJECT;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 1273 "..\\src\\verilogscanner.l"
+#line 1269 "..\\src\\verilogscanner.l"
 { if(check())    return  FOREVER_TOK;REJECT;}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 1274 "..\\src\\verilogscanner.l"
+#line 1270 "..\\src\\verilogscanner.l"
 { if(check())    return  CASEZ_TOK; REJECT;}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 1275 "..\\src\\verilogscanner.l"
+#line 1271 "..\\src\\verilogscanner.l"
 { if(check())    return  CASEX_TOK;REJECT;}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 1276 "..\\src\\verilogscanner.l"
+#line 1272 "..\\src\\verilogscanner.l"
 { if(check())    return  CASE_TOK;REJECT;}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 1277 "..\\src\\verilogscanner.l"
+#line 1273 "..\\src\\verilogscanner.l"
 { if(check())    return  IF_TOK;REJECT;}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 1278 "..\\src\\verilogscanner.l"
+#line 1274 "..\\src\\verilogscanner.l"
 { if(check())    return  DISABLE_TOK;REJECT;}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 1279 "..\\src\\verilogscanner.l"
+#line 1275 "..\\src\\verilogscanner.l"
 { if(check())    return  DEASSIGN_TOK;REJECT;}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 1280 "..\\src\\verilogscanner.l"
+#line 1276 "..\\src\\verilogscanner.l"
 { if(check())    return  RELEASE_TOK; REJECT;}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 1281 "..\\src\\verilogscanner.l"
+#line 1277 "..\\src\\verilogscanner.l"
 { if(check())    return  FORCE_TOK; REJECT; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 1282 "..\\src\\verilogscanner.l"
+#line 1278 "..\\src\\verilogscanner.l"
 { if(check())    return  WAIT_TOK; REJECT;}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 1283 "..\\src\\verilogscanner.l"
+#line 1279 "..\\src\\verilogscanner.l"
 { if(check())    return  JOIN_TOK; REJECT;}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 1284 "..\\src\\verilogscanner.l"
+#line 1280 "..\\src\\verilogscanner.l"
 { if(check())    return  FOR_TOK; REJECT;}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 1285 "..\\src\\verilogscanner.l"
+#line 1281 "..\\src\\verilogscanner.l"
 { if(check()) {  yyPrevLine=yyLineNr;  return  ALWAYS_TOK;}REJECT;}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 1286 "..\\src\\verilogscanner.l"
+#line 1282 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr;  return  ENDFUNC_TOK;} REJECT;}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 1287 "..\\src\\verilogscanner.l"
+#line 1283 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr;  return  FUNC_TOK;} REJECT;}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 1288 "..\\src\\verilogscanner.l"
+#line 1284 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr;  return  ENDTASK_TOK;}REJECT;}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 1289 "..\\src\\verilogscanner.l"
+#line 1285 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr;  return  TASK_TOK;} REJECT;}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 1290 "..\\src\\verilogscanner.l"
+#line 1286 "..\\src\\verilogscanner.l"
 { if(check())  return  TABLE_TOK; REJECT;}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 1291 "..\\src\\verilogscanner.l"
+#line 1287 "..\\src\\verilogscanner.l"
 { if(check())  return  ENDTABLE_TOK; REJECT;}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 1292 "..\\src\\verilogscanner.l"
+#line 1288 "..\\src\\verilogscanner.l"
 { if(check()) {return  INITIAL_TOK;} REJECT;}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 1293 "..\\src\\verilogscanner.l"
+#line 1289 "..\\src\\verilogscanner.l"
 { if(check())  return  ENDPRIMITIVE_TOK;REJECT;}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 1294 "..\\src\\verilogscanner.l"
+#line 1290 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr;  return  PRIMITIVE_TOK;} REJECT;}
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 1295 "..\\src\\verilogscanner.l"
+#line 1291 "..\\src\\verilogscanner.l"
 { if(check())  return  MACRO_MODUL_TOK; REJECT;}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 1296 "..\\src\\verilogscanner.l"
+#line 1292 "..\\src\\verilogscanner.l"
 { if(check())   { yyPrevLine=yyLineNr; return  MODUL_TOK; } REJECT;}
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 1297 "..\\src\\verilogscanner.l"
-{ if(check())   return  ENDMODUL_TOK;REJECT;}
+#line 1293 "..\\src\\verilogscanner.l"
+{ 
+           if(check())
+            {
+            //  yyEndModLine=yyLineNr+yyEndModLine1;  
+              return  ENDMODUL_TOK;
+             }REJECT;
+             }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 1298 "..\\src\\verilogscanner.l"
+#line 1300 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);return  REG_TOK; } REJECT;}
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 1299 "..\\src\\verilogscanner.l"
+#line 1301 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);return  INTEGER_TOK;}REJECT;}
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 1300 "..\\src\\verilogscanner.l"
+#line 1302 "..\\src\\verilogscanner.l"
 { if(check()) return  DEFPARAM_TOK; REJECT;}
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 1301 "..\\src\\verilogscanner.l"
+#line 1303 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);   return  REAL_TOK; } REJECT; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 1302 "..\\src\\verilogscanner.l"
+#line 1304 "..\\src\\verilogscanner.l"
 { if(check()){yyPrevLine=yyLineNr;addText(verilogScanYYtext,verilogScanYYleng);  return  EVENT_TOK;}REJECT;}
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 1303 "..\\src\\verilogscanner.l"
+#line 1305 "..\\src\\verilogscanner.l"
 { if(check()) return  ASSIGN_TOK; REJECT;}
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 1304 "..\\src\\verilogscanner.l"
+#line 1306 "..\\src\\verilogscanner.l"
 { if(check()) return  SCALAR_TOK;REJECT;}
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 1305 "..\\src\\verilogscanner.l"
+#line 1307 "..\\src\\verilogscanner.l"
 { if(check()) return  VEC_TOK;   REJECT;}
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 1306 "..\\src\\verilogscanner.l"
+#line 1308 "..\\src\\verilogscanner.l"
 { if(check()) return  SMALL_TOK;REJECT;}
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 1307 "..\\src\\verilogscanner.l"
+#line 1309 "..\\src\\verilogscanner.l"
 { if(check()) return  MEDIUM_TOK; REJECT;}
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 1308 "..\\src\\verilogscanner.l"
+#line 1310 "..\\src\\verilogscanner.l"
 { if(check()) return  LARGE_TOK; REJECT;}
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 1309 "..\\src\\verilogscanner.l"
+#line 1311 "..\\src\\verilogscanner.l"
 { if(check())  {yyPrevLine=yyLineNr;  addText(verilogScanYYtext,verilogScanYYleng);   return  OUTPUT_TOK; }REJECT;}
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 1310 "..\\src\\verilogscanner.l"
+#line 1312 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng); return  INPUT_TOK;} REJECT;}
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 1311 "..\\src\\verilogscanner.l"
+#line 1313 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);    return  INOUT_TOK; }REJECT;}
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 1312 "..\\src\\verilogscanner.l"
+#line 1314 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr;return  PARAMETER_TOK;}REJECT;}
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 1313 "..\\src\\verilogscanner.l"
+#line 1315 "..\\src\\verilogscanner.l"
 { if(check()) {yyPrevLine=yyLineNr; return  LOCALPARAM_TOK;}REJECT;}
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 1314 "..\\src\\verilogscanner.l"
+#line 1316 "..\\src\\verilogscanner.l"
 { if(check()) { yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);return  NET_TOK;} REJECT;}
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 1315 "..\\src\\verilogscanner.l"
+#line 1317 "..\\src\\verilogscanner.l"
 { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);   return  STR0_TOK;} REJECT;}
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 1316 "..\\src\\verilogscanner.l"
+#line 1318 "..\\src\\verilogscanner.l"
 { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng); return  STR1_TOK;}REJECT;}
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 1317 "..\\src\\verilogscanner.l"
+#line 1319 "..\\src\\verilogscanner.l"
 { if(check()) {  addText(verilogScanYYtext,verilogScanYYleng);  return  GATE_TOK;}REJECT;}
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 1318 "..\\src\\verilogscanner.l"
+#line 1320 "..\\src\\verilogscanner.l"
 { // found multiline comment
                      QCString text(verilogScanYYtext);
                      if(!g_parseCode){
@@ -3394,7 +3396,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 1361 "..\\src\\verilogscanner.l"
+#line 1363 "..\\src\\verilogscanner.l"
 {
   if (iDocLine==-1) iDocLine=yyLineNr;
   if(!g_parseCode){
@@ -3415,7 +3417,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 1379 "..\\src\\verilogscanner.l"
+#line 1381 "..\\src\\verilogscanner.l"
 {
   // found end of comment block
  int index =strComment.find("\\code");
@@ -3462,7 +3464,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 1424 "..\\src\\verilogscanner.l"
+#line 1426 "..\\src\\verilogscanner.l"
 { // one line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qcs(verilogScanYYtext);
@@ -3503,7 +3505,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 1463 "..\\src\\verilogscanner.l"
+#line 1465 "..\\src\\verilogscanner.l"
 {
        QCString text(verilogScanYYtext); 
 				//fprintf(stderr,"\n %s",text.data());
@@ -3534,7 +3536,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 1491 "..\\src\\verilogscanner.l"
+#line 1493 "..\\src\\verilogscanner.l"
 {
                   //   fprintf(stderr,"\n [%s : %c %d] string\n",verilogScanYYtext,verilogScanYYtext[verilogScanYYleng-2],verilogScanYYleng);
 
@@ -3553,7 +3555,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 1507 "..\\src\\verilogscanner.l"
+#line 1509 "..\\src\\verilogscanner.l"
 {
                    if(yytext[0]=='\t'){
                     if(!g_parseCode)
@@ -3565,27 +3567,29 @@ YY_RULE_SETUP
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 1516 "..\\src\\verilogscanner.l"
+#line 1518 "..\\src\\verilogscanner.l"
 {
    	   		// fprintf(stderr,"\nparse code line: [line: %d]",yyLineNr);
                addToken('\n');
-              
-			   if(g_parseCode){
+              if(g_parseCode){
+                  yyEndModLine++;
+			   //   yyEndModLine1=QCString(verilogScanYYtext).contains('\n');
 			     qlist.append(new QCString(verilogScanYYtext));
 			   } 
                 else
 	           yyLineNr+=QCString(verilogScanYYtext).contains('\n');
+	         
 	           c_lval.ctype=verilogScanYYtext[0];
                }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 1528 "..\\src\\verilogscanner.l"
+#line 1532 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);}
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 1529 "..\\src\\verilogscanner.l"
+#line 1533 "..\\src\\verilogscanner.l"
 {
                                                       addText(verilogScanYYtext,verilogScanYYleng);
                                                       if(verilogScanYYleng>(VBUF_SIZE-1))
@@ -3598,7 +3602,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 1539 "..\\src\\verilogscanner.l"
+#line 1543 "..\\src\\verilogscanner.l"
 {
 						                 addText(verilogScanYYtext,verilogScanYYleng);
 						   	          	
@@ -3619,7 +3623,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 1558 "..\\src\\verilogscanner.l"
+#line 1562 "..\\src\\verilogscanner.l"
 {
    c_lval.ctype=verilogScanYYtext[0];
   REJECT;
@@ -3627,177 +3631,177 @@ YY_RULE_SETUP
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 1563 "..\\src\\verilogscanner.l"
+#line 1567 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   ATL_TOK;}
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 1564 "..\\src\\verilogscanner.l"
+#line 1568 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   ATR_TOK;}
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 1565 "..\\src\\verilogscanner.l"
+#line 1569 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   SNNOT_TOK;}
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 1566 "..\\src\\verilogscanner.l"
+#line 1570 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   NOTSN_TOK;}
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 1567 "..\\src\\verilogscanner.l"
+#line 1571 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   AAAND_TOK;}
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 1568 "..\\src\\verilogscanner.l"
+#line 1572 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   AAND_TOK;}
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 1569 "..\\src\\verilogscanner.l"
+#line 1573 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   OOR_TOK;}
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
-#line 1570 "..\\src\\verilogscanner.l"
+#line 1574 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return   EXCLAMATION_TOK;}
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 1571 "..\\src\\verilogscanner.l"
+#line 1575 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);   return   UNDERSCORE_TOK;}
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 1572 "..\\src\\verilogscanner.l"
+#line 1576 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext); return  SEM_TOK;}
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 1573 "..\\src\\verilogscanner.l"
+#line 1577 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);  return  DOT_TOK;}
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 1574 "..\\src\\verilogscanner.l"
+#line 1578 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext); return  COMMA_TOK;}
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
-#line 1575 "..\\src\\verilogscanner.l"
+#line 1579 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);return  QUESTION_TOK;}
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
-#line 1576 "..\\src\\verilogscanner.l"
+#line 1580 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);return  PLUS_TOK;}
 	YY_BREAK
 case 127:
 YY_RULE_SETUP
-#line 1577 "..\\src\\verilogscanner.l"
+#line 1581 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);return  MINUS_TOK;}
 	YY_BREAK
 case 128:
 YY_RULE_SETUP
-#line 1578 "..\\src\\verilogscanner.l"
+#line 1582 "..\\src\\verilogscanner.l"
 {   parseToken(verilogScanYYtext); return  COLON_TOK;}
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
-#line 1579 "..\\src\\verilogscanner.l"
+#line 1583 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);if(g_parseCode) { c_lval.cstr[0]=' ';} return  LBRACE_TOK;}
 	YY_BREAK
 case 130:
 YY_RULE_SETUP
-#line 1580 "..\\src\\verilogscanner.l"
+#line 1584 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  RBRACE_TOK;}
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
-#line 1581 "..\\src\\verilogscanner.l"
+#line 1585 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  RRAM_TOK;}
 	YY_BREAK
 case 132:
 YY_RULE_SETUP
-#line 1582 "..\\src\\verilogscanner.l"
+#line 1586 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  LRAM_TOK;}
 	YY_BREAK
 case 133:
 YY_RULE_SETUP
-#line 1583 "..\\src\\verilogscanner.l"
+#line 1587 "..\\src\\verilogscanner.l"
 {  parseToken(verilogScanYYtext);return  LBRACKET_TOK;}
 	YY_BREAK
 case 134:
 YY_RULE_SETUP
-#line 1584 "..\\src\\verilogscanner.l"
+#line 1588 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  RBRACKET_TOK;}
 	YY_BREAK
 case 135:
 YY_RULE_SETUP
-#line 1585 "..\\src\\verilogscanner.l"
+#line 1589 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  AND_TOK;}
 	YY_BREAK
 case 136:
 YY_RULE_SETUP
-#line 1586 "..\\src\\verilogscanner.l"
+#line 1590 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext); return  OR_TOK;}
 	YY_BREAK
 case 137:
 YY_RULE_SETUP
-#line 1587 "..\\src\\verilogscanner.l"
+#line 1591 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);  return  EQU_TOK;}
 	YY_BREAK
 case 138:
 YY_RULE_SETUP
-#line 1588 "..\\src\\verilogscanner.l"
+#line 1592 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext); return  GT_TOK;}
 	YY_BREAK
 case 139:
 YY_RULE_SETUP
-#line 1589 "..\\src\\verilogscanner.l"
+#line 1593 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  LT_TOK;}
 	YY_BREAK
 case 140:
 YY_RULE_SETUP
-#line 1590 "..\\src\\verilogscanner.l"
+#line 1594 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  NOT_TOK;}
 	YY_BREAK
 case 141:
 YY_RULE_SETUP
-#line 1591 "..\\src\\verilogscanner.l"
+#line 1595 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext); return  SN_TOK;}
 	YY_BREAK
 case 142:
 YY_RULE_SETUP
-#line 1592 "..\\src\\verilogscanner.l"
+#line 1596 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  MULT_TOK;}
 	YY_BREAK
 case 143:
 YY_RULE_SETUP
-#line 1593 "..\\src\\verilogscanner.l"
+#line 1597 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  PERCENTAL_TOK;}
 	YY_BREAK
 case 144:
 YY_RULE_SETUP
-#line 1594 "..\\src\\verilogscanner.l"
+#line 1598 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);return  AT_TOK;}
 	YY_BREAK
 case 145:
 YY_RULE_SETUP
-#line 1595 "..\\src\\verilogscanner.l"
+#line 1599 "..\\src\\verilogscanner.l"
 { parseToken(verilogScanYYtext);	return  PARA_TOK;}
 	YY_BREAK
 case 146:
 YY_RULE_SETUP
-#line 1596 "..\\src\\verilogscanner.l"
+#line 1600 "..\\src\\verilogscanner.l"
 { if(g_parseCode) parseToken(verilogScanYYtext); return  DOLLAR_TOK;}
 	YY_BREAK
 case 147:
 YY_RULE_SETUP
-#line 1597 "..\\src\\verilogscanner.l"
+#line 1601 "..\\src\\verilogscanner.l"
 {
                  vbufreset(); 
 				 addText(verilogScanYYtext,verilogScanYYleng);
@@ -3809,7 +3813,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 148:
 YY_RULE_SETUP
-#line 1605 "..\\src\\verilogscanner.l"
+#line 1609 "..\\src\\verilogscanner.l"
 {
  					  char c=yy_hold_char;
                          if(c !='/'){ 
@@ -3821,7 +3825,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 149:
 YY_RULE_SETUP
-#line 1615 "..\\src\\verilogscanner.l"
+#line 1619 "..\\src\\verilogscanner.l"
 {
                        QCString tt(verilogScanYYtext);
 					   int len=tt.length();
@@ -3849,7 +3853,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 150:
 YY_RULE_SETUP
-#line 1640 "..\\src\\verilogscanner.l"
+#line 1644 "..\\src\\verilogscanner.l"
 {	 
 						 
 						  QCString *qq=new QCString(getVerilogString());
@@ -3876,10 +3880,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 151:
 YY_RULE_SETUP
-#line 1663 "..\\src\\verilogscanner.l"
+#line 1667 "..\\src\\verilogscanner.l"
 ECHO;
 	YY_BREAK
-#line 3883 "c:\\.Trash-1000\\doxygen-svn\\src\\verilogscanner.cpp"
+#line 3887 "c:\\.Trash-1000\\doxygen-svn\\src\\verilogscanner.cpp"
 			case YY_STATE_EOF(INITIAL):
 			case YY_STATE_EOF(Start):
 			case YY_STATE_EOF(Commentt):
@@ -4767,7 +4771,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 1663 "..\\src\\verilogscanner.l"
+#line 1667 "..\\src\\verilogscanner.l"
 
 
 //------ -------------------------------------------------------------------------------------------------
@@ -4824,7 +4828,10 @@ const char* getVerilogParsingFile(){return yyFileName.data();}
 int getVerilogLine() { return yyLineNr; }
 int getVerilogPrevLine() { return yyPrevLine; }
 int getVerilogEndLine(){ return yyEndLine; };
-
+int getVerilogEndModuleLine()
+{ 
+ return yyEndModLine; 
+ };
 
 void VerilogScanner::resetCodeParserState(){}
 bool VerilogScanner::needsPreprocessing(const QCString &extension){ return true; }
@@ -5022,8 +5029,7 @@ for(uint j=0;j<qsl.count();j++)
 static void parseGlobalMember(){
         QCString tmp,args,name,comment;
 		QCString qcs(getVerilogString());
-        int specLine=yyLineNr;
-        bool bInc=qcs.contains("`include"); 
+         bool bInc=qcs.contains("`include"); 
        
         if(qcs.stripPrefix("`define") || qcs.stripPrefix("`include"))
 	    {
@@ -5225,7 +5231,6 @@ QCString checkComment(QCString& q)
  int len;
  int j=ep.match(q.data(),0,&len );
  while(j>=0){
- int hj=q.length();
  QCString left=q.left(len);
   qlist.append(new QCString(left.data())); 
   q=q.right(q.length()-len);

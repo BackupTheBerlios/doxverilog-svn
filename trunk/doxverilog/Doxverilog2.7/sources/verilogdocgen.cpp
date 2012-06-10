@@ -76,7 +76,7 @@ static QList<Entry>  lineEntry;
 QList<Entry>* VerilogDocGen::getEntryAtLine1(const Entry* ce,int line)
 {
   EntryListIterator eli(*ce->children());
-  Entry *found=0;
+
   Entry *rt;
   for (;(rt=eli.current());++eli)
   {
@@ -108,7 +108,7 @@ void VerilogDocGen::adjustMemberName(QCString& nn)
 
 QCString VerilogDocGen::convertTypeToString(int type,bool sing)
 {
-  uint ttype=(uint)type;
+ 
   switch(type){
   case(VerilogDocGen::MODULE) :
    if(sing)return "Module";
@@ -177,8 +177,7 @@ QCString VerilogDocGen::convertTypeToString(int type,bool sing)
 
   default: return "";
   }
-  return "";
- 
+
 } // convertType
 
 
@@ -303,24 +302,23 @@ void VerilogDocGen::writePlainVerilogDeclarations(MemberDef* mdef,MemberList* ml
 void VerilogDocGen::writeVerilogDeclarations(MemberList* ml,OutputList& ol,GroupDef* gd,ClassDef* cd,FileDef* fd){
 
 	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::LIBRARY,FALSE),0,FALSE,VerilogDocGen::LIBRARY); 
-	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::CONFIGURATION,FALSE),0,FALSE,VerilogDocGen::CONFIGURATION);   
-	      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FEATURE,FALSE),0,FALSE,VerilogDocGen::FEATURE);
-   
-	   VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PORT,FALSE),0,FALSE,VerilogDocGen::PORT); 
-   
-	   VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INPUT,FALSE),0,FALSE,VerilogDocGen::INPUT);
-      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INOUT,FALSE),0,FALSE,VerilogDocGen::INOUT);
+  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INPUT,FALSE),0,FALSE,VerilogDocGen::INPUT);
+   	  
+	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INOUT,FALSE),0,FALSE,VerilogDocGen::INOUT);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::OUTPUT,FALSE),0,FALSE,VerilogDocGen::OUTPUT);
-         VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PARAMETER,FALSE),0,FALSE,VerilogDocGen::PARAMETER);
- 
-	   VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::MODULE,FALSE),0,FALSE,VerilogDocGen::MODULE);
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PARAMETER,FALSE),0,FALSE,VerilogDocGen::PARAMETER);
+    VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::MODULE,FALSE),0,FALSE,VerilogDocGen::MODULE);
+  
+	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::CONFIGURATION,FALSE),0,FALSE,VerilogDocGen::CONFIGURATION);   
+	  VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::PORT,FALSE),0,FALSE,VerilogDocGen::PORT); 
+      VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FEATURE,FALSE),0,FALSE,VerilogDocGen::FEATURE);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::INCLUDE,FALSE),0,FALSE,VerilogDocGen::INCLUDE);
            VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::SIGNAL,FALSE),0,FALSE,VerilogDocGen::SIGNAL);
   
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::FUNCTION,FALSE),0,FALSE,VerilogDocGen::FUNCTION);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::ALWAYS,FALSE),0,FALSE,VerilogDocGen::ALWAYS);
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::TASK,FALSE),0,FALSE,VerilogDocGen::TASK);
-       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::COMPONENT,FALSE),0,FALSE,VerilogDocGen::COMPONENT);
+           VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VerilogDocGen::COMPONENT,FALSE),0,FALSE,VerilogDocGen::COMPONENT);
     
     
       VerilogDocGen::writeVerilogDeclarations(ml,ol,cd,0,fd,gd,VerilogDocGen::convertTypeToString(VhdlDocGen::MISCELLANEOUS,FALSE),0,FALSE,VhdlDocGen::MISCELLANEOUS);
@@ -384,10 +382,10 @@ void VerilogDocGen::writeVerilogDeclarations(MemberDef* mdef,OutputList &ol,
 //  if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
   // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
+//  ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
 
   // start a new member declaration
-  bool isAnonymous =  annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
+ // bool isAnonymous =  annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
  
 //  if(mdef->getMemberSpecifiers()==VerilogDocGen::FEATURE)
@@ -704,7 +702,6 @@ MemberDef* VerilogDocGen::findInstMember(QCString & cl,QCString & inst,QCString 
 	{
      ClassDef* cdInst=0;
 	 ClassDef* cdClass=0;
-	 MemberDef *mdef=NULL;
 	 if(!cl.isEmpty())
 		 cdClass=getClass(cl.data());
 
@@ -722,8 +719,7 @@ MemberDef* VerilogDocGen::findInstMember(QCString & cl,QCString & inst,QCString 
 	  else
 		  return  instPortDict.find(key.data());
 
-    return NULL;
-	}//find
+ 	}//find
 
 
 MemberDef* VerilogDocGen::findMember(QCString& className, QCString& memName,int type)
@@ -1040,9 +1036,7 @@ void VerilogDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
   FileDef *fd=mdef->getBodyDef();
   QCString defFileName;
   assert(fd);
-  int start=mdef->getStartBodyLine();
-  int end=mdef->getEndBodyLine();
-  QStringList qsl=QStringList::split("\n",codeFragment);
+    QStringList qsl=QStringList::split("\n",codeFragment);
 
   ParserInterface *pIntf = Doxygen::parserManager->getParser(fdd.data());
   pIntf->resetCodeParserState();

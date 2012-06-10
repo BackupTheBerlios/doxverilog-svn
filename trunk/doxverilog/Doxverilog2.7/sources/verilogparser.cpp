@@ -735,86 +735,86 @@ static const short int yyrhs[] =
 static const unsigned short int yyrline[] =
 {
        0,   138,   138,   140,   140,   141,   150,   152,   153,   154,
-     157,   170,   171,   174,   175,   181,   182,   183,   186,   196,
-     197,   202,   203,   207,   208,   209,   210,   211,   215,   216,
-     220,   223,   227,   228,   231,   234,   235,   242,   243,   246,
-     250,   251,   252,   254,   255,   256,   257,   258,   259,   260,
-     265,   268,   269,   271,   290,   290,   298,   299,   306,   306,
-     307,   310,   310,   311,   311,   314,   315,   316,   317,   320,
-     320,   321,   325,   329,   330,   333,   334,   335,   338,   339,
-     342,   343,   346,   347,   348,   349,   352,   353,   354,   355,
-     362,   363,   364,   365,   366,   367,   368,   369,   373,   374,
-     375,   376,   377,   378,   379,   380,   383,   384,   385,   386,
-     387,   388,   389,   390,   391,   392,   396,   396,   397,   405,
-     405,   406,   406,   407,   407,   408,   408,   409,   409,   410,
-     413,   413,   414,   414,   415,   415,   416,   416,   417,   417,
-     418,   421,   422,   423,   430,   430,   431,   431,   432,   433,
-     436,   436,   437,   437,   438,   439,   444,   444,   445,   445,
-     447,   447,   449,   450,   451,   452,   460,   461,   465,   466,
-     467,   468,   469,   470,   471,   476,   480,   481,   484,   485,
-     488,   489,   493,   494,   495,   496,   497,   498,   499,   500,
-     501,   502,   503,   507,   508,   512,   513,   516,   517,   519,
-     519,   520,   523,   524,   525,   528,   528,   529,   532,   533,
-     540,   541,   542,   547,   548,   549,   558,   559,   562,   563,
-     566,   569,   576,   577,   580,   581,   585,   586,   590,   591,
-     594,   595,   598,   601,   602,   607,   608,   609,   612,   616,
-     617,   620,   623,   631,   633,   640,   648,   651,   659,   667,
-     671,   674,   678,   691,   692,   693,   694,   695,   696,   700,
-     701,   704,   705,   708,   709,   713,   714,   718,   719,   727,
-     729,   731,   733,   735,   738,   750,   751,   754,   755,   759,
-     760,   764,   765,   770,   774,   779,   783,   788,   793,   801,
-     802,   804,   805,   807,   808,   811,   812,   813,   814,   818,
-     819,   822,   823,   824,   825,   826,   827,   828,   829,   833,
-     834,   835,   836,   843,   844,   845,   846,   847,   848,   849,
-     850,   853,   854,   855,   859,   860,   863,   864,   871,   872,
-     873,   874,   875,   876,   879,   880,   883,   884,   889,   890,
-     895,   896,   899,   900,   908,   915,   918,   921,   918,   922,
-     922,   926,   927,   930,   931,   933,   934,   937,   938,   941,
-     944,   945,   949,   950,   954,   955,   956,   959,   977,   978,
-     981,   982,   985,   989,   990,   993,  1003,  1003,  1004,  1007,
-    1008,  1012,  1013,  1017,  1018,  1019,  1020,  1021,  1024,  1025,
-    1028,  1031,  1032,  1035,  1036,  1037,  1041,  1044,  1047,  1048,
-    1049,  1050,  1058,  1060,  1065,  1087,  1088,  1090,  1093,  1094,
-    1095,  1098,  1099,  1102,  1103,  1104,  1106,  1109,  1110,  1111,
-    1112,  1115,  1116,  1118,  1119,  1125,  1129,  1130,  1131,  1132,
-    1136,  1137,  1140,  1141,  1146,  1147,  1150,  1154,  1155,  1156,
-    1157,  1160,  1161,  1162,  1166,  1168,  1169,  1172,  1175,  1176,
-    1177,  1178,  1186,  1187,  1188,  1191,  1192,  1195,  1196,  1199,
-    1207,  1208,  1209,  1210,  1213,  1214,  1217,  1220,  1221,  1224,
-    1224,  1236,  1240,  1241,  1242,  1243,  1246,  1247,  1248,  1249,
-    1256,  1257,  1258,  1259,  1262,  1266,  1267,  1275,  1276,  1277,
-    1278,  1279,  1284,  1285,  1288,  1291,  1292,  1293,  1294,  1295,
-    1296,  1301,  1300,  1303,  1304,  1305,  1306,  1307,  1310,  1319,
-    1320,  1328,  1329,  1330,  1331,  1332,  1333,  1334,  1335,  1336,
-    1337,  1338,  1339,  1340,  1343,  1344,  1348,  1349,  1350,  1351,
-    1352,  1353,  1354,  1357,  1363,  1364,  1365,  1368,  1369,  1370,
-    1370,  1373,  1376,  1377,  1378,  1379,  1380,  1383,  1386,  1387,
-    1388,  1391,  1392,  1393,  1396,  1398,  1404,  1405,  1406,  1407,
-    1410,  1411,  1412,  1418,  1419,  1420,  1421,  1422,  1423,  1427,
-    1428,  1432,  1433,  1434,  1441,  1442,  1443,  1444,  1448,  1449,
-    1450,  1451,  1459,  1460,  1461,  1464,  1465,  1466,  1467,  1474,
-    1475,  1476,  1480,  1481,  1485,  1486,  1487,  1488,  1489,  1493,
-    1494,  1495,  1499,  1500,  1501,  1508,  1509,  1510,  1514,  1519,
-    1520,  1521,  1524,  1525,  1528,  1531,  1532,  1542,  1543,  1544,
-    1548,  1549,  1553,  1554,  1555,  1556,  1557,  1565,  1568,  1569,
-    1573,  1574,  1578,  1580,  1586,  1587,  1591,  1593,  1594,  1598,
-    1599,  1600,  1604,  1613,  1614,  1615,  1616,  1617,  1618,  1619,
-    1620,  1621,  1622,  1623,  1624,  1628,  1629,  1632,  1633,  1637,
-    1638,  1642,  1643,  1644,  1647,  1648,  1649,  1653,  1654,  1657,
-    1658,  1660,  1661,  1665,  1666,  1669,  1670,  1673,  1674,  1678,
-    1679,  1682,  1683,  1686,  1694,  1696,  1699,  1702,  1703,  1704,
-    1705,  1708,  1712,  1713,  1714,  1717,  1718,  1721,  1722,  1723,
-    1726,  1727,  1730,  1734,  1742,  1743,  1748,  1750,  1751,  1754,
-    1755,  1756,  1757,  1758,  1767,  1768,  1776,  1777,  1782,  1786,
-    1787,  1788,  1791,  1792,  1800,  1801,  1802,  1803,  1804,  1805,
-    1806,  1808,  1812,  1813,  1814,  1815,  1818,  1819,  1820,  1821,
-    1824,  1825,  1828,  1830,  1832,  1839,  1840,  1841,  1842,  1843,
-    1844,  1845,  1846,  1847,  1848,  1852,  1853,  1855,  1856,  1857,
-    1858,  1859,  1860,  1861,  1862,  1863,  1864,  1865,  1866,  1867,
-    1868,  1869,  1870,  1871,  1872,  1873,  1874,  1875,  1876,  1877,
-    1885,  1886,  1887,  1888,  1894,  1897,  1898,  1902,  1903,  1914,
-    1915,  1918,  1919,  1920,  1923,  1924,  1927,  1928,  1931,  1932,
-    1936,  1939,  1944
+     157,   161,   162,   165,   166,   172,   173,   174,   177,   187,
+     188,   193,   194,   198,   199,   200,   201,   202,   206,   207,
+     211,   214,   218,   219,   222,   225,   226,   233,   234,   237,
+     241,   242,   243,   245,   246,   247,   248,   249,   250,   251,
+     256,   259,   260,   262,   281,   281,   289,   290,   297,   297,
+     298,   301,   301,   302,   302,   305,   306,   307,   308,   311,
+     311,   312,   316,   320,   321,   324,   325,   326,   329,   330,
+     333,   334,   337,   338,   339,   340,   343,   344,   345,   346,
+     353,   354,   355,   356,   357,   358,   359,   360,   364,   365,
+     366,   367,   368,   369,   370,   371,   374,   375,   376,   377,
+     378,   379,   380,   381,   382,   383,   387,   387,   388,   396,
+     396,   397,   397,   398,   398,   399,   399,   400,   400,   401,
+     404,   404,   405,   405,   406,   406,   407,   407,   408,   408,
+     409,   412,   413,   414,   421,   421,   422,   422,   423,   424,
+     427,   427,   428,   428,   429,   430,   435,   435,   436,   436,
+     438,   438,   440,   441,   442,   443,   451,   452,   456,   457,
+     458,   459,   460,   461,   462,   467,   471,   472,   475,   476,
+     479,   480,   484,   485,   486,   487,   488,   489,   490,   491,
+     492,   493,   494,   498,   499,   503,   504,   507,   508,   510,
+     510,   511,   514,   515,   516,   519,   519,   520,   523,   524,
+     531,   532,   533,   538,   539,   540,   549,   550,   553,   554,
+     557,   560,   567,   568,   571,   572,   576,   577,   581,   582,
+     585,   586,   589,   592,   593,   598,   599,   600,   603,   607,
+     608,   611,   614,   622,   624,   631,   639,   642,   650,   658,
+     662,   665,   669,   682,   683,   684,   685,   686,   687,   691,
+     692,   695,   696,   699,   700,   704,   705,   709,   710,   718,
+     720,   722,   724,   726,   729,   741,   742,   745,   746,   750,
+     751,   755,   756,   761,   765,   770,   774,   779,   784,   792,
+     793,   795,   796,   798,   799,   802,   803,   804,   805,   809,
+     810,   813,   814,   815,   816,   817,   818,   819,   820,   824,
+     825,   826,   827,   834,   835,   836,   837,   838,   839,   840,
+     841,   844,   845,   846,   850,   851,   854,   855,   862,   863,
+     864,   865,   866,   867,   870,   871,   874,   875,   880,   881,
+     886,   887,   890,   891,   899,   906,   909,   912,   909,   913,
+     913,   917,   918,   921,   922,   924,   925,   928,   929,   932,
+     935,   936,   940,   941,   945,   946,   947,   950,   968,   969,
+     972,   973,   976,   980,   981,   984,   994,   994,   995,   998,
+     999,  1003,  1004,  1008,  1009,  1010,  1011,  1012,  1015,  1016,
+    1019,  1022,  1023,  1026,  1027,  1028,  1032,  1035,  1038,  1039,
+    1040,  1041,  1049,  1051,  1056,  1078,  1079,  1081,  1084,  1085,
+    1086,  1089,  1090,  1093,  1094,  1095,  1097,  1100,  1101,  1102,
+    1103,  1106,  1107,  1109,  1110,  1116,  1120,  1121,  1122,  1123,
+    1127,  1128,  1131,  1132,  1137,  1138,  1141,  1145,  1146,  1147,
+    1148,  1151,  1152,  1153,  1157,  1159,  1160,  1163,  1166,  1167,
+    1168,  1169,  1177,  1178,  1179,  1182,  1183,  1186,  1187,  1190,
+    1198,  1199,  1200,  1201,  1204,  1205,  1208,  1211,  1212,  1215,
+    1215,  1227,  1231,  1232,  1233,  1234,  1237,  1238,  1239,  1240,
+    1247,  1248,  1249,  1250,  1253,  1257,  1258,  1266,  1267,  1268,
+    1269,  1270,  1275,  1276,  1279,  1282,  1283,  1284,  1285,  1286,
+    1287,  1292,  1291,  1294,  1295,  1296,  1297,  1298,  1301,  1310,
+    1311,  1319,  1320,  1321,  1322,  1323,  1324,  1325,  1326,  1327,
+    1328,  1329,  1330,  1331,  1334,  1335,  1339,  1340,  1341,  1342,
+    1343,  1344,  1345,  1348,  1354,  1355,  1356,  1359,  1360,  1361,
+    1361,  1364,  1367,  1368,  1369,  1370,  1371,  1374,  1377,  1378,
+    1379,  1382,  1383,  1384,  1387,  1389,  1395,  1396,  1397,  1398,
+    1401,  1402,  1403,  1409,  1410,  1411,  1412,  1413,  1414,  1418,
+    1419,  1423,  1424,  1425,  1432,  1433,  1434,  1435,  1439,  1440,
+    1441,  1442,  1450,  1451,  1452,  1455,  1456,  1457,  1458,  1465,
+    1466,  1467,  1471,  1472,  1476,  1477,  1478,  1479,  1480,  1484,
+    1485,  1486,  1490,  1491,  1492,  1499,  1500,  1501,  1505,  1510,
+    1511,  1512,  1515,  1516,  1519,  1522,  1523,  1533,  1534,  1535,
+    1539,  1540,  1544,  1545,  1546,  1547,  1548,  1556,  1559,  1560,
+    1564,  1565,  1569,  1571,  1577,  1578,  1582,  1584,  1585,  1589,
+    1590,  1591,  1595,  1604,  1605,  1606,  1607,  1608,  1609,  1610,
+    1611,  1612,  1613,  1614,  1615,  1619,  1620,  1623,  1624,  1628,
+    1629,  1633,  1634,  1635,  1638,  1639,  1640,  1644,  1645,  1648,
+    1649,  1651,  1652,  1656,  1657,  1660,  1661,  1664,  1665,  1669,
+    1670,  1673,  1674,  1677,  1685,  1687,  1690,  1693,  1694,  1695,
+    1696,  1699,  1703,  1704,  1705,  1708,  1709,  1712,  1713,  1714,
+    1717,  1718,  1721,  1725,  1733,  1734,  1739,  1741,  1742,  1745,
+    1746,  1747,  1748,  1749,  1758,  1759,  1767,  1768,  1773,  1777,
+    1778,  1779,  1782,  1783,  1791,  1792,  1793,  1794,  1795,  1796,
+    1797,  1799,  1803,  1804,  1805,  1806,  1809,  1810,  1811,  1812,
+    1815,  1816,  1819,  1821,  1823,  1830,  1831,  1832,  1833,  1834,
+    1835,  1836,  1837,  1838,  1839,  1843,  1844,  1846,  1847,  1848,
+    1849,  1850,  1851,  1852,  1853,  1854,  1855,  1856,  1857,  1858,
+    1859,  1860,  1861,  1862,  1863,  1864,  1865,  1866,  1867,  1868,
+    1876,  1877,  1878,  1879,  1885,  1888,  1889,  1893,  1894,  1905,
+    1906,  1909,  1910,  1911,  1914,  1915,  1918,  1919,  1922,  1923,
+    1927,  1930,  1935
 };
 #endif
 
@@ -3997,7 +3997,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 18:
 
 /* Line 936 of glr.c  */
-#line 186 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 177 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                                 if(!parseCode) 
 								{ 
@@ -4009,20 +4009,13 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
 				            }
     break;
 
-  case 37:
-
-/* Line 936 of glr.c  */
-#line 242 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
-    {}
-    break;
-
   case 53:
 
 /* Line 936 of glr.c  */
-#line 271 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 262 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                                     yydebug=0; //sets parser in debug mode
-                                    if(!parseCode) { 
+                                     if(!parseCode) { 
 							              
 											 lastModule=VerilogDocGen::makeNewEntry("",Entry::CLASS_SEC,VerilogDocGen::MODULE);
                                             currentVerilog=lastModule;
@@ -4032,7 +4025,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
 				                             
 										    }
                                             else {
-											      parseModule();
+											       parseModule();
                                          		  }
                                currVerilogType=0;						       
 							   vbufreset();
@@ -4042,769 +4035,762 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 54:
 
 /* Line 936 of glr.c  */
-#line 290 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 281 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
             if(!parseCode){ 
 			        int ll=getVerilogLine();
 	                currentVerilog->endBodyLine=ll;
-			       } 	 
+			       } 	 				  
               vbufreset(); 
 		   }
-    break;
-
-  case 55:
-
-/* Line 936 of glr.c  */
-#line 296 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
-    {currentVerilog=0;vbufreset();}
     break;
 
   case 58:
 
 /* Line 936 of glr.c  */
-#line 306 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 297 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=VerilogDocGen::PORT;}
     break;
 
   case 59:
 
 /* Line 936 of glr.c  */
-#line 306 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 297 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 60:
 
 /* Line 936 of glr.c  */
-#line 307 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 298 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 61:
 
 /* Line 936 of glr.c  */
-#line 310 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 301 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 62:
 
 /* Line 936 of glr.c  */
-#line 310 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 301 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;}
     break;
 
   case 63:
 
 /* Line 936 of glr.c  */
-#line 311 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 302 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 64:
 
 /* Line 936 of glr.c  */
-#line 311 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 302 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;}
     break;
 
   case 69:
 
 /* Line 936 of glr.c  */
-#line 320 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 311 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=VerilogDocGen::PORT;}
     break;
 
   case 70:
 
 /* Line 936 of glr.c  */
-#line 320 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 311 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 71:
 
 /* Line 936 of glr.c  */
-#line 321 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 312 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 72:
 
 /* Line 936 of glr.c  */
-#line 325 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 316 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 73:
 
 /* Line 936 of glr.c  */
-#line 329 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 320 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {parseListOfPorts();vbufreset();}
     break;
 
   case 74:
 
 /* Line 936 of glr.c  */
-#line 330 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 321 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {parseListOfPorts();vbufreset();}
     break;
 
   case 86:
 
 /* Line 936 of glr.c  */
-#line 352 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 343 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=0;vbufreset();}
     break;
 
   case 87:
 
 /* Line 936 of glr.c  */
-#line 353 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 344 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=0;vbufreset();}
     break;
 
   case 88:
 
 /* Line 936 of glr.c  */
-#line 354 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 345 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=0;vbufreset();}
     break;
 
   case 89:
 
 /* Line 936 of glr.c  */
-#line 355 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 346 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 92:
 
 /* Line 936 of glr.c  */
-#line 364 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 355 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 93:
 
 /* Line 936 of glr.c  */
-#line 365 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 356 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 96:
 
 /* Line 936 of glr.c  */
-#line 368 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 359 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 98:
 
 /* Line 936 of glr.c  */
-#line 373 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 364 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 99:
 
 /* Line 936 of glr.c  */
-#line 374 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 365 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 100:
 
 /* Line 936 of glr.c  */
-#line 375 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 366 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 101:
 
 /* Line 936 of glr.c  */
-#line 376 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 367 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 102:
 
 /* Line 936 of glr.c  */
-#line 377 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 368 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 103:
 
 /* Line 936 of glr.c  */
-#line 378 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 369 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 104:
 
 /* Line 936 of glr.c  */
-#line 379 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 370 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 113:
 
 /* Line 936 of glr.c  */
-#line 390 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 381 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 114:
 
 /* Line 936 of glr.c  */
-#line 391 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 382 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {}
     break;
 
   case 115:
 
 /* Line 936 of glr.c  */
-#line 392 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 383 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {}
     break;
 
   case 116:
 
 /* Line 936 of glr.c  */
-#line 396 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 387 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { if(parseCode) currVerilogType=VerilogDocGen::DEFPARAM;}
     break;
 
   case 117:
 
 /* Line 936 of glr.c  */
-#line 396 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 387 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset(); if(parseCode) currVerilogType=0; }
     break;
 
   case 118:
 
 /* Line 936 of glr.c  */
-#line 397 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 388 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset(); if(parseCode) currVerilogType=0;}
     break;
 
   case 119:
 
 /* Line 936 of glr.c  */
-#line 405 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 396 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 120:
 
 /* Line 936 of glr.c  */
-#line 405 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 396 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 121:
 
 /* Line 936 of glr.c  */
-#line 406 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 397 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 122:
 
 /* Line 936 of glr.c  */
-#line 406 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 397 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 123:
 
 /* Line 936 of glr.c  */
-#line 407 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 398 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 124:
 
 /* Line 936 of glr.c  */
-#line 407 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 398 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 125:
 
 /* Line 936 of glr.c  */
-#line 408 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 399 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 126:
 
 /* Line 936 of glr.c  */
-#line 408 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 399 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 127:
 
 /* Line 936 of glr.c  */
-#line 409 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 400 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 128:
 
 /* Line 936 of glr.c  */
-#line 409 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 400 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 130:
 
 /* Line 936 of glr.c  */
-#line 413 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 404 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 131:
 
 /* Line 936 of glr.c  */
-#line 413 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 404 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 132:
 
 /* Line 936 of glr.c  */
-#line 414 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 405 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 133:
 
 /* Line 936 of glr.c  */
-#line 414 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 405 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 134:
 
 /* Line 936 of glr.c  */
-#line 415 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 406 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 135:
 
 /* Line 936 of glr.c  */
-#line 415 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 406 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 136:
 
 /* Line 936 of glr.c  */
-#line 416 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 407 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 137:
 
 /* Line 936 of glr.c  */
-#line 416 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 407 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 138:
 
 /* Line 936 of glr.c  */
-#line 417 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 408 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::PARAMETER;}
     break;
 
   case 139:
 
 /* Line 936 of glr.c  */
-#line 417 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 408 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 140:
 
 /* Line 936 of glr.c  */
-#line 418 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 409 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;vbufreset();}
     break;
 
   case 141:
 
 /* Line 936 of glr.c  */
-#line 421 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 412 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 142:
 
 /* Line 936 of glr.c  */
-#line 422 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 413 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 144:
 
 /* Line 936 of glr.c  */
-#line 430 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 421 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::INOUT; }
     break;
 
   case 145:
 
 /* Line 936 of glr.c  */
-#line 430 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 421 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 146:
 
 /* Line 936 of glr.c  */
-#line 431 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 422 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::INOUT; }
     break;
 
   case 147:
 
 /* Line 936 of glr.c  */
-#line 431 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 422 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 148:
 
 /* Line 936 of glr.c  */
-#line 432 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 423 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 149:
 
 /* Line 936 of glr.c  */
-#line 433 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 424 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 150:
 
 /* Line 936 of glr.c  */
-#line 436 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 427 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::INPUT; }
     break;
 
   case 151:
 
 /* Line 936 of glr.c  */
-#line 436 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 427 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 152:
 
 /* Line 936 of glr.c  */
-#line 437 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 428 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::INPUT; }
     break;
 
   case 153:
 
 /* Line 936 of glr.c  */
-#line 437 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 428 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 154:
 
 /* Line 936 of glr.c  */
-#line 438 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 429 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 155:
 
 /* Line 936 of glr.c  */
-#line 439 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 430 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 156:
 
 /* Line 936 of glr.c  */
-#line 444 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 435 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT; }
     break;
 
   case 157:
 
 /* Line 936 of glr.c  */
-#line 444 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 435 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 158:
 
 /* Line 936 of glr.c  */
-#line 445 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 436 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT; }
     break;
 
   case 159:
 
 /* Line 936 of glr.c  */
-#line 445 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 436 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 160:
 
 /* Line 936 of glr.c  */
-#line 447 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 438 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT; }
     break;
 
   case 161:
 
 /* Line 936 of glr.c  */
-#line 447 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 438 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 163:
 
 /* Line 936 of glr.c  */
-#line 450 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 441 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 164:
 
 /* Line 936 of glr.c  */
-#line 451 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 442 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 165:
 
 /* Line 936 of glr.c  */
-#line 452 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 443 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 176:
 
 /* Line 936 of glr.c  */
-#line 480 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 471 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 177:
 
 /* Line 936 of glr.c  */
-#line 481 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 472 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 180:
 
 /* Line 936 of glr.c  */
-#line 488 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 479 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 182:
 
 /* Line 936 of glr.c  */
-#line 493 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 484 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 183:
 
 /* Line 936 of glr.c  */
-#line 494 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 485 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 184:
 
 /* Line 936 of glr.c  */
-#line 495 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 486 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 185:
 
 /* Line 936 of glr.c  */
-#line 496 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 487 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 186:
 
 /* Line 936 of glr.c  */
-#line 497 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 488 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 187:
 
 /* Line 936 of glr.c  */
-#line 498 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 489 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 188:
 
 /* Line 936 of glr.c  */
-#line 499 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 490 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 189:
 
 /* Line 936 of glr.c  */
-#line 500 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 491 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 190:
 
 /* Line 936 of glr.c  */
-#line 501 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 492 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 191:
 
 /* Line 936 of glr.c  */
-#line 502 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 493 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 192:
 
 /* Line 936 of glr.c  */
-#line 503 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 494 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 197:
 
 /* Line 936 of glr.c  */
-#line 516 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 507 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();currVerilogType=0;}
     break;
 
   case 198:
 
 /* Line 936 of glr.c  */
-#line 517 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 508 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 199:
 
 /* Line 936 of glr.c  */
-#line 519 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 510 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::TIME; }
     break;
 
   case 200:
 
 /* Line 936 of glr.c  */
-#line 519 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 510 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();currVerilogType=0;}
     break;
 
   case 201:
 
 /* Line 936 of glr.c  */
-#line 520 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 511 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 202:
 
 /* Line 936 of glr.c  */
-#line 523 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 514 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;}
     break;
 
   case 203:
 
 /* Line 936 of glr.c  */
-#line 524 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 515 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;}
     break;
 
   case 204:
 
 /* Line 936 of glr.c  */
-#line 525 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 516 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 205:
 
 /* Line 936 of glr.c  */
-#line 528 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 519 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::TIME; }
     break;
 
   case 206:
 
 /* Line 936 of glr.c  */
-#line 528 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 519 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();currVerilogType=0;}
     break;
 
   case 207:
 
 /* Line 936 of glr.c  */
-#line 529 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 520 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 216:
 
 /* Line 936 of glr.c  */
-#line 558 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 549 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {}
     break;
 
   case 223:
 
 /* Line 936 of glr.c  */
-#line 577 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 568 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) {parseReg(currentVerilog);}vbufreset();}
     break;
 
   case 224:
 
 /* Line 936 of glr.c  */
-#line 580 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 571 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) {parseReg(currentVerilog);}vbufreset();}
     break;
 
   case 225:
 
 /* Line 936 of glr.c  */
-#line 581 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 572 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) {parseReg(currentVerilog);}vbufreset();}
     break;
 
   case 241:
 
 /* Line 936 of glr.c  */
-#line 620 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 611 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) {
                                                                    							parseReg(currentVerilog);}
 																							vbufreset();}
@@ -4813,21 +4799,21 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 242:
 
 /* Line 936 of glr.c  */
-#line 623 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 614 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) parseReg(currentVerilog);vbufreset();}
     break;
 
   case 243:
 
 /* Line 936 of glr.c  */
-#line 631 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 622 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) {parseReg(currentVerilog);}vbufreset();}
     break;
 
   case 244:
 
 /* Line 936 of glr.c  */
-#line 633 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 624 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                           			 if(currVerilogType==VerilogDocGen::PARAMETER && !parseCode)
 									 parseParam(currentVerilog);
@@ -4838,7 +4824,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 248:
 
 /* Line 936 of glr.c  */
-#line 662 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 653 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode && currentFunctionVerilog)
 						                                {
 														  currentFunctionVerilog->endBodyLine=getVerilogPrevLine();
@@ -4848,21 +4834,21 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 249:
 
 /* Line 936 of glr.c  */
-#line 670 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 661 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode && currentFunctionVerilog){currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset(); }
     break;
 
   case 251:
 
 /* Line 936 of glr.c  */
-#line 674 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 665 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 252:
 
 /* Line 936 of glr.c  */
-#line 678 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 669 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {  if(!parseCode){
                              //    printf("\n  funcname [%s] --\n",getVerilogString());
                                  currentFunctionVerilog=VerilogDocGen::makeNewEntry("",Entry::FUNCTION_SEC,VerilogDocGen::FUNCTION);
@@ -4877,42 +4863,42 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 266:
 
 /* Line 936 of glr.c  */
-#line 714 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 705 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=0;}
     break;
 
   case 269:
 
 /* Line 936 of glr.c  */
-#line 728 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 719 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode && currentFunctionVerilog) { currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset();}
     break;
 
   case 271:
 
 /* Line 936 of glr.c  */
-#line 732 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 723 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode && currentFunctionVerilog) { currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset();}
     break;
 
   case 272:
 
 /* Line 936 of glr.c  */
-#line 734 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 725 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode && currentFunctionVerilog) { currentFunctionVerilog->endBodyLine=getVerilogPrevLine();} vbufreset();}
     break;
 
   case 273:
 
 /* Line 936 of glr.c  */
-#line 735 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 726 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 274:
 
 /* Line 936 of glr.c  */
-#line 738 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 729 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {  if(!parseCode){
                              //    printf("\n  funcname [%s] --\n",getVerilogString());
                                  currentFunctionVerilog=VerilogDocGen::makeNewEntry("",Entry::FUNCTION_SEC,VerilogDocGen::TASK);
@@ -4927,7 +4913,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 284:
 
 /* Line 936 of glr.c  */
-#line 774 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 765 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                              if(!parseCode){
 							   parsePortDir(currentVerilog,3);}
@@ -4938,7 +4924,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 285:
 
 /* Line 936 of glr.c  */
-#line 779 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 770 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){
 							   parsePortDir(currentVerilog,3);}
 							   vbufreset();
@@ -4948,7 +4934,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 286:
 
 /* Line 936 of glr.c  */
-#line 783 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 774 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){
 							   parsePortDir(currentVerilog,3);}
 							   vbufreset();
@@ -4958,7 +4944,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 287:
 
 /* Line 936 of glr.c  */
-#line 788 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 779 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                              if(!parseCode){
 							   parsePortDir(currentVerilog,3);}
@@ -4969,7 +4955,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 288:
 
 /* Line 936 of glr.c  */
-#line 793 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 784 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                              if(!parseCode){
 							   parsePortDir(currentVerilog,3);}
@@ -4980,119 +4966,119 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 295:
 
 /* Line 936 of glr.c  */
-#line 811 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 802 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { if(!parseCode )currVerilogType=VerilogDocGen::INOUT;}
     break;
 
   case 296:
 
 /* Line 936 of glr.c  */
-#line 812 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 803 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { if(!parseCode)currVerilogType=VerilogDocGen::OUTPUT;}
     break;
 
   case 297:
 
 /* Line 936 of glr.c  */
-#line 813 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 804 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { if(!parseCode)currVerilogType=VerilogDocGen::INPUT;}
     break;
 
   case 298:
 
 /* Line 936 of glr.c  */
-#line 814 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 805 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { if(!parseCode){parsePortDir(currentVerilog,3);vbufreset();}}
     break;
 
   case 301:
 
 /* Line 936 of glr.c  */
-#line 822 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 813 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 302:
 
 /* Line 936 of glr.c  */
-#line 823 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 814 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 303:
 
 /* Line 936 of glr.c  */
-#line 824 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 815 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 304:
 
 /* Line 936 of glr.c  */
-#line 825 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 816 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 305:
 
 /* Line 936 of glr.c  */
-#line 826 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 817 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 306:
 
 /* Line 936 of glr.c  */
-#line 827 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 818 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 307:
 
 /* Line 936 of glr.c  */
-#line 828 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 819 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode){currVerilogType=VerilogDocGen::INPUT;parsePortDir(currentVerilog,3);}vbufreset();}
     break;
 
   case 308:
 
 /* Line 936 of glr.c  */
-#line 829 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 820 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 321:
 
 /* Line 936 of glr.c  */
-#line 853 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 844 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 322:
 
 /* Line 936 of glr.c  */
-#line 854 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 845 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 323:
 
 /* Line 936 of glr.c  */
-#line 855 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 846 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 333:
 
 /* Line 936 of glr.c  */
-#line 876 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 867 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 346:
 
 /* Line 936 of glr.c  */
-#line 918 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 909 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { 
                     						     moduleParamName=prevName;	
                     					         moduleLine=c_lloc.first_line;
@@ -5102,70 +5088,70 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 347:
 
 /* Line 936 of glr.c  */
-#line 921 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 912 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();moduleLine=0;}
     break;
 
   case 349:
 
 /* Line 936 of glr.c  */
-#line 922 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 913 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 357:
 
 /* Line 936 of glr.c  */
-#line 937 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 928 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {}
     break;
 
   case 360:
 
 /* Line 936 of glr.c  */
-#line 944 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 935 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { }
     break;
 
   case 362:
 
 /* Line 936 of glr.c  */
-#line 949 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 940 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 363:
 
 /* Line 936 of glr.c  */
-#line 950 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 941 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 364:
 
 /* Line 936 of glr.c  */
-#line 954 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 945 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset(); currVerilogType=0;}
     break;
 
   case 365:
 
 /* Line 936 of glr.c  */
-#line 955 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 946 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset(); currVerilogType=0;}
     break;
 
   case 366:
 
 /* Line 936 of glr.c  */
-#line 956 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 947 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset(); currVerilogType=0;}
     break;
 
   case 367:
 
 /* Line 936 of glr.c  */
-#line 959 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 950 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { 
                             QCString secName((((yyGLRStackItem const *)yyvsp)[YYFILL ((0) - (2))].yystate.yysemantics.yysval.cstr));
 							QCString firstName((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.cstr));;
@@ -5185,91 +5171,91 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 372:
 
 /* Line 936 of glr.c  */
-#line 985 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 976 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 376:
 
 /* Line 936 of glr.c  */
-#line 1003 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 994 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {CurrState=VerilogDocGen::STATE_GENERATE;generateItem=true;}
     break;
 
   case 377:
 
 /* Line 936 of glr.c  */
-#line 1003 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 994 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {CurrState=0;generateItem=false;}
     break;
 
   case 378:
 
 /* Line 936 of glr.c  */
-#line 1004 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 995 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {CurrState=0;generateItem=false;}
     break;
 
   case 383:
 
 /* Line 936 of glr.c  */
-#line 1017 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1008 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 384:
 
 /* Line 936 of glr.c  */
-#line 1018 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1009 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 385:
 
 /* Line 936 of glr.c  */
-#line 1019 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1010 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 386:
 
 /* Line 936 of glr.c  */
-#line 1020 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1011 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 387:
 
 /* Line 936 of glr.c  */
-#line 1021 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1012 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 400:
 
 /* Line 936 of glr.c  */
-#line 1049 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1040 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 401:
 
 /* Line 936 of glr.c  */
-#line 1050 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1041 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 402:
 
 /* Line 936 of glr.c  */
-#line 1059 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1050 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();currentVerilog=0;}
     break;
 
   case 404:
 
 /* Line 936 of glr.c  */
-#line 1065 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1056 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { if(!parseCode) { 
 							               //  printf("\n  name_of_mod [%s] [%d]--\n",getVerilogString(),getVerilogLine());
                                             lastModule=VerilogDocGen::makeNewEntry("",Entry::CLASS_SEC,VerilogDocGen::MODULE);
@@ -5291,147 +5277,147 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 405:
 
 /* Line 936 of glr.c  */
-#line 1087 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1078 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {parseListOfPorts();vbufreset();}
     break;
 
   case 406:
 
 /* Line 936 of glr.c  */
-#line 1088 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1079 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {parseListOfPorts();vbufreset();}
     break;
 
   case 417:
 
 /* Line 936 of glr.c  */
-#line 1109 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1100 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT;if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 418:
 
 /* Line 936 of glr.c  */
-#line 1110 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1101 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT;if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 419:
 
 /* Line 936 of glr.c  */
-#line 1111 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1102 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT;if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 420:
 
 /* Line 936 of glr.c  */
-#line 1112 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1103 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::OUTPUT;if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 421:
 
 /* Line 936 of glr.c  */
-#line 1115 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1106 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::INPUT;if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 422:
 
 /* Line 936 of glr.c  */
-#line 1116 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1107 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { currVerilogType=VerilogDocGen::INPUT;if(!parseCode)parsePortDir(currentVerilog,3);vbufreset();}
     break;
 
   case 423:
 
 /* Line 936 of glr.c  */
-#line 1118 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1109 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) parseReg(currentVerilog);vbufreset();}
     break;
 
   case 424:
 
 /* Line 936 of glr.c  */
-#line 1119 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1110 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode) parseReg(currentVerilog);vbufreset();}
     break;
 
   case 426:
 
 /* Line 936 of glr.c  */
-#line 1129 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1120 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 427:
 
 /* Line 936 of glr.c  */
-#line 1130 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1121 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 428:
 
 /* Line 936 of glr.c  */
-#line 1131 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1122 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 429:
 
 /* Line 936 of glr.c  */
-#line 1132 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1123 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 434:
 
 /* Line 936 of glr.c  */
-#line 1146 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1137 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 435:
 
 /* Line 936 of glr.c  */
-#line 1147 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1138 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 436:
 
 /* Line 936 of glr.c  */
-#line 1150 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1141 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { identVerilog+=(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.cstr);writeDigit(); }
     break;
 
   case 448:
 
 /* Line 936 of glr.c  */
-#line 1175 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1166 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { identVerilog+=(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.cstr);writeDigit(); }
     break;
 
   case 467:
 
 /* Line 936 of glr.c  */
-#line 1220 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1211 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 468:
 
 /* Line 936 of glr.c  */
-#line 1221 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1212 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();  }
     break;
 
   case 469:
 
 /* Line 936 of glr.c  */
-#line 1224 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1215 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                                currVerilogType=VerilogDocGen::ALWAYS;
                                prevName.resize(0);
@@ -5441,7 +5427,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 470:
 
 /* Line 936 of glr.c  */
-#line 1227 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1218 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                                             if(!parseCode && currentFunctionVerilog)
 											 {
@@ -5456,35 +5442,35 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 471:
 
 /* Line 936 of glr.c  */
-#line 1236 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1227 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();currVerilogType=0;}
     break;
 
   case 475:
 
 /* Line 936 of glr.c  */
-#line 1243 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1234 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 479:
 
 /* Line 936 of glr.c  */
-#line 1249 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1240 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 501:
 
 /* Line 936 of glr.c  */
-#line 1301 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1292 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(!parseCode && currVerilogType==VerilogDocGen::ALWAYS)parseAlways(true);}
     break;
 
   case 508:
 
 /* Line 936 of glr.c  */
-#line 1310 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1301 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                                             if(!parseCode){
                                              if(currentFunctionVerilog && currentFunctionVerilog->spec==VerilogDocGen::ALWAYS){
@@ -5498,196 +5484,196 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 521:
 
 /* Line 936 of glr.c  */
-#line 1338 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1329 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 536:
 
 /* Line 936 of glr.c  */
-#line 1365 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1356 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 539:
 
 /* Line 936 of glr.c  */
-#line 1370 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1361 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;}
     break;
 
   case 540:
 
 /* Line 936 of glr.c  */
-#line 1370 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1361 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {currVerilogType=0;}
     break;
 
   case 542:
 
 /* Line 936 of glr.c  */
-#line 1376 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1367 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { parseAlways(); vbufreset();currVerilogType=0;}
     break;
 
   case 543:
 
 /* Line 936 of glr.c  */
-#line 1377 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1368 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { parseAlways(); vbufreset();currVerilogType=0;}
     break;
 
   case 544:
 
 /* Line 936 of glr.c  */
-#line 1378 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1369 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { parseAlways(); vbufreset();currVerilogType=0;}
     break;
 
   case 545:
 
 /* Line 936 of glr.c  */
-#line 1379 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1370 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { parseAlways(); vbufreset();currVerilogType=0;}
     break;
 
   case 546:
 
 /* Line 936 of glr.c  */
-#line 1380 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1371 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { parseAlways(); vbufreset();currVerilogType=0;}
     break;
 
   case 564:
 
 /* Line 936 of glr.c  */
-#line 1419 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1410 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 566:
 
 /* Line 936 of glr.c  */
-#line 1421 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1412 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 568:
 
 /* Line 936 of glr.c  */
-#line 1423 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1414 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset();}
     break;
 
   case 590:
 
 /* Line 936 of glr.c  */
-#line 1475 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1466 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 591:
 
 /* Line 936 of glr.c  */
-#line 1476 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1467 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 592:
 
 /* Line 936 of glr.c  */
-#line 1480 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1471 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 593:
 
 /* Line 936 of glr.c  */
-#line 1481 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1472 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 594:
 
 /* Line 936 of glr.c  */
-#line 1485 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1476 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 595:
 
 /* Line 936 of glr.c  */
-#line 1486 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1477 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 596:
 
 /* Line 936 of glr.c  */
-#line 1487 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1478 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 597:
 
 /* Line 936 of glr.c  */
-#line 1488 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1479 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 598:
 
 /* Line 936 of glr.c  */
-#line 1489 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1480 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 787:
 
 /* Line 936 of glr.c  */
-#line 1902 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1893 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { identVerilog+=(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.cstr);writeDigit(); }
     break;
 
   case 788:
 
 /* Line 936 of glr.c  */
-#line 1903 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1894 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {if(parseCode) {writePrevVerilogWords(identVerilog);writeVerilogFont("vhdllogic",identVerilog.data());identVerilog.resize(0);}}
     break;
 
   case 789:
 
 /* Line 936 of glr.c  */
-#line 1914 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1905 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {vbufreset();}
     break;
 
   case 790:
 
 /* Line 936 of glr.c  */
-#line 1915 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1906 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 792:
 
 /* Line 936 of glr.c  */
-#line 1919 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1910 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 793:
 
 /* Line 936 of glr.c  */
-#line 1920 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1911 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { vbufreset(); }
     break;
 
   case 799:
 
 /* Line 936 of glr.c  */
-#line 1932 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1923 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
 										 }
     break;
@@ -5695,14 +5681,14 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 800:
 
 /* Line 936 of glr.c  */
-#line 1936 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1927 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     { parseString(); }
     break;
 
   case 801:
 
 /* Line 936 of glr.c  */
-#line 1939 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1930 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {
                     	//if(parseCode) 
 						      identVerilog+=(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.cstr); 
@@ -5713,14 +5699,14 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 802:
 
 /* Line 936 of glr.c  */
-#line 1944 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1935 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
     {}
     break;
 
 
 
 /* Line 936 of glr.c  */
-#line 5724 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.cpp"
+#line 5710 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.cpp"
       default: break;
     }
 
@@ -7139,7 +7125,7 @@ yyparse (void)
 { yydebug=0; }
 
 /* Line 2331 of glr.c  */
-#line 7143 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.cpp"
+#line 7129 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.cpp"
 
   if (! yyinitGLRStack (yystackp, YYINITDEPTH))
     goto yyexhaustedlab;
@@ -7438,7 +7424,7 @@ yypdumpstack (yyGLRStack* yystackp)
 
 
 /* Line 2634 of glr.c  */
-#line 1951 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
+#line 1942 "c:\\.Trash-1000\\doxygen-svn\\src\\\\..\\src\\verilogparser.y"
 
 //------ ------------------------------------------------------------------------------------------------
 
@@ -8134,8 +8120,11 @@ void parseString(){
                        b=generateVerilogClassOrGlobalLink(identVerilog.data());
 					  if(!b){
 					  const QCString*  col=VerilogDocGen::findKeyWord(identVerilog.data());
-					  if(col) 
+					  if(col){ 
+					    fprintf(stderr,"\n %s",col->data());			
+					
 					  codifyVerilogString(identVerilog.data(),col->data());
+					  }
 					  else					  
 					  codifyVerilogString(identVerilog.data(),"vhdlchar");
 					   }   

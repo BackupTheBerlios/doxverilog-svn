@@ -130,7 +130,7 @@ void addSubEntry(Entry* root, Entry* e);
 %token IFNONE_TOK REALTIME_TOK DESIGN_TOK 
 %token ATL_TOK ATR_TOK OOR_TOK AAND_TOK SNNOT_TOK NOTSN_TOK AAAND_TOK
 %token DEFINE_TOK 
-
+%expect 19
 %initial-action { yydebug=0; } 
 %start file 
 /* -------------- rules section -------------- */
@@ -157,15 +157,6 @@ library_descriptions :  include_statement   {vbufreset();}
 library_declaration : LIBRARY_TOK SEM_TOK  //  | parse in verlogscanner.l 
 					;
 
-identifier_lib : identifier {
-                                if(!parseCode) 
-								{ 
-								   QCString libName=$<cstr>1;
-								   Entry *lib=VerilogDocGen::makeNewEntry(libName.data(),Entry::VARIABLE_SEC,VerilogDocGen::LIBRARY,c_lloc.first_line);
-                                   lib->type="library";
-								   addGlobalVerilogMember(lib);
-								}          
-				            }
 
 file_path_spec : simple_identifier
                 | STRING_TOK
@@ -239,7 +230,7 @@ config : /* empty */
 //---------------------------- -- A.1.3 Module and primitive source text  -------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------
 
-description : module_declaration {}
+description : module_declaration 
 	         | udp_declaration
            //  | DEFINE_TOK identifier  expression
            //  | INCLUDE_TOK  expression
@@ -270,7 +261,7 @@ module_type: MODUL_TOK
 
 module_keyword : module_type name_of_module {
                                     yydebug=0; //sets parser in debug mode
-                                    if(!parseCode) { 
+                                     if(!parseCode) { 
 							              
 											 lastModule=VerilogDocGen::makeNewEntry("",Entry::CLASS_SEC,VerilogDocGen::MODULE);
                                             currentVerilog=lastModule;
@@ -280,7 +271,7 @@ module_keyword : module_type name_of_module {
 				                             
 										    }
                                             else {
-											      parseModule();
+											       parseModule();
                                          		  }
                                currVerilogType=0;						       
 							   vbufreset();
@@ -291,10 +282,10 @@ end_mod :  {
             if(!parseCode){ 
 			        int ll=getVerilogLine();
 	                currentVerilog->endBodyLine=ll;
-			       } 	 
+			       } 	 				  
               vbufreset(); 
-		   } ENDMODUL_TOK {currentVerilog=0;vbufreset();}
-
+		   } ENDMODUL_TOK 
+		   
 module_option : module_item
              | module_option module_item
 		     ;
@@ -2643,8 +2634,11 @@ void parseString(){
                        b=generateVerilogClassOrGlobalLink(identVerilog.data());
 					  if(!b){
 					  const QCString*  col=VerilogDocGen::findKeyWord(identVerilog.data());
-					  if(col) 
+					  if(col){ 
+					    fprintf(stderr,"\n %s",col->data());			
+					
 					  codifyVerilogString(identVerilog.data(),col->data());
+					  }
 					  else					  
 					  codifyVerilogString(identVerilog.data(),"vhdlchar");
 					   }   

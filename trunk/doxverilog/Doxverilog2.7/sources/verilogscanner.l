@@ -3,7 +3,7 @@
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
+*    (at your option) any later version.
 *
 *
 * This program is distributed in the hope that it will be useful,
@@ -51,7 +51,9 @@
 //--------------------------------------------------------------------------
 
 static ParserInterface *g_thisParser;
-
+static int ss1,ee1;
+static int yyEndModLine=0;
+static int yyEndModLine1;
 static int yyLineNr =1;
 static int yyPrevLine=1;
 static int yyEndLine=1;
@@ -105,6 +107,9 @@ static bool          g_lexInit = FALSE;
 static bool          g_parseCode=FALSE;
 static bool gInit=false;
 static int iCodeLen;
+
+
+
 // ------------------< functions for verilog code scanner >---------------
 
 static void writeFont(const char *s,const char* text);
@@ -128,8 +133,10 @@ static void parseGlobalMember();
 static void parseLib(char *);
 static QCString checkComment(QCString& q);
 static void composeString(QCString& q);
-static void writeInclude(QCString);
+static  void writeInclude(QCString);
 //-------------------------------------------------------------------
+
+
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_USER_ACTION num_chars +=verilogScanYYleng ;
@@ -174,31 +181,13 @@ static const char* VerilogKewWordMap1[] = {"$async$and$array","$async$and$plane"
 "$itor", "$rtoi","$signed", "$unsigned","$test$plusargs", "$value$plusargs","$q_initialize", "$q_add",
 "$q_remove", "$q_full","$q_exam","$period","$hold","$setup","$width","$skew","$reovery","$nochange","$timeskew","$setuphold","$fullskew",""};
 
-/*
-static void startCodeBlock(QCString qcs,int ii){
-   iCodeLen=num_chars;
-     int ff= getLR(iCodeLen);
-     iCodeLen=ff;
-   gBlock.reset();
-   int len=qcs.length();
-   QCString name=qcs.right(len-ii);// 
-   name=VhdlDocGen::getIndexWord(name.data(),1);
-    if(!name)
-         gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
-    else
-        gBlock.name=name;
-    gBlock.bodyLine=yyLineNr+1;
-    QCString q=strComment;
-   VhdlDocGen::prepareComment(q);
-   gBlock.brief+=q;
-   strComment.resize(0);
-}
-*/
+
+
 
 static void startCodeBlock(int index){
     int ll=strComment.length();
      iCodeLen=inputVerilogString.findRev(strComment.data())+ll;
-  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+  //fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
    //assert(false);
     gBlock.reset();
    int len=strComment.length();
@@ -605,9 +594,10 @@ void writePrevVerilogWords(const QCString& qcs){
 //	printf("\n++++++++++++++++++ %s",qcs.data()); 
 //if(qcs.contains("`"))
 //	 printVerilogStringList();
-	 if(strcmp(qcs.data(),word->data()) != 0) {
+	 if(strcmp(qcs.data(),word->data()) != 0)
+	  {
       writeVWord(*word);
-      qlist.removeFirst();
+     qlist.removeFirst();
      }else { 
 //	   QCString *wsord=(QCString*)qlist.getFirst();
 	  qlist.removeFirst();
@@ -822,7 +812,7 @@ static int countLines()
   return count;
 }
 
-/*! writes a word to the output.
+/*! writes a word to the output. 
  *  If curr_class is defined, the word belongs to a class
  *  and will be linked.
  */
@@ -893,6 +883,13 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
 static void startCodeLine()
 {
   //if (g_currentFontClass) { g_code->endFontClass(); }
+
+bool isLine;
+if(ss1>ee1)
+  isLine=true;
+  else
+isLine=false; 
+  
   if (g_sourceFileDef)
   {
      if((yyLineNr % 500) == 0) 
@@ -919,7 +916,7 @@ static void startCodeLine()
       {
      	g_code->writeLineNumber(g_currentMemberDef->getReference(),
 	                        g_currentMemberDef->getOutputFileBase(),
-	                        g_currentMemberDef->anchor(),yyLineNr);
+	                        g_currentMemberDef->anchor(),yyLineNr,isLine);
         setCurrentDoc(
                                 g_currentMemberDef->qualifiedName(),
 	                        g_sourceFileDef->getSourceFileBase(),
@@ -929,7 +926,7 @@ static void startCodeLine()
       {
         g_code->writeLineNumber(d->getReference(),
 	                        d->getOutputFileBase(),
-	                        0,yyLineNr);
+	                        0,yyLineNr,isLine);
         setCurrentDoc(
                                 d->qualifiedName(),
 	                        g_sourceFileDef->getSourceFileBase(),
@@ -938,7 +935,7 @@ static void startCodeLine()
     }
     else
     {
-      g_code->writeLineNumber(0,0,0,yyLineNr);
+      g_code->writeLineNumber(0,0,0,yyLineNr,isLine);
     }
   }
   g_code->startCodeLine(yyLineNr); 
@@ -987,7 +984,6 @@ static int verilogScanYYread(char *buf,int max_size)
 // part of a word like (reg)ister
 static bool check(bool bb=true)
 {
-  bool b=true;
   char c=yy_hold_char;
  
   if(iSize==0){
@@ -1294,7 +1290,13 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>"primitive"    { if(check()){yyPrevLine=yyLineNr;  return  PRIMITIVE_TOK;} REJECT;}
 <Start>"macromodule"  { if(check())  return  MACRO_MODUL_TOK; REJECT;}
 <Start>"module"       { if(check())   { yyPrevLine=yyLineNr; return  MODUL_TOK; } REJECT;}
-<Start>"endmodule"   { if(check())   return  ENDMODUL_TOK;REJECT;}
+<Start>"endmodule"   { 
+           if(check())
+            {
+            //  yyEndModLine=yyLineNr+yyEndModLine1;  
+              return  ENDMODUL_TOK;
+             }REJECT;
+             }
 <Start>"reg"         { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);return  REG_TOK; } REJECT;}
 <Start>"integer"     { if(check()) {yyPrevLine=yyLineNr; addText(verilogScanYYtext,verilogScanYYleng);return  INTEGER_TOK;}REJECT;}
 <Start>"defparam" { if(check()) return  DEFPARAM_TOK; REJECT;}
@@ -1516,12 +1518,14 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start,EndOfText>[\n] {
    	   		// fprintf(stderr,"\nparse code line: [line: %d]",yyLineNr);
                addToken('\n');
-              
-			   if(g_parseCode){
+              if(g_parseCode){
+                  yyEndModLine++;
+			   //   yyEndModLine1=QCString(verilogScanYYtext).contains('\n');
 			     qlist.append(new QCString(verilogScanYYtext));
 			   } 
                 else
 	           yyLineNr+=QCString(verilogScanYYtext).contains('\n');
+	         
 	           c_lval.ctype=verilogScanYYtext[0];
                }
 
@@ -1716,7 +1720,10 @@ const char* getVerilogParsingFile(){return yyFileName.data();}
 int getVerilogLine() { return yyLineNr; }
 int getVerilogPrevLine() { return yyPrevLine; }
 int getVerilogEndLine(){ return yyEndLine; };
-
+int getVerilogEndModuleLine()
+{ 
+ return yyEndModLine; 
+ };
 
 void VerilogScanner::resetCodeParserState(){}
 bool VerilogScanner::needsPreprocessing(const QCString &extension){ return true; }
@@ -1914,8 +1921,7 @@ for(uint j=0;j<qsl.count();j++)
 static void parseGlobalMember(){
         QCString tmp,args,name,comment;
 		QCString qcs(getVerilogString());
-        int specLine=yyLineNr;
-        bool bInc=qcs.contains("`include"); 
+         bool bInc=qcs.contains("`include"); 
        
         if(qcs.stripPrefix("`define") || qcs.stripPrefix("`include"))
 	    {
@@ -2117,7 +2123,6 @@ QCString checkComment(QCString& q)
  int len;
  int j=ep.match(q.data(),0,&len );
  while(j>=0){
- int hj=q.length();
  QCString left=q.left(len);
   qlist.append(new QCString(left.data())); 
   q=q.right(q.length()-len);
