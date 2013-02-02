@@ -165,7 +165,39 @@ static const char* VerilogKewWordMap[] = {"module","endmodule","input","output",
 	"table","tran","tranif0","tranif1","tri1","triand","trior","trireg","pulsestyle_ondetect",    "showcancelled","noshowcancelled","pulsestyle_onevent",
 	"generate","endgenerate","genvar","unsigend","xor","xnor","wait","wand","weak0","weak1","while","wire","wor","vectored",""}; 
 
-static const char* VerilogDefineMap[] = {"`line","`resetall","`define","`undef","`timescale","`ifndef","`ifdef","`elsif","`else","`endif","`include","`celldefine","`endcelldefine","`default_nettype","`unconnected_drive","`nounconnected_drive",""};
+static const char* VerilogDefineMap[] = 
+{
+   "`accelerate",	
+  "`autoexpand_vectornets"	,
+  "`celldefine",	
+  "`default_decay_time,"
+  "`default_nettype",
+  "`default_trireg_strength",
+  "`delay_mode_distributed",		
+  "`delay_mode_zero"	,	
+  "`disable_portfaults",		
+  "`enable_portfaults",		
+  "`endcelldefine",	
+  "`endprotect",			
+  "`expand_vectornets",		
+  "`inline",
+  "`line",
+  "`noaccelerate",
+  "`noexpand_vectornets",
+  "`noremove_gatenames",
+  "`noremove_netnames"	,
+  "`nosuppress_faults",	
+  "`nounconnected_drive",
+  "`portcoerce",		
+  "`pragma",
+  "`protect"	,//SV			
+  "`protected",// SV	
+  "`remove_gatenames",			
+  "`remove_netnames",
+  "`resetall",		
+  "`suppress_faults",
+  "`timescale",
+   ""  };
 
 // some but not all system words
 static const char* VerilogKewWordMap1[] = {"$async$and$array","$async$and$plane","$async$nand$array", "$async$nand$plane","$async$or$array", "$async$or$plane",
@@ -892,8 +924,8 @@ isLine=false;
   
   if (g_sourceFileDef)
   {
-     if((yyLineNr % 500) == 0) 
-	 fprintf(stderr,"\r parsing line %d:",yyLineNr);
+   //  if((yyLineNr % 500) == 0) 
+	// fprintf(stderr,"\r parsing line %d:",yyLineNr);
     Definition *d   = g_sourceFileDef->getSourceDefinition(yyLineNr);
    // printf("startCodeLine %d d=%s\n", yyLineNr,d ? d->name().data() : "<null>");
     if (!g_includeCodeFragment && d)
@@ -1050,10 +1082,8 @@ COMMENT     "//"[^\n]*
 COMMENT1    "//!"[^\n]*
 MIT         [^\\\n]*
 STRING      ["][^"]*["]
-FEATURE     ("`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef")[^\n]*
+FEATURE     ("`default_trireg_strength"|"`default_decay_time"|"`pragma"|"`default_nettype"|"`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef")[^\n]*
 FEATUREX     ("`define"){MIT}
-
-
 
 FEATURE1    [`][a-zA-Z0-9_]+
 SIGNEDBASE  ['][sS][oOhHbBdD]
@@ -1186,6 +1216,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                  
 <Start>{FEATURE1} {
 				    QCString s(verilogScanYYtext);
+				    QCString s1=s;
 				    DefineDict* gDict=getFileDefineDictVerilog();
 				    VhdlDocGen::deleteAllChars(s,'`');
 				
@@ -1205,15 +1236,18 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                      qlist.append(yy);
                     }
                     
-					if(!verilogDefineDict.find(s))
+                 //   s.stripPrefix("`");
+					if(!verilogDefineDict.find(s1))
 					{            
 					if(!g_parseCode)
 					 addText(verilogScanYYtext,verilogScanYYleng);
 				    }
 				  	
-				  	if(!def)// && !def->definition.isEmpty())
-					if(Config_getBool("WARNINGS"))
-					 warn(yyFileName,yyLineNr,"\n macro %s is not defined",verilogScanYYtext);		  
+				  	// if(!def) && !def->definition.isEmpty())
+					// if(Config_getBool("WARNINGS"))
+					//  warn(yyFileName,yyLineNr,"\n macro %s is not defined",verilogScanYYtext);		  
+							
+							if(!verilogDefineDict.find(s1)) 
 							  return  LETTER_TOK;	
 				
 					}
@@ -1370,7 +1404,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
     startCodeBlock(index);
     }
    }
-   fprintf(stderr,"[[ \n %s ]]",strComment.data());
+   //fprintf(stderr,"[[ \n %s ]]",strComment.data());
    if(g_parseCode) 
    { 
      qlist.append(new QCString(verilogScanYYtext)); 
@@ -1381,7 +1415,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <tagComment>.|\n {
   // found end of comment block
  int index =strComment.find("\\code");
-  fprintf(stderr," %s ",strComment.data());
+ // fprintf(stderr," %s ",strComment.data());
  // assert(false);
    if(!g_parseCode && index>0)
   {
@@ -1389,7 +1423,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
     /*
     int ll=strComment.length();
      iCodeLen=inputVerilogString.findRev(strComment.data(),num_chars)+ll;
-  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+//  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
     gBlock.reset();
    int len=strComment.length();
    QCString name=strComment.right(len-index);// 
@@ -1432,7 +1466,7 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 
    if(isEndCode && !g_parseCode)
    {
-     fprintf(stderr,"\n ending code..");
+ //    fprintf(stderr,"\n ending code..");
    
     int end=inputVerilogString.find(qcs.data(),iCodeLen);
     makeInlineDoc(end);
@@ -1808,7 +1842,7 @@ for(uint j=0;j<qsl.count();j++)
 				   QCString pPuffer(" ",1);
 				   if(!fileDef)
 				   {
-				    fprintf(stderr," spe code << %s >> \n",input.data());
+				//    fprintf(stderr," spe code << %s >> \n",input.data());
 				    return;
                                      }
 				   assert(fileDef);
