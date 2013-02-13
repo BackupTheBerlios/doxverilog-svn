@@ -9756,7 +9756,7 @@ Index: winbuild/Doxygen.vcproj
 +					>
 +					<Tool
 +						Name="Lex"
-+						CommandLine="flex -i -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
 +					/>
 +				</FileConfiguration>
 +				<FileConfiguration
@@ -9764,7 +9764,7 @@ Index: winbuild/Doxygen.vcproj
 +					>
 +					<Tool
 +						Name="Lex"
-+						CommandLine="flex -i -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
 +					/>
 +				</FileConfiguration>
 +				<FileConfiguration
@@ -9772,7 +9772,7 @@ Index: winbuild/Doxygen.vcproj
 +					>
 +					<Tool
 +						Name="Lex"
-+						CommandLine="flex -i -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
 +					/>
 +				</FileConfiguration>
 +				<FileConfiguration
@@ -9780,7 +9780,7 @@ Index: winbuild/Doxygen.vcproj
 +					>
 +					<Tool
 +						Name="Lex"
-+						CommandLine="flex -i -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
 +					/>
 +				</FileConfiguration>
 +			</File>
