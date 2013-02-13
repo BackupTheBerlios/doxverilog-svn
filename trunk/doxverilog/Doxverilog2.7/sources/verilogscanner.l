@@ -1025,12 +1025,13 @@ static bool check(bool bb=true)
   return true;
  }
  
+/* 
  QCString qt(verilogScanYYtext);
  qt=qt.lower();
 
  if(strcmp(qt.data(),verilogScanYYtext)!=0)
   return false;
- 
+ */
   char d = g_buf[iSize-1];
   int l=isdigit(c);
   int k=isdigit(d);
@@ -1330,15 +1331,8 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 <Start>"initial"      { if(check()) {return  INITIAL_TOK;} REJECT;}
 <Start>"endprimitive" { if(check())  return  ENDPRIMITIVE_TOK;REJECT;}
 <Start>"primitive"    { if(check()){yyPrevLine=yyLineNr;  return  PRIMITIVE_TOK;} REJECT;}
-<Start>"macromodule"  { if(check())  return  MACRO_MODUL_TOK; REJECT;}
-<Start>"module"       { 
-                                      QCString ve=verilogScanYYtext;
-                                      if(check())   
-                                                     { 
-                                                       yyPrevLine=yyLineNr;
-                                                        return  MODUL_TOK; 
-                                                      } REJECT;
-                                                     }
+<Start>"macromodule"   { if(check())  return  MACRO_MODUL_TOK; REJECT;}
+<Start>"module"       {    if(check())      {  yyPrevLine=yyLineNr;return  MODUL_TOK; } REJECT;}
 <Start>"endmodule"   { 
            if(check())
             {
