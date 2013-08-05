@@ -5,8 +5,8 @@
 * the Free Software Foundation; either version 2 of the License, or
 *    (at your option) any later version.
 *
-*
-* This program is distributed in the hope that it will be useful,
+* 
+* This program isb    distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU Library General Public License for more details.
@@ -49,6 +49,8 @@
 #include "message.h"
 
 //--------------------------------------------------------------------------
+//  FEATURE1   [`]("accelerate"|"autoexpand_vectornets"|"celldefine"|"default_decay_time"|"default_nettype"|"default_trireg_strength"|"delay_mode_distributed"|"delay_mode_zero"|"disable_portfaults"|"enable_portfaults"|"endcelldefine"|"endprotect"|"expand_vectornets"|"inline"|"line"|"noaccelerate"|"noexpand_vectornets"|"noremove_gatenames"|"noremove_netnames"|"nosuppress_faults"|"nounconnected_drive"|"portcoerce"|"pragma"|"protect"|"protected"|"remove_gatenames"|"remove_netnames"|"resetall"|"suppress_faults"|"timescale")[^\n]*
+// ("accelerate"|"autoexpand_vectornets"|"celldefine"|"default_decay_time"|"default_nettype"|"default_trireg_strength"|"delay_mode_distributed"|"delay_mode_zero"|"disable_portfaults"|"enable_portfaults"|"endcelldefine"|"endprotect"|"expand_vectornets"|"inline"|"line"|"noaccelerate"|"noexpand_vectornets"|"noremove_gatenames"|"noremove_netnames"|"nosuppress_faults"|"nounconnected_drive"|"portcoerce"|"pragma"|"protect"|"protected"|"remove_gatenames"|"remove_netnames"|"resetall"|"suppress_faults"|"timescale")[\n]*
 
 static ParserInterface *g_thisParser;
 static int ss1,ee1;
@@ -167,7 +169,7 @@ static const char* VerilogKewWordMap[] = {"module","endmodule","input","output",
 
 static const char* VerilogDefineMap[] = 
 {
-   "`accelerate",	
+  "`accelerate",	
   "`autoexpand_vectornets"	,
   "`celldefine",	
   "`default_decay_time,"
@@ -1067,16 +1069,7 @@ static void parseToken(const char* s){
 	 c_lval.ctype=s[0];
 	 addToken(s[0]);
 	}
-/*
-<Start>"`define"|"`include" {
-     QCString qtemp(verilogScanYYtext);
-              if(qtemp.contains("`define")) return DEFINE_TOK;
-                  if(qtemp.contains("`include")) return INCLUDE_TOK;
-                      
-}
- 
 
-*/
 
 %}
 
@@ -1091,10 +1084,11 @@ COMMENT     "//"[^\n]*
 COMMENT1    "//!"[^\n]*
 MIT         [^\\\n]*
 STRING      ["][^"]*["]
-FEATURE     ("`default_trireg_strength"|"`default_decay_time"|"`pragma"|"`default_nettype"|"`include"|"`line"|"`timescale"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef")[^\n]*
-FEATUREX     ("`define"){MIT}
 
-FEATURE1    [`][a-zA-Z0-9_]+
+FEATURE   ("`include"|"`define"|"`ifndef"|"`endif"|"`elsif"|"`ifdef"|"`else"|"`undef")[^\n]*
+
+FEATURE1   [`]("accelerate"|"autoexpand_vectornets"|"celldefine"|"default_decay_time"|"default_nettype"|"default_trireg_strength"|"delay_mode_distributed"|"delay_mode_zero"|"disable_portfaults"|"enable_portfaults"|"endcelldefine"|"endprotect"|"expand_vectornets"|"inline"|"line"|"noaccelerate"|"noexpand_vectornets"|"noremove_gatenames"|"noremove_netnames"|"nosuppress_faults"|"nounconnected_drive"|"portcoerce"|"pragma"|"protect"|"protected"|"remove_gatenames"|"remove_netnames"|"resetall"|"suppress_faults"|"timescale")[^\n]*
+FEATUREX    [`][a-zA-Z0-9_]+[^\n]*                  
 SIGNEDBASE  ['][sS][oOhHbBdD]
 BASE	    ("'b"|"'B"|"'o"|"'O"|"'d"|"'D"|"'h"|"'H"|{SIGNEDBASE})[ ]?
 NETTYPE	    "wire"|"tri"|"tri1"|"supply0"|"wand"|"triand"|"tri0"|"supply1"|"wor"|"trior"|"trireg"
@@ -1106,7 +1100,10 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 %option noyywrap
 
 
-  /* language parsing states */
+  /*
+ 
+   language parsing states 
+  */
 
 %x Start
 %x Commentt
@@ -1219,12 +1216,15 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
                   }//if
                  }       
  
- <Start>{FEATUREX} {  
-                    // assert(0);
-                    } 
-                 
-<Start>{FEATURE1} {
+          
+<Start>{FEATURE1}|{FEATUREX} {
 				    QCString s(verilogScanYYtext);
+				    s=s.stripWhiteSpace();
+				    int j=s.find(" ");
+				    if(j>0)
+				      s=s.left(j);
+				    
+				    
 				    QCString s1=s;
 				    DefineDict* gDict=getFileDefineDictVerilog();
 				    VhdlDocGen::deleteAllChars(s,'`');
@@ -1599,11 +1599,14 @@ GATETYPE  	"and"|"nand"|"or"|"nor"|"xor"|"xnor"|"buf"|"bufif0"|"bufif1"|"not"|"n
 						                //  c_lloc.last_line= c_lloc.first_line;
 						                  c_lloc.first_line=yyLineNr;
 						                  return  LETTER_TOK;
-                                         }
+                                   }
 
  
 <Start>.  {
    c_lval.ctype=verilogScanYYtext[0];
+  if(c_lval.ctype=='`')
+  unput('`');
+  
   REJECT;
  }         
 
