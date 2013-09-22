@@ -1,0 +1,3118 @@
+diff --git a/src/classdef.cpp b/src/classdef.cpp
+index 07a275c..0f66e69 100644
+--- a/src/classdef.cpp
++++ b/src/classdef.cpp
+@@ -44,6 +44,7 @@
+ #include "filedef.h"
+ #include "namespacedef.h"
+ #include "membergroup.h"
++#include "verilogdocgen.h"
+ 
+ //-----------------------------------------------------------------------------
+ 
+@@ -308,7 +309,7 @@ QCString ClassDef::displayName(bool includeScope) const
+   SrcLangExt lang = getLanguage();
+   //static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+   QCString n;
+-  if (lang==SrcLangExt_VHDL)
++  if (lang==SrcLangExt_VHDL || lang==SrcLangExt_VERILOG)
+   {
+     n = VhdlDocGen::getClassName(this);
+   }
+@@ -404,9 +405,23 @@ void ClassDef::internalInsertMember(MemberDef *md,
+                                    )
+ {
+   //printf("insertInternalMember(%s) isHidden()=%d\n",md->name().data(),md->isHidden());
++   static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
++
+   if (md->isHidden()) return;
++/*
++ if(optVerilog)
++	  {
++	  QCString tti=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),false);
++      //  VhdlDocGen::deleteAllChars(tti,' '); // Always Construct
++  
++        QStringList qsl=this->getList();
++        int i=qsl.findIndex(tti);
++        if(i<0)
++          this->addListType(tti);
++	  }
+ 
+-  if (getLanguage()==SrcLangExt_VHDL)
++*/
++  if (getLanguage()==SrcLangExt_VHDL || getLanguage()==SrcLangExt_VERILOG)
+   {
+     QCString title=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),FALSE);
+     if (!m_impl->vhdlSummaryTitles.find(title))
+@@ -1463,6 +1478,12 @@ void ClassDef::endMemberDeclarations(OutputList &ol)
+   static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
+   if (!inlineInheritedMembers && countAdditionalInheritedMembers()>0)
+   {
++     if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++	  {	
++		  ol.endMemberSections();
++	    	return;
++	  }
++
+     ol.startMemberHeader("inherited");
+     ol.parseText(theTranslator->trAdditionalInheritedMembers());
+     ol.endMemberHeader();
+@@ -1494,7 +1515,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
+   bool first=TRUE;
+   SrcLangExt lang = getLanguage();
+   
+-  if (lang!=SrcLangExt_VHDL)
++  if ( getLanguage()!=SrcLangExt_VERILOG)
+   {
+     for (eli.toFirst();(lde=eli.current());++eli)
+     {
+@@ -1761,9 +1782,12 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
+       {
+         ol.parseText(header);
+       }
+-      else if (lang==SrcLangExt_VHDL)
++      else if (lang==SrcLangExt_VHDL ||  lang==SrcLangExt_VERILOG)
+       {
+-        ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
++         if(lang==SrcLangExt_VERILOG)
++		 ol.parseText("Modules");
++	  else
++         ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
+       }
+       else
+       {
+@@ -1783,8 +1807,13 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
+     }
+     ol.startMemberDeclaration();
+     ol.startMemberItem(anchor(),FALSE);
+-    QCString ctype = compoundTypeString();
+-    QCString cname = displayName(!localNames);
++    QCString ctype ;
++    if(lang==SrcLangExt_VERILOG)
++	   ctype=VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)protection());
++	else
++		ctype = compoundTypeString();
++
++     QCString cname = displayName(!localNames);
+ 
+     if (lang!=SrcLangExt_VHDL) // for VHDL we swap the name and the type
+     {
+@@ -2337,7 +2366,7 @@ void ClassDef::writeMemberList(OutputList &ol)
+         {
+           ol.writeString("<span class=\"mlabel\">");
+           QStrList sl;
+-          if (lang==SrcLangExt_VHDL) 
++          if (lang==SrcLangExt_VHDL || lang==SrcLangExt_VERILOG) 
+           {
+             sl.append(VhdlDocGen::trVhdlType(md->getMemberSpecifiers())); //append vhdl type
+           }
+diff --git a/src/config.l b/src/config.l
+index 19f0267..95bebc2 100644
+--- a/src/config.l
++++ b/src/config.l
+@@ -1370,6 +1370,7 @@ void Config::check()
+     filePatternList.append("*.vhd");
+     filePatternList.append("*.vhdl");
+     filePatternList.append("*.tcl");
++     filePatternList.append("*.v");
+     filePatternList.append("*.md");
+     filePatternList.append("*.markdown");
+     if (portable_fileSystemIsCaseSensitive())
+@@ -1394,6 +1395,7 @@ void Config::check()
+       filePatternList.append("*.VHD");
+       filePatternList.append("*.VHDL");
+       filePatternList.append("*.TCL");
++       filePatternList.append("*.V");
+       filePatternList.append("*.MD");
+       filePatternList.append("*.MARKDOWN");
+     }
+@@ -1510,6 +1512,10 @@ void Config::check()
+     annotationFromBrief.append("an");
+     annotationFromBrief.append("the");
+   }
++  if (Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++  {
++   Config_getBool("OPTIMIZE_OUTPUT_VHDL")       = TRUE;
++  }
+ 
+   // some default settings for vhdl
+   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
+@@ -1547,6 +1553,11 @@ void Config::check()
+     Config_getBool("ENABLE_PREPROCESSING")  = FALSE;
+     Config_getBool("EXTRACT_PACKAGE")       = TRUE;
+   }                               
++ if (Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++  {
++   Config_getBool("ENABLE_PREPROCESSING")  = TRUE;
++  }
++  
+ 
+   checkFileName("GENERATE_TAGFILE");
+ }
+diff --git a/src/configoptions.cpp b/src/configoptions.cpp
+index d37163b..9c82547 100644
+--- a/src/configoptions.cpp
++++ b/src/configoptions.cpp
+@@ -374,7 +374,21 @@ void addConfigOptions(Config *cfg)
+               "The default value is: NO.",
+               FALSE
+              );
+-  //----
++    //----
++    cb = cfg->addBool(
++                  "OPTIMIZE_OUTPUT_VERILOG",
++                    "Set the OPTIMIZE_OUTPUT_VERILOG tag to YES if your project consists of Verilog \n"
++                    "sources. Doxygen will then generate output that is tailored for \n"
++					"Verilog. \n",
++                    FALSE
++                 );          
++  //----
++   cb = cfg->addBool(
++                  "HIDE_PORT",
++                    "Set the HIDE_PORT tag to YES Verilog ports are not shown  \n",
++                    TRUE
++                 );  
++ //----
+   cl = cfg->addList(
+               "EXTENSION_MAPPING",
+               "Doxygen selects the parser to use depending on the extension of the files it\n"
+diff --git a/src/doxygen.cpp b/src/doxygen.cpp
+index 972d758..d255e2a 100644
+--- a/src/doxygen.cpp
++++ b/src/doxygen.cpp
+@@ -14,6 +14,7 @@
+  */
+ 
+ #include <locale.h>
++#include "VPreProc.h"
+ 
+ #include <qfileinfo.h>
+ #include <qfile.h>
+@@ -97,6 +98,8 @@
+ #include "docsets.h"
+ #include "formula.h"
+ #include "settings.h"
++#include "verilogscanner.h"
++//#include "preVerilog.h"
+ 
+ #define RECURSE_ENTRYTREE(func,var) \
+   do { if (var->children()) { \
+@@ -9169,6 +9172,7 @@ static void parseFile(ParserInterface *parser,
+   static bool clangAssistedParsing = FALSE;
+ #endif
+   QCString fileName=fn;
++  
+   QCString extension;
+   int ei = fileName.findRev('.');
+   if (ei!=-1)
+@@ -9188,9 +9192,36 @@ static void parseFile(ParserInterface *parser,
+   {
+     BufStr inBuf(fi.size()+4096);
+     msg("Preprocessing %s...\n",fn);
++      BufStr strBuf(fi.size()+4096);
++       if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG")) 
++	 {
++	 VerilogPreProc defProc;
++     readInputFile(fileName,strBuf);
++      QCString s=defProc.performPreprocessing(fi,true).data();
++  #if 0
++   // deleteVerilogChars(bb,"\0");
++        printf("\n++++++++++++++++######++++++++++++++++++++++++++++");
++         printf("\n %s",s.data());    
++           printf("\n+++++++++++++++++++++++++++++++++++++");
++   // exit(0);
++   //  defProc.printDict();
++ #endif
++ 
++ preBuf.addArray(s.data(),s.length()); 
++ //exit(0);
++ 
++ #if 0
++    readInputFile(fileName,inBuf);
++   preprocessVerilogFile(fileName,preBuf,0,-1,inBuf.data());
++ #endif 
++   cerr<< "\n finished Preprocessing ..."<<fi.filePath().data()<<endl;
++	 }
++	 else 
++	 {
+     readInputFile(fileName,inBuf);
+     preprocessFile(fileName,inBuf,preBuf);
+   }
++  }
+   else // no preprocessing
+   {
+     msg("Reading %s...\n",fn);
+@@ -9822,6 +9853,7 @@ void initDoxygen()
+   Doxygen::parserManager->registerParser("dbusxml", new DBusXMLScanner);
+   Doxygen::parserManager->registerParser("tcl",     new TclLanguageScanner);
+   Doxygen::parserManager->registerParser("md",      new MarkdownFileParser);
++  Doxygen::parserManager->registerParser("v", new VerilogScanner);
+ 
+   // register any additional parsers here...
+ 
+@@ -9829,7 +9861,7 @@ void initDoxygen()
+   initClassMemberIndices();
+   initNamespaceMemberIndices();
+   initFileMemberIndices();
+-
++  //initVerilogPreprocessor();
+   Doxygen::symbolMap     = new QDict<DefinitionIntf>(50177);
+ #ifdef USE_LIBCLANG
+   Doxygen::clangUsrMap   = new QDict<Definition>(50177);
+@@ -9910,6 +9942,9 @@ void cleanUpDoxygen()
+   delete Doxygen::xrefLists;
+   delete Doxygen::parserManager;
+   cleanUpPreprocessor();
++  //  cleanUpVerilogPreprocessor();
++
++
+   delete theTranslator;
+   delete g_outputList;
+   Mappers::freeMappers();
+diff --git a/src/doxygen_css.h b/src/doxygen_css.h
+index 38ffa19..902f8dd 100644
+--- a/src/doxygen_css.h
++++ b/src/doxygen_css.h
+@@ -364,6 +364,10 @@
+ "	color: #ff0000 \n"
+ "}\n"
+ "\n"
++"span.undoc { \n"
++"	color: #999999 \n"
++"}\n"
++"\n"
+ "blockquote {\n"
+ "        background-color: ##F8;\n"
+ "        border-left: 2px solid ##AA;\n"
+diff --git a/src/index.cpp b/src/index.cpp
+index 5970a43..36b7b8f 100644
+--- a/src/index.cpp
++++ b/src/index.cpp
+@@ -47,7 +47,7 @@
+ #include "classlist.h"
+ #include "namespacedef.h"
+ #include "filename.h"
+-
++#include "verilogdocgen.h"
+ #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
+ #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
+ 
+@@ -2277,7 +2277,10 @@ void addClassMemberNameToIndex(MemberDef *md)
+   static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
+   ClassDef *cd=0;
+ 
+- 
++   if ( md->getLanguage()==SrcLangExt_VERILOG) // &&  (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
++  {
++    VerilogDocGen::adjustMemberName(md);
++  }
+   
+   if (md->isLinkableInProject() && 
+       (cd=md->getClassDef())    && 
+diff --git a/src/libdoxygen.pro.in b/src/libdoxygen.pro.in
+index c4e79da..2273d87 100644
+--- a/src/libdoxygen.pro.in
++++ b/src/libdoxygen.pro.in
+@@ -169,10 +169,16 @@ HEADERS      =	arguments.h \
+ 		types.h \
+ 		unistd.h \
+ 		util.h \
++		verilogscanner.h \
++		verilogdocgen.h \
++		verilogparser.hpp \
+ 		version.h \
++		VFileLine.h \
+ 		vhdlcode.h \
+ 		vhdldocgen.h \
+ 		vhdlscanner.h \
++		VPreLex.h \
++		VPreProc.h \
+ 		xmldocvisitor.h \
+                 xmlgen.h \
+                 docbookvisitor.h \
+@@ -262,10 +268,16 @@ SOURCES      =	arguments.cpp \
+                 tooltip.cpp \
+ 		util.cpp \
+ 		version.cpp \
++		verilogscanner.cpp \
++		verilogparser.cpp \
++		verilogdocgen.cpp \
++		VFileLine.cpp \
+ 		vhdlcode.cpp \
+ 		vhdldocgen.cpp \
+ 		vhdlparser.cpp \
+ 		vhdlscanner.cpp \
++		VPreLex.cpp \
++		VPreProc.cpp \
+ 		xmldocvisitor.cpp \
+                 xmlgen.cpp \
+                 docbookvisitor.cpp \
+diff --git a/src/libdoxygen.t.in b/src/libdoxygen.t.in
+index 959fd69..0b3e314 100644
+--- a/src/libdoxygen.t.in
++++ b/src/libdoxygen.t.in
+@@ -107,6 +107,17 @@ sub GenerateDep {
+ 	$(YACC) -l -d -p vhdlScanYY vhdlparser.y -o vhdlparser.c 
+ 	-rm vhdlparser.c	
+ 	
++#$ GenerateDep("verilogscanner.cpp","verilogscanner.l");
++	$(LEX)  -8  -PverilogScanYY -t verilogscanner.l | $(INCBUFSIZE) >verilogscanner.cpp
++
++#$ GenerateDep("verilogparser.cpp","verilogparser.y");
++	$(YACC)  -v -d verilogparser.y -o verilogparser.cpp 
++
++#$ GenerateDep("VPreLex.cpp","VPreLex.l");
++	$(LEX) -PVPreLex -t VPreLex.l | $(INCBUFSIZE) >VPreLex.cpp 
++	
++
++	
+ #$ GenerateDep("layout.cpp","layout_default.h");
+ 
+ TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
+diff --git a/src/memberdef.cpp b/src/memberdef.cpp
+index d9b9ce9..ed5ee62 100644
+--- a/src/memberdef.cpp
++++ b/src/memberdef.cpp
+@@ -44,6 +44,7 @@
+ #include "namespacedef.h"
+ #include "filedef.h"
+ #include "config.h"
++#include "verilogdocgen.h"
+ 
+ //-----------------------------------------------------------------------------
+ 
+@@ -651,11 +652,24 @@ void MemberDefImpl::init(Definition *def,
+   if (mt==MemberType_Typedef) type.stripPrefix("typedef ");
+   //  type.stripPrefix("struct ");
+   //  type.stripPrefix("class " );
+-  //  type.stripPrefix("union " );
++  // type.stripPrefix("union " );
+   type=removeRedundantWhiteSpace(type);
+   args=a;
+   args=removeRedundantWhiteSpace(args);
+-  if (type.isEmpty()) decl=def->name()+args; else decl=type+" "+def->name()+args;
++  if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++  {
++  QCString nn=def->name();
++  VerilogDocGen::adjustOpName(nn);
++  if (type.isEmpty()) decl=nn+" "+args; else decl=args+" "+nn+" "+type; 
++  }
++else
++ {
++  if (type.isEmpty()) 
++    decl=def->name()+" "+args; 
++      else 
++      decl=type+" "+def->name()+" "+args;
++}
++
+ 
+   memberGroup=0;
+   virt=v;
+@@ -1919,7 +1933,7 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
+     //ol.startTypewriter();
+     //ol.docify(" [");
+     SrcLangExt lang = getLanguage();
+-    bool optVhdl = lang==SrcLangExt_VHDL;
++    bool optVhdl =( lang==SrcLangExt_VHDL || lang==SrcLangExt_VERILOG);
+     if (optVhdl)
+     {
+       sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
+@@ -2380,7 +2394,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
+ 
+   SrcLangExt lang = getLanguage();
+   //printf("member=%s lang=%d\n",name().data(),lang);
+-  bool optVhdl = lang==SrcLangExt_VHDL;
++  bool optVhdl =( lang==SrcLangExt_VHDL || lang==SrcLangExt_VERILOG);
+   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
+ 
+   QCString scopeName = scName;
+diff --git a/src/memberlist.cpp b/src/memberlist.cpp
+index 68edabc..eac883d 100644
+--- a/src/memberlist.cpp
++++ b/src/memberlist.cpp
+@@ -533,7 +533,7 @@ void MemberList::writeDeclarations(OutputList &ol,
+   }
+   else if (num>0)
+   {
+-    if (title) 
++    if (title && !Config_getBool("OPTIMIZE_OUTPUT_VERILOG")) 
+     {
+       if (showInline)
+       {
+@@ -880,6 +880,8 @@ void MemberList::setNeedsSorting(bool b)
+ 
+ QCString MemberList::listTypeAsString(MemberListType type) const
+ {
++  if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++  return "";
+   switch(type)
+   {
+     case MemberListType_pubMethods: return "pub-methods";
+diff --git a/src/outputgen.h b/src/outputgen.h
+index 95c467d..5298506 100644
+--- a/src/outputgen.h
++++ b/src/outputgen.h
+@@ -88,7 +88,7 @@ class CodeOutputInterface
+      */
+     virtual void writeLineNumber(const char *ref,const char *file,
+                                  const char *anchor,int lineNumber) = 0;
+-
++ 
+     /*! Writes a tool tip definition 
+      *  \param id       unique identifier for the tooltip
+      *  \param docInfo  Info about the symbol's documentation.
+diff --git a/src/searchindex.cpp b/src/searchindex.cpp
+index 0380b33..b708321 100644
+--- a/src/searchindex.cpp
++++ b/src/searchindex.cpp
+@@ -832,8 +832,11 @@ void writeJavascriptSearchIndex()
+   // index classes
+   ClassSDict::Iterator cli(*Doxygen::classSDict);
+   ClassDef *cd;
++  int count=Doxygen::classSDict->count();
+   for (;(cd=cli.current());++cli)
+   {
++ //   QCString nn=cd->name();
++ //  if(nn.isEmpty()) continue;
+     uchar charCode = (uchar)cd->localName().at(0);
+     uint letter = charCode<128 ? tolower(charCode) : charCode;
+     if (cd->isLinkable() && isId(letter))
+diff --git a/src/tooltip.cpp b/src/tooltip.cpp
+index 041aa16..122a0d4 100644
+--- a/src/tooltip.cpp
++++ b/src/tooltip.cpp
+@@ -22,6 +22,7 @@
+ #include "filedef.h"
+ #include "doxygen.h"
+ #include "config.h"
++#include "verilogdocgen.h"
+ 
+ class TooltipManager::Private
+ {
+@@ -111,15 +112,32 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
+     }
+     SourceLinkInfo declInfo; // TODO: fill in...
+     QCString decl;
+-    if (d->definitionType()==Definition::TypeMember)
++     if (d->definitionType()==Definition::TypeMember)
+     {
+       MemberDef *md = (MemberDef*)d;
+-      decl = md->declaration();
++      QCString s;
++      ClassDef *cl=md->getClassDef();
++      if(cl)
++        s=cl->name();
++      QCString s1=VerilogDocGen::convertTypeToString(md->getMemberSpecifiers());
++      decl=s1+" ";
++      QCString d=md->declaration();
++      VerilogDocGen::adjustOpName(d);
++      VerilogDocGen::adjustMemberName(md);
++      decl += d;
++     
++     
++    if(cl)
++      docInfo.name=s+"::"+md->name();
++    
++    
+       if (!decl.isEmpty() && decl.at(0)=='@') // hide enum values
+       {
+         decl.resize(0);
+       }
+     }
++    VerilogDocGen::adjustOpName(decl);
++ 
+     ol.writeTooltip(di.currentKey(),                 // id
+                     docInfo,                         // symName
+                     decl,                            // decl
+diff --git a/src/translator_en.h b/src/translator_en.h
+index cb933df..6fb466c 100644
+--- a/src/translator_en.h
++++ b/src/translator_en.h
+@@ -1853,7 +1853,13 @@ class TranslatorEnglish : public Translator
+ 
+     /*! Used file list for a Java enum */
+     virtual QCString trEnumGeneratedFromFiles(bool single)
+-    { QCString result = "The documentation for this enum was generated from the following file";
++    {
++     QCString result;
++      if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++      result = "The documentation for this module was generated from the following file";
++      else
++      result = "The documentation for this enum was generated from the following file";
++      
+       if (!single) result += "s";
+       result+=":";
+       return result;
+@@ -1861,11 +1867,18 @@ class TranslatorEnglish : public Translator
+ 
+     /*! Header of a Java enum page (Java enums are represented as classes). */
+     virtual QCString trEnumReference(const char *name)
+-    { return QCString(name)+" Enum Reference"; }
++    { 
++      if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))	
++		return QCString(name)+" Module Reference";
++
++       return QCString(name)+" Enum Reference";
++     }
+ 
+     /*! Used for a section containing inherited members */
+     virtual QCString trInheritedFrom(const char *members,const char *what)
+-    { return QCString(members)+" inherited from "+what; }
++    { 
++       return QCString(members)+" inherited from "+what; 
++    }
+ 
+     /*! Header of the sections with inherited members specific for the
+      *  base class(es)
+diff --git a/src/types.h b/src/types.h
+index 0c269be..dc76174 100644
+--- a/src/types.h
++++ b/src/types.h
+@@ -54,7 +54,8 @@ enum SrcLangExt
+   SrcLangExt_VHDL     = 0x02000,
+   SrcLangExt_XML      = 0x04000,
+   SrcLangExt_Tcl      = 0x08000,
+-  SrcLangExt_Markdown = 0x10000
++  SrcLangExt_Markdown = 0x10000,
++  SrcLangExt_VERILOG = 0x20000
+ };
+ 
+ /** Grouping info */
+diff --git a/src/util.cpp b/src/util.cpp
+index 781a678..79d7802 100644
+--- a/src/util.cpp
++++ b/src/util.cpp
+@@ -1652,7 +1652,9 @@ static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
+ QCString removeRedundantWhiteSpace(const QCString &s)
+ {
+   static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
+-  if (s.isEmpty()) return s;
++  static bool vhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
++   
++  if (s.isEmpty() || vhdl) return s;
+   static GrowBuf growBuf;
+   //int resultLen = 1024;
+   //int resultPos = 0;
+@@ -6684,6 +6686,9 @@ g_lang2extMap[] =
+   { "dbusxml",     "dbusxml", SrcLangExt_XML      },
+   { "tcl",         "tcl",     SrcLangExt_Tcl      },
+   { "md",          "md",      SrcLangExt_Markdown },
++    { "ucf",        "v",    SrcLangExt_VERILOG   },
++  { "qsf",        "v",    SrcLangExt_VERILOG   },
++  { "v",        "v",    SrcLangExt_VERILOG    },
+   { 0,             0,        (SrcLangExt)0        }
+ };
+ 
+@@ -6747,10 +6752,11 @@ void initDefaultExtensionMapping()
+   updateLanguageMapping(".for",      "fortran");
+   updateLanguageMapping(".f90",      "fortran");
+   updateLanguageMapping(".vhd",      "vhdl");
++  updateLanguageMapping(".v",     "v");
+   updateLanguageMapping(".vhdl",     "vhdl");
+   updateLanguageMapping(".tcl",      "tcl");
+-  updateLanguageMapping(".ucf",      "vhdl");
+-  updateLanguageMapping(".qsf",      "vhdl");
++  updateLanguageMapping(".ucf",      "v");
++  updateLanguageMapping(".qsf",      "v");
+   updateLanguageMapping(".md",       "md");
+   updateLanguageMapping(".markdown", "md");
+ 
+diff --git a/src/vhdldocgen.cpp b/src/vhdldocgen.cpp
+index a9af81a..4834113 100644
+--- a/src/vhdldocgen.cpp
++++ b/src/vhdldocgen.cpp
+@@ -58,16 +58,16 @@
+ #include "namespacedef.h"
+ #include "filename.h"
+ #include "membergroup.h"
++#include "verilogdocgen.h"
+ 
+ #define theTranslator_vhdlType VhdlDocGen::trVhdlType
+-
++#define COL_SIZE 80 
+ static QDict<QCString> g_vhdlKeyDict0(17,FALSE);
+ static QDict<QCString> g_vhdlKeyDict1(17,FALSE);
+ static QDict<QCString> g_vhdlKeyDict2(17,FALSE);
+ static QDict<QCString> g_xilinxUcfDict(17,FALSE);
+ 
+ static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
+-static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
+ static void assignBinding(VhdlConfNode* conf);
+ static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,Entry *cur,ClassDef* archBind=NULL);
+ 
+@@ -134,7 +134,7 @@ static void writeLink(const MemberDef* mdef,OutputList &ol)
+       mdef->name());
+ }
+ 
+-static void startFonts(const QCString& q, const char *keyword,OutputList& ol)
++void startFonts(const QCString& q, const char *keyword,OutputList& ol)
+ {
+   ol.startFontClass(keyword);
+   ol.docify(q.data());
+@@ -922,6 +922,11 @@ MemberDef* VhdlDocGen::findFunction(const QList<Argument> &ql,
+ 
+ QCString VhdlDocGen::getClassTitle(const ClassDef *cd)
+ {
++  
++  static bool optVerilog = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++  if(optVerilog)
++   return VerilogDocGen::getClassTitle(cd);
++
+   QCString pageTitle;
+   if (cd==0) return "";
+   pageTitle+=cd->displayName();
+@@ -1099,9 +1104,18 @@ void VhdlDocGen::writeVhdlLink(const ClassDef* ccd ,OutputList& ol,QCString& typ
+  */
+ void VhdlDocGen::prepareComment(QCString& qcs)
+ {
++   static bool optVerilog       = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++
++
+   const char* s="--!";
+   int index=0;
+ 
++ if(optVerilog)
++     s=vlogComment;
++     else
++    s="--!";
++
++
+   while (TRUE)
+   {
+     index=qcs.find(s,0,TRUE);
+@@ -1179,6 +1193,8 @@ QCString VhdlDocGen::getIndexWord(const char* c,int index)
+   QCString temp(c);
+   QRegExp reg("[\\s:|]");
+ 
++
++
+   ql=QStringList::split(reg,temp,FALSE);
+ 
+   if (ql.count() > (unsigned int)index)
+@@ -1192,6 +1208,15 @@ QCString VhdlDocGen::getIndexWord(const char* c,int index)
+ 
+ QCString VhdlDocGen::getProtectionName(int prot)
+ {
++ 
++  static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++ if(optVerilog)
++	 {
++       if(prot==Public) return "Module";
++		   return "Primitive";
++	 }
++
++ 
+   if (prot==VhdlDocGen::ENTITYCLASS)
+     return "entity";
+   else if (prot==VhdlDocGen::ARCHITECTURECLASS)
+@@ -1206,6 +1231,13 @@ QCString VhdlDocGen::getProtectionName(int prot)
+ 
+ QCString VhdlDocGen::trTypeString(uint64 type)
+ {
++  
++    static bool optVerilog       = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++
++    if(optVerilog)
++    return VerilogDocGen::convertTypeToString(type);
++ 
++  
+   switch(type)
+   {
+     case VhdlDocGen::LIBRARY:        return "Library";
+@@ -1288,31 +1320,56 @@ QCString VhdlDocGen::getRecordNumber()
+ 
+ QCString VhdlDocGen::getProcessNumber()
+ {
++  static bool optVerilog=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
+   static int stringCounter;
+   char buf[8];
+-  QCString qcs("PROCESS_");
++  QCString qcs;
++   if(optVerilog)
++     qcs="ALWAYS_";
++    else
++     qcs="PROCESS_";
++
+   sprintf(buf,"%d",stringCounter++);
+   qcs.append(&buf[0]);
+   return qcs;
+ }
+ 
++
++ bool checkString(QCString &name,OutputList& ol)
++{
++  if (name.isEmpty()) return FALSE;
++  name=name.simplifyWhiteSpace();
++  if (name.isEmpty()) return FALSE;
++  
++  int len=name.length();
++  if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
++  {
++      startFonts(name,"keyword",ol);     
++      return true;
++  }
++    return false;
++  }
++
++
++/////////////////
+ /*!
+  * writes a colored and formatted string
+  */
+-
+-void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberDef* mdef)
++void VhdlDocGen::writeFormatString(const QCString& qq,OutputList&ol,const MemberDef* mdef)
+ {
+-  QRegExp reg("[\\[\\]\\.\\/\\:\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]");
+-  QCString qcs = s;
++  static bool optVerilog=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++  QRegExp reg("[\\[\\]\\/\\:\\<\\>\\s\\,\\;\\+\\-\\*\\|\\&\\=\\(\\)\"\\s]");
++  QCString qcs=qq;
+   qcs+=QCString(" ");// parsing the last sign
+-  QCString *ss;
++  const QCString *ss;
+   QCString find=qcs;
+   QCString temp=qcs;
+   char buf[2];
+   buf[1]='\0';
+-
+   int j;
+   int len;
++    int col=0;
++ 
+   j = reg.match(temp.data(),0,&len);
+ 
+   ol.startBold();
+@@ -1320,10 +1377,26 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
+   {
+     while (j>=0)
+     {
++     bool bString=false;
++    
+       find=find.left(j);
+       buf[0]=temp[j];
++	  if(buf[0]=='"' && temp.length()>1)
++	  {
++		int i=temp.find('"',1);
++		if(i>0){
++         find=temp.left(i+1);
++         j+=i;
++         bString=true;
++		}
++	  }
++	  
++	  if(optVerilog){
++        ss=VerilogDocGen::findKeyWord(find);
++     }
++	  else
+       ss=VhdlDocGen::findKeyWord(find);
+-      bool k=isNumber(find); // is this a number
++      bool k=VhdlDocGen::isNumber(find); // is this a number
+       if (k)
+       {
+         ol.docify(" ");
+@@ -1332,42 +1405,44 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
+       }
+       else if (j != 0 && ss)
+       {
+-        startFonts(find,ss->data(),ol);
++	   startFonts(find,ss->data(),ol);
+       }
+       else
+       {
+-        if (j>0)
+-        {
+-          VhdlDocGen::writeStringLink(mdef,find,ol);
+-        }
++	if (j>0)
++	{
++         if(!checkString(find,ol))	   
++	  VhdlDocGen::writeStringLink(mdef,find,ol);
++	}
+       }
++      if(!bString)
+       startFonts(&buf[0],"vhdlchar",ol);
++      col+=j+1;
++      if( col > COL_SIZE)
++	  {
++		  ol.docify(". . . .");
++		  return;
++	  }
+ 
+       QCString st=temp.remove(0,j+1);
+       find=st;
+-      if (!find.isEmpty() && find.at(0)=='"')
+-      {
+-        int ii=find.find('"',2);
+-        if (ii>1)
+-        {
+-          QCString com=find.left(ii+1);
+-          startFonts(com,"keyword",ol);
+-          temp=find.remove(0,ii+1);
+-        }
+-      }
+-      else
+-      {
+-        temp=st;
+-      }
++      temp=st;
+       j = reg.match(temp.data(),0,&len);
++	  bString=false;
+     }//while
+   }//if
+   else
+   {
+-    startFonts(find,"vhdlchar",ol);
++      if(checkString(find,ol))
++	  {
++        printf("found"); 
++	  }
++	  else
++    startFonts(find,"vhdlchar",ol);     
+   }
+   ol.endBold();
+ }// writeFormatString
++/////////////////
+ 
+ /*!
+  * returns TRUE if this string is a number
+@@ -1375,10 +1450,26 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
+ bool VhdlDocGen::isNumber(const QCString& s)
+ {
+   static QRegExp regg("[0-9][0-9eEfFbBcCdDaA_.#-+?xXzZ]*");
++  static QRegExp reggVerilog("[0-9]+[']*[0-9a-fA-FhHoOxXzZ._?]*");
++  static QRegExp reggVerilog1("['][0-9a-fA-FhHoOxXzZ._?]+");
++  static bool optVerilog=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++
+ 
+   if (s.isEmpty()) return FALSE;
+   int j,len;
+-  j = regg.match(s.data(),0,&len);
++  
++   if(optVerilog){
++    QCString t=s;
++    VhdlDocGen::deleteAllChars(t,' ');
++     j = reggVerilog.match(t.data(),0,&len);
++     if ((j==0) && (len==(int)t.length())) return true; 
++     j = reggVerilog1.match(t.data(),0,&len);
++     if ((j==0) && (len==(int)t.length())) return true;
++     return false;
++    }  
++  else 
++    j = regg.match(s.data(),0,&len);
++  
+   if ((j==0) && (len==(int)s.length())) return TRUE;
+   return FALSE;
+ 
+@@ -1392,6 +1483,15 @@ bool VhdlDocGen::isNumber(const QCString& s)
+ 
+ void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef* mdef)
+ {
++ 
++    static bool optVerilog  = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++
++  if(optVerilog){
++      VhdlDocGen::writeFormatString(s,ol,mdef);
++       return;
++  }
++
++ 
+   QCString qcs = s;
+   QCString temp(qcs.length());
+   qcs.stripPrefix(":");
+@@ -1507,6 +1607,8 @@ void VhdlDocGen::writeProcedureProto(OutputList& ol,const ArgumentList* al,const
+ 
+ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList* al,const MemberDef* mdef)
+ {
++   
++
+   if (al==0) return;
+   ArgumentListIterator ali(*al);
+   Argument *arg;
+@@ -1619,6 +1721,8 @@ bool VhdlDocGen::writeFuncProcDocu(
+     const ArgumentList* al,
+     bool /*type*/)
+ {
++   static bool optVerilog       = Config_getBool("OPTIMIZE_OUTPUT_VERILOG"); 
++
+   if (al==0) return FALSE;
+   //bool sem=FALSE;
+   ol.enableAll();
+@@ -1650,11 +1754,15 @@ bool VhdlDocGen::writeFuncProcDocu(
+       startFonts(arg->defval,"keywordtype",ol);
+       ol.docify(" ");
+     }
++     if(optVerilog)  
++      VerilogDocGen::adjustOpName(arg->name);
++
++
+     ol.endParameterType();
+ 
+     ol.startParameterName(TRUE);
+     VhdlDocGen::writeFormatString(arg->name,ol,md);
+-   
++      ol.docify("  ");
+     if (VhdlDocGen::isProcedure(md))
+     {
+       startFonts(arg->attrib,"stringliteral",ol);
+@@ -1734,6 +1842,13 @@ void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
+ {
+   static ClassDef *cdef;
+   //static GroupDef* gdef;
++   static bool optVerilog  = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++  
++   if(optVerilog){
++       VerilogDocGen::writeVerilogDeclarations(ml,ol,0,cd);
++       return;   
++   }
++
+   if (cd && cdef!=cd)
+   { // only one inline link
+     VhdlDocGen::writeInlineClassLink(cd,ol);
+@@ -1817,12 +1932,21 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
+   ClassDef *cd=(ClassDef*)d;
+   bool hasParams = FALSE;
+ 
++  bool bParseVerilogFunc=false;
++  static bool optVerilog  = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++
++  if(optVerilog)
++   if(!mdef->isVariable())
++    bParseVerilogFunc=true;
++
++
++
+   if (cd==0) return hasParams;
+ 
+   QCString ttype=mdef->typeString();
+   QCString largs=mdef->argsString();
+ 
+-  if ((VhdlDocGen::isVhdlFunction(mdef) || VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isProcess(mdef)))
++  if ((VhdlDocGen::isVhdlFunction(mdef) || VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isProcess(mdef) || bParseVerilogFunc))
+   {
+     QCString nn=mdef->typeString();
+     nn=nn.stripWhiteSpace();
+@@ -1870,6 +1994,33 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
+     }
+ 
+     // QCString largs=mdef->argsString();
++ if(optVerilog)
++      {
++       if(mdef->getMemberSpecifiers()==VerilogDocGen::FEATURE)
++       {
++	   QCString arg=mdef->definition();
++	   int kr=arg.find("\\?");	  
++	   if(kr>=0)
++	   {
++       arg=arg.left(kr-2);
++	   arg.stripPrefix("feature");
++	   arg=arg.simplifyWhiteSpace();
++	   arg.stripPrefix(mdef->name().data());
++	   arg.append("{ . . . }");
++	   VhdlDocGen::formatString(arg,ol,mdef);
++	   }
++	 else
++	 {
++     QCString ttype=mdef->typeString();
++	 ttype.stripPrefix("feature");
++	 VhdlDocGen::formatString(ttype,ol,mdef);
++	 }
++	 return true;  
++	  }
++      if(mdef->getMemberSpecifiers()==VerilogDocGen::PARAMETER)  
++	   VhdlDocGen::formatString(largs,ol,mdef);
++	 return true;
++	 }
+ 
+     bool c=largs=="context";
+     bool brec=largs.stripPrefix("record")  ;
+@@ -2019,9 +2170,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
+   /*VHDL CHANGE */
+   bool bRec,bUnit;
+   QCString ltype(mdef->typeString());
+-  ltype=ltype.replace(reg," ");
++ // ltype=ltype.replace(reg," ");
+   QCString largs(mdef->argsString());
+-  largs=largs.replace(reg," ");
++ //   largs=largs.replace(reg," ");
+   mdef->setType(ltype.data());
+   mdef->setArgsString(largs.data());
+   //ClassDef * plo=mdef->getClassDef();
+@@ -2304,7 +2455,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
+   pack.clear();
+ }//plainDeclaration
+ 
+-static bool membersHaveSpecificType(MemberList *ml,uint64 type)
++ bool membersHaveSpecificType(MemberList *ml,uint64 type)
+ {
+   if (ml==0) return FALSE;
+   MemberDef *mdd=0;
+@@ -2392,8 +2543,20 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
+ bool VhdlDocGen::writeClassType( ClassDef *& cd,
+     OutputList &ol ,QCString & cname)
+ {
++  static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++
++  QCString qcs;
++  if(optVerilog){
++   if(cd->protection()==Public)
++    qcs+=" Module";
++     else
++    qcs+=" Primitive";
++  }
++  else{
++
+   int id=cd->protection();
+   QCString qcs = VhdlDocGen::trTypeString(id+2);
++ }
+   cname=VhdlDocGen::getClassName(cd);
+   ol.startBold();
+   ol.writeString(qcs.data());
+@@ -2405,6 +2568,11 @@ bool VhdlDocGen::writeClassType( ClassDef *& cd,
+ 
+ QCString VhdlDocGen::trVhdlType(uint64 type,bool sing)
+ {
++   static bool optVerilog    = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++ 
++   if(optVerilog) return   VerilogDocGen::convertTypeToString(type,sing);
++
++
+   switch(type)
+   {
+     case VhdlDocGen::LIBRARY:
+@@ -2506,6 +2674,12 @@ QCString VhdlDocGen::trDesignUnitMembers()
+ 
+ QCString VhdlDocGen::trDesignUnitListDescription()
+ {
++   static bool optVerilog = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++ if(optVerilog)
++  return "Here is a list of all design unit members with links to "
++         "the Modules they belong to:";
++
++
+   return "Here is a list of all design unit members with links to "
+     "the Entities  they belong to:";
+ }
+@@ -2522,6 +2696,8 @@ QCString VhdlDocGen::trDesignUnits()
+ 
+ QCString VhdlDocGen::trFunctionAndProc()
+ {
++   if(Config_getBool("OPTIMIZE_OUTPUT_VERILOG"))
++   return "Functions/Tasks/Always Construct";
+   return "Functions/Procedures/Processes";
+ }
+ 
+@@ -2530,13 +2706,25 @@ QCString VhdlDocGen::trFunctionAndProc()
+ 
+ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList& ol)
+ {
++    bool optVerilog          = Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
++       MemberDef* memdef=0;
++ 
++
+   if (mdef)
+   {
+     ClassDef *cd=mdef->getClassDef();
+     if (cd)
+     {
+       QCString n=cd->name();
+-      MemberDef* memdef=VhdlDocGen::findMember(n,mem);
++       if(optVerilog){
++        if(mem.contains("`"))
++        memdef = findGlobalMember(mem);
++        if(memdef==0)
++        memdef=VerilogDocGen::findMember(n,mem,-1);
++      }
++      else
++     memdef=VhdlDocGen::findMember(n,mem);
++
+       if (memdef && memdef->isLinkable())
+       {
+         ol.startBold();
+@@ -2743,7 +2931,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
+ }
+ 
+ 
+-static void writeUCFLink(const MemberDef* mdef,OutputList &ol)
++ void writeUCFLink(const MemberDef* mdef,OutputList &ol)
+ {
+ 
+   QCString largs(mdef->argsString());
+diff --git a/src/vhdldocgen.h b/src/vhdldocgen.h
+index 7c78373..e92a661 100644
+--- a/src/vhdldocgen.h
++++ b/src/vhdldocgen.h
+@@ -26,6 +26,7 @@
+ #include "layout.h"
+ #include "arguments.h"
+ #include "entry.h"
++#include "config.h"
+ 
+ class Entry;
+ class ClassDef;
+@@ -248,7 +249,7 @@ class VhdlDocGen
+ 
+ 
+ 
+-  private:
++  public:
+     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
+     static bool compareArgList(ArgumentList*,ArgumentList*);
+     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
+@@ -343,4 +344,7 @@ private:
+     QCString exp;
+ };
+ 
++ bool membersHaveSpecificType(MemberList *ml,uint64 type);
++void startFonts(const QCString& q, const char *keyword,OutputList& ol);
++ void writeUCFLink(const MemberDef* mdef,OutputList &ol);
+ #endif
+diff --git a/src/vhdlparser.y b/src/vhdlparser.y
+index 3d3cc64..d3a1742 100644
+--- a/src/vhdlparser.y
++++ b/src/vhdlparser.y
+@@ -6,7 +6,7 @@
+  * documentation under the terms of the GNU General Public License is hereby 
+  * granted. No representations are made about the suitability of this software 
+  * for any purpose. It is provided "as is" without express or implied warranty.
+- * See the GNU General Public License for more details.
++ * See the GNU General Public    License for more details.
+  *
+  * Documents produced by Doxygen are derivative works derived from the
+  * input used in their production; they are not affected by this license.
+@@ -382,19 +382,19 @@ t_ToolDir
+ %type<qstr>  sel_wavefrms_1 sel_wavefrms_2 gen_stat1 block_declarative_part end_stats inout_stat
+ %type<qstr> selected_signal_assignment comp_inst_stat                                             
+  %type<qstr> conditional_signal_assignment selected_variable_assignment conditional_variable_assignment 
+- %type<qstr> subprog_decltve_item subprog_body_3 subprog_body_1 procs_stat1_2
++ %type<qstr> subprog_decltve_item subprog_body_3 subprog_body_1 procs_stat1_2 gen_assoc
+ 
+-%debug
++//%debug
+ 
+ // for debugging set yydebug=1
+-%initial-action { yydebug=0; }
++//%initial-action { yydebug=0; }
+ 
+ %expect 2
+ 
+ // minimum bison version
+ //%required "2.2"
+ 
+-
++//%verbose
+ 
+ %%
+ start: design_file 
+@@ -470,8 +470,16 @@ use_clause : t_USE sel_list t_Semicolon
+                    QStringList ql1=QStringList::split(",",$2,FALSE);
+                    for (uint j=0;j<ql1.count();j++)
+                    {
+-                     //QStringList ql=QStringList::split(".",ql1[j],FALSE);
+-                     QCString it=ql1[j].utf8();
++                     QStringList ql=QStringList::split(".",ql1[j],FALSE);
++                     QCString it;
++                     for(uint j=0; j<ql.count();j++)
++                    {
++                     it=ql[j].utf8();
++                     if(it=="all")
++                     break;
++                    }
++                    
++           
+                      if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
+                      {
+                        addVhdlType(it,getParsedLine(t_USE),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_");
+@@ -875,13 +883,18 @@ association_list:   t_LeftParen association_element association_list_1 t_RightPa
+ association_list_1:  /* empty */                           { $$=""; }
+ association_list_1: association_list_1 association_list_2  { $$=$1+" "+$2; }
+ association_list_2: t_Comma association_element            { $$=", "+$2; }
++// VHDL '93 range_constraint ::= range range
++//gen_association_list : gen_assoc gen_assoc { $$=$1+$2;}
++                                
++gen_association_list : gen_assoc { $$=$1; }
++
++ gen_assoc:  t_LeftParen gen_association_element gen_association_list_1 t_RightParen 
++       {
++        QCString str="("+$2+$3;
++        str.append(")");
++        $$=str;
++       }
+ 
+-gen_association_list : t_LeftParen gen_association_element gen_association_list_1 t_RightParen
+-    {
+-      QCString str="( "+$2+$3;
+-      str.append(" )");
+-      $$=str;
+-    }
+ gen_association_list: t_LeftParen  error t_RightParen { $$=""; }
+ gen_association_list: t_LeftParen t_OPEN t_RightParen { $$=" ( open ) "; }
+ 
+@@ -1073,7 +1086,7 @@ type_decl: t_TYPE t_Identifier type_decl_1 t_Semicolon
+ type_decl: t_TYPE error t_Semicolon { $$=""; }
+ 
+ type_decl_1:  /* empty */           { $$=""; }
+-type_decl_1: t_IS type_definition   { $$=" is "+$2; }
++type_decl_1: t_IS type_definition   { $$="  "+$2; }
+ 
+ type_definition: enumeration_type_definition    { $$=$1; }
+ type_definition: range_constraint               { $$=$1; }
+@@ -1170,10 +1183,10 @@ subtype_indic:    mark subtype_indic_1          { $$=$1+" "+$2; }
+ subtype_indic:    subtype_indic1                { $$=$1; }
+ subtype_indic_1:  /* empty */                   { $$=""; }
+ subtype_indic_1:  gen_association_list          { $$=$1; }
+-
++// have to make changes here 
+ subtype_indic1:   mark mark range_constraint    { $$=$1+" "+$2+" "+$3; }
+ subtype_indic1:   mark range_constraint         { $$=$1+" "+$2; }
+-subtype_indic1:   mark mark subtype_indic1_1    { $$=$1+" "+$2+" "+$3; }
++subtype_indic1:   mark mark subtype_indic1_1  //  { $$=$1+" "+$2+" "+$3; }
+ subtype_indic1_1:  /* empty */                  { $$=""; }
+ subtype_indic1_1: gen_association_list          { $$=$1; }
+ 
+@@ -2265,8 +2278,8 @@ extern YYSTYPE vhdlScanYYlval;
+ 
+ void vhdlScanYYerror(const char* /*str*/)
+ {
+-  // fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
+-  //  exit(0);
++   fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
++    exit(0);
+ }
+ 
+ void vhdlParse()
+@@ -2541,10 +2554,10 @@ static void addVhdlType(const QCString &name,int startLine,int section,
+     if (current->args.isEmpty())
+     {
+       current->args=args;
+-      current->args.replace(reg,"%"); // insert dummy chars because wihte spaces are removed
++//      current->args.replace(reg,"%"); // insert dummy chars because wihte spaces are removed
+     }
+     current->type=type;
+-    current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
++//    current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
+     current->protection=prot;
+  
+        if (!lastCompound && (section==Entry::VARIABLE_SEC) &&  (spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
+diff --git a/src/vhdlscanner.l b/src/vhdlscanner.l
+index fb0dcb7..4dee1c8 100644
+--- a/src/vhdlscanner.l
++++ b/src/vhdlscanner.l
+@@ -36,6 +36,7 @@
+  * modified for doxygen by M. Kreis
+  * extended to VHDL 93/2008 
+  ******************************************************************************/
++
+ %{
+ 
+ #ifndef YYSTYPE
+diff --git a/winbuild/Doxygen.sln b/winbuild/Doxygen.sln
+index 8f2fba5..5504b0c 100644
+--- a/winbuild/Doxygen.sln
++++ b/winbuild/Doxygen.sln
+@@ -1,6 +1,6 @@
+ ﻿
+ Microsoft Visual Studio Solution File, Format Version 10.00
+-# Visual Studio 2008
++# Visual C++ Express 2008
+ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxygen", "Doxygen.vcproj", "{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}"
+ 	ProjectSection(ProjectDependencies) = postProject
+ 		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64} = {B6BB4771-8A4E-4656-AC08-1EF8AC182F64}
+@@ -27,11 +27,10 @@ Global
+ 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+ 		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Debug|Win32.ActiveCfg = Debug|Win32
+ 		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Debug|Win32.Build.0 = Debug|Win32
+-		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Debug|x64.ActiveCfg = Debug|x64
++		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Debug|x64.ActiveCfg = Debug|Win32
+ 		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|Win32.ActiveCfg = Release|Win32
+ 		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|Win32.Build.0 = Release|Win32
+-		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|x64.ActiveCfg = Release|x64
+-		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|x64.Build.0 = Release|x64
++		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|x64.ActiveCfg = Release|Win32
+ 		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Debug|Win32.ActiveCfg = Debug|Win32
+ 		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Debug|Win32.Build.0 = Debug|Win32
+ 		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Debug|x64.ActiveCfg = Debug|x64
+diff --git a/winbuild/Doxygen.vcproj b/winbuild/Doxygen.vcproj
+index 1822438..897c1ec 100644
+--- a/winbuild/Doxygen.vcproj
++++ b/winbuild/Doxygen.vcproj
+@@ -123,9 +123,9 @@
+ 			/>
+ 		</Configuration>
+ 		<Configuration
+-			Name="Debug|x64"
+-			OutputDirectory="..\bin\Debug64"
+-			IntermediateDirectory=".\Debug64"
++			Name="Release|Win32"
++			OutputDirectory="..\bin\Release"
++			IntermediateDirectory=".\Release"
+ 			ConfigurationType="1"
+ 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+ 			UseOfMFC="0"
+@@ -141,6 +141,7 @@
+ 			/>
+ 			<Tool
+ 				Name="Lex"
++				CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
+ 			/>
+ 			<Tool
+ 				Name="VCXMLDataGeneratorTool"
+@@ -150,23 +151,25 @@
+ 			/>
+ 			<Tool
+ 				Name="VCMIDLTool"
+-				TargetEnvironment="3"
+-				TypeLibraryName=".\Debug64\Doxygen.tlb"
++				TypeLibraryName=".\Release\Doxygen.tlb"
+ 				HeaderFileName=""
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalOptions="/Zm200 /bigobj"
+-				Optimization="0"
++				AdditionalOptions="/Zm200 "
++				Optimization="2"
++				InlineFunctionExpansion="2"
++				OmitFramePointers="true"
++				WholeProgramOptimization="true"
+ 				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+-				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+-				MinimalRebuild="true"
+-				BasicRuntimeChecks="3"
+-				RuntimeLibrary="1"
+-				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
+-				AssemblerListingLocation=".\Debug64/"
+-				ObjectFile=".\Debug64/"
+-				ProgramDataBaseFileName=".\Debug64/"
++				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
++				StringPooling="true"
++				RuntimeLibrary="0"
++				EnableFunctionLevelLinking="true"
++				PrecompiledHeaderFile=".\Release/Doxygen.pch"
++				AssemblerListingLocation=".\Release/"
++				ObjectFile=".\Release/"
++				ProgramDataBaseFileName=".\Release/"
+ 				WarningLevel="3"
+ 				SuppressStartupBanner="true"
+ 				DebugInformationFormat="3"
+@@ -176,7 +179,7 @@
+ 			/>
+ 			<Tool
+ 				Name="VCResourceCompilerTool"
+-				PreprocessorDefinitions="_DEBUG"
++				PreprocessorDefinitions="NDEBUG"
+ 				Culture="1033"
+ 			/>
+ 			<Tool
+@@ -184,19 +187,18 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="qtools.lib ws2_32.lib iconv64.lib shell32.lib"
+-				OutputFile="..\bin\Debug64\doxygen.exe"
+-				LinkIncremental="2"
++				AdditionalOptions="/LTCG"
++				AdditionalDependencies="qtools.lib iconv.lib shell32.lib"
++				OutputFile="..\bin\Release\doxygen.exe"
++				LinkIncremental="1"
+ 				SuppressStartupBanner="true"
+-				AdditionalLibraryDirectories="Debug64"
+-				GenerateManifest="false"
+-				GenerateDebugInformation="true"
+-				ProgramDatabaseFile=".\Debug64/Doxygen.pdb"
++				AdditionalLibraryDirectories="Release"
++				ProgramDatabaseFile=".\Release/Doxygen.pdb"
+ 				SubSystem="1"
+ 				LargeAddressAware="2"
+ 				RandomizedBaseAddress="1"
+ 				DataExecutionPrevention="0"
+-				TargetMachine="17"
++				TargetMachine="1"
+ 			/>
+ 			<Tool
+ 				Name="VCALinkTool"
+@@ -210,7 +212,7 @@
+ 			<Tool
+ 				Name="VCBscMakeTool"
+ 				SuppressStartupBanner="true"
+-				OutputFile=".\Debug64/Doxygen.bsc"
++				OutputFile=".\Release/Doxygen.bsc"
+ 			/>
+ 			<Tool
+ 				Name="VCFxCopTool"
+@@ -223,9 +225,9 @@
+ 			/>
+ 		</Configuration>
+ 		<Configuration
+-			Name="Release|Win32"
+-			OutputDirectory="..\bin\Release"
+-			IntermediateDirectory=".\Release"
++			Name="Debug|x64"
++			OutputDirectory="..\bin\Debug64"
++			IntermediateDirectory=".\Debug64"
+ 			ConfigurationType="1"
+ 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+ 			UseOfMFC="0"
+@@ -241,7 +243,6 @@
+ 			/>
+ 			<Tool
+ 				Name="Lex"
+-				CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
+ 			/>
+ 			<Tool
+ 				Name="VCXMLDataGeneratorTool"
+@@ -251,25 +252,23 @@
+ 			/>
+ 			<Tool
+ 				Name="VCMIDLTool"
+-				TypeLibraryName=".\Release\Doxygen.tlb"
++				TargetEnvironment="3"
++				TypeLibraryName=".\Debug64\Doxygen.tlb"
+ 				HeaderFileName=""
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalOptions="/Zm200 "
+-				Optimization="2"
+-				InlineFunctionExpansion="2"
+-				OmitFramePointers="true"
+-				WholeProgramOptimization="true"
++				AdditionalOptions="/Zm200 /bigobj"
++				Optimization="0"
+ 				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+-				StringPooling="true"
+-				RuntimeLibrary="0"
+-				EnableFunctionLevelLinking="true"
+-				PrecompiledHeaderFile=".\Release/Doxygen.pch"
+-				AssemblerListingLocation=".\Release/"
+-				ObjectFile=".\Release/"
+-				ProgramDataBaseFileName=".\Release/"
++				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
++				MinimalRebuild="true"
++				BasicRuntimeChecks="3"
++				RuntimeLibrary="1"
++				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
++				AssemblerListingLocation=".\Debug64/"
++				ObjectFile=".\Debug64/"
++				ProgramDataBaseFileName=".\Debug64/"
+ 				WarningLevel="3"
+ 				SuppressStartupBanner="true"
+ 				DebugInformationFormat="3"
+@@ -279,7 +278,7 @@
+ 			/>
+ 			<Tool
+ 				Name="VCResourceCompilerTool"
+-				PreprocessorDefinitions="NDEBUG"
++				PreprocessorDefinitions="_DEBUG"
+ 				Culture="1033"
+ 			/>
+ 			<Tool
+@@ -287,18 +286,19 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalOptions="/LTCG"
+-				AdditionalDependencies="qtools.lib iconv.lib shell32.lib"
+-				OutputFile="..\bin\Release\doxygen.exe"
+-				LinkIncremental="1"
++				AdditionalDependencies="qtools.lib ws2_32.lib iconv64.lib shell32.lib"
++				OutputFile="..\bin\Debug64\doxygen.exe"
++				LinkIncremental="2"
+ 				SuppressStartupBanner="true"
+-				AdditionalLibraryDirectories="Release"
+-				ProgramDatabaseFile=".\Release/Doxygen.pdb"
++				AdditionalLibraryDirectories="Debug64"
++				GenerateManifest="false"
++				GenerateDebugInformation="true"
++				ProgramDatabaseFile=".\Debug64/Doxygen.pdb"
+ 				SubSystem="1"
+ 				LargeAddressAware="2"
+ 				RandomizedBaseAddress="1"
+ 				DataExecutionPrevention="0"
+-				TargetMachine="1"
++				TargetMachine="17"
+ 			/>
+ 			<Tool
+ 				Name="VCALinkTool"
+@@ -312,7 +312,7 @@
+ 			<Tool
+ 				Name="VCBscMakeTool"
+ 				SuppressStartupBanner="true"
+-				OutputFile=".\Release/Doxygen.bsc"
++				OutputFile=".\Debug64/Doxygen.bsc"
+ 			/>
+ 			<Tool
+ 				Name="VCFxCopTool"
+@@ -455,7 +455,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -464,7 +464,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -503,7 +503,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -512,7 +512,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -543,7 +543,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -552,7 +552,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -583,7 +583,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -592,7 +592,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -626,7 +626,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -634,7 +634,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -674,7 +674,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -682,7 +682,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -718,19 +718,19 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+-						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex  -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+-						CommandLine="flex  -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+@@ -760,21 +760,21 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+-						CommandLine="flex -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
++						CommandLine="flex  -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
+ 						AdditionalDependencies="$(InputDir)constexp.l"
+ 						Output="$(InputDir)ce_lex.cpp"
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+-						CommandLine="flex  -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
++						CommandLine="flex -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
+ 						AdditionalDependencies="$(InputDir)constexp.l"
+ 						Output="$(InputDir)ce_lex.cpp"
+ 					/>
+@@ -804,7 +804,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCustomBuildTool"
+@@ -814,7 +814,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCustomBuildTool"
+@@ -847,7 +847,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -856,7 +856,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -891,7 +891,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -900,7 +900,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -934,7 +934,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -942,7 +942,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -974,7 +974,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -982,7 +982,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1011,7 +1011,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1020,7 +1020,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1051,7 +1051,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1060,7 +1060,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1091,7 +1091,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1100,7 +1100,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1131,7 +1131,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1140,7 +1140,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1171,7 +1171,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1180,7 +1180,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1219,7 +1219,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1228,7 +1228,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1259,7 +1259,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1268,7 +1268,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1302,7 +1302,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1310,7 +1310,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1339,7 +1339,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1348,7 +1348,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1379,7 +1379,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1388,7 +1388,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1423,7 +1423,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1432,7 +1432,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1463,7 +1463,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1472,7 +1472,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1503,7 +1503,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1512,7 +1512,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1543,7 +1543,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1552,7 +1552,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1586,7 +1586,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1594,7 +1594,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1626,7 +1626,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1634,7 +1634,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -1667,7 +1667,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1676,7 +1676,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1707,7 +1707,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1716,7 +1716,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1747,7 +1747,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1756,7 +1756,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1787,7 +1787,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1796,7 +1796,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1827,7 +1827,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1836,7 +1836,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1867,7 +1867,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1876,7 +1876,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1907,7 +1907,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1916,7 +1916,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1947,7 +1947,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1956,7 +1956,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1987,7 +1987,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -1996,7 +1996,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2027,7 +2027,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2036,7 +2036,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2067,7 +2067,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2076,7 +2076,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2115,7 +2115,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2124,7 +2124,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2155,7 +2155,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2164,7 +2164,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2195,7 +2195,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2204,7 +2204,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2235,7 +2235,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2244,7 +2244,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2283,7 +2283,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2292,7 +2292,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2323,7 +2323,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2332,7 +2332,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2363,7 +2363,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2372,7 +2372,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2403,7 +2403,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2412,7 +2412,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2443,7 +2443,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2452,7 +2452,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2483,7 +2483,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2492,7 +2492,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2527,7 +2527,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2536,7 +2536,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2571,7 +2571,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2580,7 +2580,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2611,7 +2611,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2620,7 +2620,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2651,7 +2651,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2660,7 +2660,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2691,7 +2691,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2700,7 +2700,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2742,19 +2742,19 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+-						CommandLine="flex -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex  -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+-						CommandLine="flex  -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
++						CommandLine="flex -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+@@ -2782,7 +2782,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -2790,7 +2790,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -2822,7 +2822,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -2830,7 +2830,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -2859,7 +2859,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2868,7 +2868,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2899,7 +2899,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2908,7 +2908,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2939,7 +2939,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2948,7 +2948,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2979,7 +2979,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2988,7 +2988,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3019,7 +3019,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3028,7 +3028,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3059,7 +3059,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3068,7 +3068,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3102,7 +3102,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3110,7 +3110,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3139,7 +3139,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3148,7 +3148,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3187,7 +3187,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3196,7 +3196,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3230,7 +3230,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3238,7 +3238,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3261,7 +3261,7 @@
+ 			<File
+ 				RelativePath="..\src\tooltip.cpp"
+ 				>
+-			</File>			
++			</File>
+ 			<File
+ 				RelativePath="..\src\util.cpp"
+ 				>
+@@ -3275,7 +3275,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3284,7 +3284,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3303,6 +3303,78 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="..\src\verilogdocgen.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\src\verilogparser.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\src\verilogparser.y"
++				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCustomBuildTool"
++						Description="Running bison on verilogparser.y"
++						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
++						Outputs="$(InputDir)\..\src\verilogparser.cpp"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|x64"
++					>
++					<Tool
++						Name="VCCustomBuildTool"
++						Description="Running bison on verilogparser.y"
++						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
++						Outputs="$(InputDir)\..\src\verilogparser.cpp"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="..\src\verilogscanner.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\src\verilogscanner.l"
++				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="Lex"
++						CommandLine="flex -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="Lex"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|x64"
++					>
++					<Tool
++						Name="Lex"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|x64"
++					>
++					<Tool
++						Name="Lex"
++						CommandLine="flex  -PverilogScanYY [AllOptions] [AdditionalOptions] [inputs]"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="..\src\version.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -3315,7 +3387,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3324,7 +3396,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3343,6 +3415,14 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="..\src\VFileLine.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\src\vhdlcode.cpp"
++				>
++			</File>
++			<File
+ 				RelativePath="..\src\vhdlcode.l"
+ 				>
+ 				<FileConfiguration
+@@ -3354,7 +3434,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3362,7 +3442,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3425,6 +3505,10 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="..\src\vhdlscanner.cpp"
++				>
++			</File>
++			<File
+ 				RelativePath="..\src\vhdlscanner.l"
+ 				>
+ 				<FileConfiguration
+@@ -3436,7 +3520,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3444,7 +3528,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="Lex"
+@@ -3461,6 +3545,18 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="..\src\VPreLex.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\src\VPreLex.l"
++				>
++			</File>
++			<File
++				RelativePath="..\src\VPreProc.cpp"
++				>
++			</File>
++			<File
+ 				RelativePath="..\src\xmldocvisitor.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -3473,7 +3569,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3482,7 +3578,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3513,7 +3609,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -3522,7 +3618,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -4150,6 +4246,10 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\src\types.h"
++				>
++			</File>
++			<File
+ 				RelativePath="..\src\unistd.h"
+ 				>
+ 				<FileConfiguration
+@@ -4163,7 +4263,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCustomBuildTool"
+@@ -4173,7 +4273,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCustomBuildTool"
+@@ -4198,11 +4298,23 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\src\verilogdocgen.h"
++				>
++			</File>
++			<File
++				RelativePath="..\src\verilogparser.hpp"
++				>
++			</File>
++			<File
++				RelativePath="..\src\verilogscanner.h"
++				>
++			</File>
++			<File
+ 				RelativePath="..\src\version.h"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\src\vhdlcode.cpp"
++				RelativePath="..\src\VFileLine.h"
+ 				>
+ 			</File>
+ 			<File
+@@ -4214,11 +4326,15 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\src\vhdlscanner.cpp"
++				RelativePath="..\src\vhdlscanner.h"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\src\vhdlscanner.h"
++				RelativePath="..\src\VPreLex.h"
++				>
++			</File>
++			<File
++				RelativePath="..\src\VPreProc.h"
+ 				>
+ 			</File>
+ 			<File
+diff --git a/winbuild/runbison.bat b/winbuild/runbison.bat
+index 65f923d..4d8a7ec 100644
+--- a/winbuild/runbison.bat
++++ b/winbuild/runbison.bat
+@@ -2,6 +2,7 @@ bison -l -d -p cppExpYY %1\..\src\constexp.y -o %1\..\src\ce_parse.c
+ del %1\..\src\ce_parse.c
+ bison -l -p cppExpYY %1\..\src\constexp.y -o %1\..\src\ce_parse.cpp
+ 
+-bison -l -d -p vhdlScanYY %1\..\src\vhdlparser.y -o %1\..\src\vhdlparser.c
++bison  -d -p vhdlScanYY %1\..\src\vhdlparser.y -o %1\..\src\vhdlparser.c
+ del %1\..\src\vhdlparser.c
+-bison -l -p vhdlScanYY %1\..\src\vhdlparser.y -o %1\..\src\vhdlparser.cpp
++bison  -p vhdlScanYY %1\..\src\vhdlparser.y -o %1\..\src\vhdlparser.cpp
++bison -d -t -v %1\..\src\verilogparser.y -o %1\..\src\verilogparser.cpp
+\ No newline at end of file
