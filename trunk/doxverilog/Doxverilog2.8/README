@@ -32,11 +32,11 @@ install the doxygen-1.8.5 sources(official release)
 
 1. copy the Verilog files verilogparser.y verlogscanner.l and the others source files to the doxygen-1.8.5/src directory
 
-==================  LINUX =====================================
+==================  LINUX  =====================================
 
-    For Linux copy the patch file linux.patch to directory doxygen-1.8.1/src
-    open a shell in the doxygen-1.8.1/src directory
-    make  patch  # patch -F3 -p0  < linux.patch
+    For Linux copy the patch file linux.patch to directory doxygen-1.8.5/src
+    open a shell in the doxygen-1.8.5/src directory
+    make  patch  # patch -p1  < verilog.patch
 
    - configure doxygen
      sh configure
@@ -45,7 +45,7 @@ install the doxygen-1.8.5 sources(official release)
      make all
 
 ==================  WINDOWS =====================================	 
-    For WINDOWS copy the patch file windows.patch to directory doxygen-1.8.1
+    For WINDOWS copy the patch file windows.patch to directory doxygen-1.8.5
     open a shell in the doxygen-1.8.5 directory
     make  patch  # patch -p1  < verilog.patch
 	
